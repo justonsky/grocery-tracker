@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="GroceryTracker.Api.Tests/GroceryTracker.Api.Tests.csproj" />
+  <Project Path="GroceryTracker.Api/GroceryTracker.Api.csproj" />
+  <Project Path="GroceryTracker.Core/GroceryTracker.Core.csproj" />
+</Solution>

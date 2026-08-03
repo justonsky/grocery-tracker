@@ -1,0 +1,23 @@
+# Example systemd unit for a non-Docker deploy. Install with:
+#   sudo cp deploy/grocery-tracker.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now grocery-tracker
+#
+# Assumes the app was published to /opt/grocery-tracker via:
+#   dotnet publish backend/GroceryTracker.Api -c Release -o /opt/grocery-tracker
+
+[Unit]
+Description=Grocery Tracker
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/grocery-tracker
+ExecStart=/usr/bin/dotnet /opt/grocery-tracker/GroceryTracker.Api.dll
+Restart=on-failure
+RestartSec=5
+User=grocerytracker
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DataDirectory=/var/lib/grocery-tracker
+
+[Install]
+WantedBy=multi-user.target
