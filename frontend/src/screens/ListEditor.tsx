@@ -37,6 +37,10 @@ export function ListEditor({ profileId }: { profileId: string }) {
     queryFn: () => api.lists(profileId).get(listId!),
     enabled: isEditing,
   })
+  // Full item/store lists back native <datalist> autocomplete below — small
+  // enough per profile that fetching once beats debouncing per keystroke.
+  const { data: itemSuggestions } = useQuery({ queryKey: ['items', profileId], queryFn: () => api.items(profileId).search() })
+  const { data: storeSuggestions } = useQuery({ queryKey: ['stores', profileId], queryFn: () => api.stores(profileId).search() })
 
   const [name, setName] = useState(`Grocery List — ${todayIso()}`)
   const [date, setDate] = useState(todayIso())
@@ -73,6 +77,8 @@ export function ListEditor({ profileId }: { profileId: string }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lists', profileId] })
+      queryClient.invalidateQueries({ queryKey: ['items', profileId] })
+      queryClient.invalidateQueries({ queryKey: ['stores', profileId] })
       toast('success', isEditing ? 'List updated.' : 'List created.')
       navigate('/lists')
     },
@@ -108,6 +114,13 @@ export function ListEditor({ profileId }: { profileId: string }) {
     setItems((its) => its.map((it) => (it.key === key ? { ...it, ...patch } : it)))
   const removeItem = (key: string) => setItems((its) => its.filter((it) => it.key !== key))
   const addItem = () => setItems((its) => [...its, newItem(defaultCategoryId)])
+
+  // See TripEditor's setItemName — same "carry over the remembered category
+  // when a datalist suggestion is picked" behavior.
+  const setItemName = (key: string, value: string) => {
+    const match = itemSuggestions?.find((i) => i.name.toLowerCase() === value.toLowerCase())
+    updateItem(key, match?.defaultCategoryId ? { itemName: value, categoryId: match.defaultCategoryId } : { itemName: value })
+  }
 
   const previewRef = useRef<HTMLDivElement>(null)
   const categoryName = (id: string) => categories?.find((c) => c.id === id)?.name ?? 'Other'
@@ -176,6 +189,7 @@ export function ListEditor({ profileId }: { profileId: string }) {
           <div className="flex gap-1.5">
             <input
               className="input"
+              list="dl-stores"
               placeholder="e.g. Costco"
               value={newStoreName}
               onChange={(e) => setNewStoreName(e.target.value)}
@@ -186,6 +200,12 @@ export function ListEditor({ profileId }: { profileId: string }) {
             </button>
           </div>
         </div>
+        <datalist id="dl-stores">
+          {storeSuggestions?.map((s) => <option key={s.id} value={s.name} />)}
+        </datalist>
+        <datalist id="dl-items">
+          {itemSuggestions?.map((i) => <option key={i.id} value={i.name} />)}
+        </datalist>
 
         <div className="hr" />
 
@@ -200,9 +220,10 @@ export function ListEditor({ profileId }: { profileId: string }) {
               />
               <input
                 className="input"
+                list="dl-items"
                 placeholder="Item name"
                 value={item.itemName}
-                onChange={(e) => updateItem(item.key, { itemName: e.target.value })}
+                onChange={(e) => setItemName(item.key, e.target.value)}
               />
               <select className="input" value={item.categoryId} onChange={(e) => updateItem(item.key, { categoryId: e.target.value })}>
                 {categories?.map((c) => (

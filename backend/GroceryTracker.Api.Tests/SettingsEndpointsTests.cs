@@ -21,20 +21,15 @@ public class SettingsEndpointsTests : IDisposable
     {
         var settings = await (await _client.GetAsync("/api/v1/settings")).ReadAsAsync<SettingsDto>();
         settings!.ThemeMode.Should().Be("system");
-        settings.CurrentProfileId.Should().BeNull();
     }
 
     [Fact]
-    public async Task UpdateSettings_PersistsThemeAndCurrentProfile()
+    public async Task UpdateSettings_PersistsTheme()
     {
-        var profileId = (await (await _client.PostJsonAsync("/api/v1/profiles", new CreateProfileRequest("Settings Tester")))
-            .ReadAsAsync<ProfileDto>())!.Id;
-
-        var updateResponse = await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest("dark", profileId));
+        var updateResponse = await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest("dark"));
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var updated = await updateResponse.ReadAsAsync<SettingsDto>();
         updated!.ThemeMode.Should().Be("dark");
-        updated.CurrentProfileId.Should().Be(profileId);
 
         var refetched = await (await _client.GetAsync("/api/v1/settings")).ReadAsAsync<SettingsDto>();
         refetched!.ThemeMode.Should().Be("dark");

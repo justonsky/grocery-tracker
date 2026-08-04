@@ -8,16 +8,12 @@ namespace GroceryTracker.Core.Services;
 public class SettingsService(GroceryTrackerDbContext db)
 {
     private const string ThemeModeKey = "ThemeMode";
-    private const string CurrentProfileIdKey = "CurrentProfileId";
 
     public async Task<SettingsDto> GetAsync(CancellationToken ct = default)
     {
         var settings = await db.AppSettings.ToDictionaryAsync(s => s.Key, s => s.Value, ct);
         var themeMode = settings.GetValueOrDefault(ThemeModeKey, "system");
-        var currentProfileId = settings.TryGetValue(CurrentProfileIdKey, out var raw) && Guid.TryParse(raw, out var id)
-            ? id
-            : (Guid?)null;
-        return new SettingsDto(themeMode, currentProfileId);
+        return new SettingsDto(themeMode);
     }
 
     public async Task<SettingsDto> UpdateAsync(UpdateSettingsRequest request, CancellationToken ct = default)
@@ -25,10 +21,6 @@ public class SettingsService(GroceryTrackerDbContext db)
         if (request.ThemeMode is not null)
         {
             await UpsertAsync(ThemeModeKey, request.ThemeMode, ct);
-        }
-        if (request.CurrentProfileId is not null)
-        {
-            await UpsertAsync(CurrentProfileIdKey, request.CurrentProfileId.Value.ToString(), ct);
         }
         await db.SaveChangesAsync(ct);
         return await GetAsync(ct);

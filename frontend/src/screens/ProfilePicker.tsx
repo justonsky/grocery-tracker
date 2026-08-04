@@ -6,7 +6,7 @@ import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useOnlineStatus } from '../app/useOnlineStatus'
 
-export function ProfilePicker() {
+export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => void }) {
   const queryClient = useQueryClient()
   const toast = useToast()
   const confirm = useConfirm()
@@ -16,18 +16,13 @@ export function ProfilePicker() {
 
   const { data: profiles, isLoading } = useQuery({ queryKey: ['profiles'], queryFn: api.profiles.list })
 
-  const selectProfile = useMutation({
-    mutationFn: (profileId: string) => api.settings.update({ currentProfileId: profileId }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings'] }),
-  })
-
   const createProfile = useMutation({
     mutationFn: (name: string) => api.profiles.create(name),
     onSuccess: (profile) => {
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
       setCreating(false)
       setNewName('')
-      selectProfile.mutate(profile.id)
+      onSelect(profile.id)
     },
     onError: () => toast('error', "Couldn't create that profile."),
   })
@@ -52,23 +47,13 @@ export function ProfilePicker() {
         <h1 className="text-[clamp(28px,4vw,38px)]">Grocery Tracker</h1>
         <p className="m-0 text-text/70">Who's shopping today?</p>
       </div>
-      {!isOnline && (
-        <div
-          className="max-w-[420px] rounded-md px-4 py-2 text-center text-xs"
-          style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}
-        >
-          Can't reach your local server. Profile selection needs a connection — check your network and try again.
-        </div>
-      )}
       <div className="flex max-w-[720px] flex-wrap justify-center gap-4.5">
         {!isLoading &&
           profiles?.map((p) => (
             <div
               key={p.id}
-              className={`card elev-sm relative w-[150px] items-center px-3.5 py-5.5 text-center transition-transform ${
-                isOnline ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'cursor-not-allowed opacity-60'
-              }`}
-              onClick={() => isOnline && selectProfile.mutate(p.id)}
+              className="card elev-sm relative w-[150px] cursor-pointer items-center px-3.5 py-5.5 text-center transition-transform hover:-translate-y-0.5 hover:shadow-md"
+              onClick={() => onSelect(p.id)}
             >
               <button
                 type="button"
@@ -110,6 +95,7 @@ export function ProfilePicker() {
                 type="button"
                 className="btn btn-primary px-2.5 py-1 text-xs"
                 disabled={!newName.trim() || !isOnline}
+                title={isOnline ? undefined : "Can't create a profile while offline"}
                 onClick={() => createProfile.mutate(newName.trim())}
               >
                 Add
@@ -121,6 +107,7 @@ export function ProfilePicker() {
             className={`card elev-sm w-[150px] items-center justify-center gap-2 border border-dashed border-divider bg-transparent px-3.5 py-5.5 text-center ${
               isOnline ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
             }`}
+            title={isOnline ? undefined : "Can't create a profile while offline"}
             onClick={() => isOnline && setCreating(true)}
           >
             <span className="text-2xl text-accent">+</span>

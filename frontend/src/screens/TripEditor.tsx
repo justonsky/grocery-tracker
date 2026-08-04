@@ -34,6 +34,10 @@ export function TripEditor({ profileId }: { profileId: string }) {
     queryFn: () => api.trips(profileId).get(tripId!),
     enabled: isEditing,
   })
+  // Full item/store lists back native <datalist> autocomplete below — small
+  // enough per profile that fetching once beats debouncing per keystroke.
+  const { data: itemSuggestions } = useQuery({ queryKey: ['items', profileId], queryFn: () => api.items(profileId).search() })
+  const { data: storeSuggestions } = useQuery({ queryKey: ['stores', profileId], queryFn: () => api.stores(profileId).search() })
 
   const [date, setDate] = useState(todayIso())
   const [store, setStore] = useState('')
@@ -68,6 +72,8 @@ export function TripEditor({ profileId }: { profileId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
       queryClient.invalidateQueries({ queryKey: ['trips', profileId] })
+      queryClient.invalidateQueries({ queryKey: ['items', profileId] })
+      queryClient.invalidateQueries({ queryKey: ['stores', profileId] })
       toast('success', isEditing ? 'Trip updated.' : 'Trip logged.')
       navigate('/')
     },
@@ -93,6 +99,15 @@ export function TripEditor({ profileId }: { profileId: string }) {
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)))
   const removeRow = (key: string) => setRows((rs) => rs.filter((r) => r.key !== key))
   const addRow = () => setRows((rs) => [...rs, newRow(defaultCategoryId)])
+
+  // Picking a suggestion from the item datalist fires the same onChange as
+  // typing — if the typed value exactly matches a known item, carry over its
+  // remembered category (the backend already does this on save; this just
+  // reflects it immediately in the form instead of after the fact).
+  const setItemName = (key: string, value: string) => {
+    const match = itemSuggestions?.find((i) => i.name.toLowerCase() === value.toLowerCase())
+    updateRow(key, match?.defaultCategoryId ? { itemName: value, categoryId: match.defaultCategoryId } : { itemName: value })
+  }
 
   return (
     <div className="mx-auto max-w-[760px] px-5 pt-6 pb-25">
@@ -123,12 +138,19 @@ export function TripEditor({ profileId }: { profileId: string }) {
             <label>Store</label>
             <input
               className="input"
+              list="dl-stores"
               placeholder="e.g. Trader Joe's"
               value={store}
               onChange={(e) => setStore(e.target.value)}
             />
           </div>
         </div>
+        <datalist id="dl-stores">
+          {storeSuggestions?.map((s) => <option key={s.id} value={s.name} />)}
+        </datalist>
+        <datalist id="dl-items">
+          {itemSuggestions?.map((i) => <option key={i.id} value={i.name} />)}
+        </datalist>
 
         <div className="hr" />
 
@@ -137,9 +159,10 @@ export function TripEditor({ profileId }: { profileId: string }) {
             <div key={row.key} className="grid grid-cols-[1.5fr_1fr_0.8fr_auto] items-center gap-2">
               <input
                 className="input"
+                list="dl-items"
                 placeholder="Item name"
                 value={row.itemName}
-                onChange={(e) => updateRow(row.key, { itemName: e.target.value })}
+                onChange={(e) => setItemName(row.key, e.target.value)}
               />
               <select
                 className="input"

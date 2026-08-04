@@ -156,5 +156,4 @@ export interface ItemHistory {
 
 export interface Settings {
   themeMode: 'system' | 'light' | 'dark'
-  currentProfileId: string | null
 }

@@ -12,18 +12,16 @@ import { TripEditor } from '../screens/TripEditor'
 import { ItemDetail } from '../screens/ItemDetail'
 import { SettingsDialog } from '../screens/SettingsDialog'
 import { AppShell } from './AppShell'
+import { useCurrentProfileId } from './useCurrentProfileId'
 
 function AppContent() {
-  const { data: settings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['settings'],
-    queryFn: api.settings.get,
-  })
+  const [currentProfileId, setCurrentProfileId] = useCurrentProfileId()
   const { data: profiles, isLoading: profilesLoading } = useQuery({
     queryKey: ['profiles'],
     queryFn: api.profiles.list,
   })
 
-  if (settingsLoading || profilesLoading) {
+  if (profilesLoading) {
     return (
       <div className="mx-auto max-w-[960px] px-5 py-7">
         <div className="skel mb-6 h-6 w-45" />
@@ -36,15 +34,15 @@ function AppContent() {
     )
   }
 
-  const currentProfile = profiles?.find((p) => p.id === settings?.currentProfileId)
+  const currentProfile = profiles?.find((p) => p.id === currentProfileId)
   if (!currentProfile) {
-    return <ProfilePicker />
+    return <ProfilePicker onSelect={setCurrentProfileId} />
   }
 
   const profileId = currentProfile.id
 
   return (
-    <AppShell profileId={profileId}>
+    <AppShell profileId={profileId} onSwitchProfile={() => setCurrentProfileId(null)}>
       <Routes>
         <Route path="/" element={<Dashboard profileId={profileId} />} />
         <Route path="/history" element={<History profileId={profileId} />} />

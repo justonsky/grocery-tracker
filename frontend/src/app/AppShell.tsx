@@ -11,7 +11,15 @@ const NAV_ITEMS = [
   { to: '/lists', label: 'Lists', icon: '☰' },
 ]
 
-export function AppShell({ profileId, children }: { profileId: string; children: ReactNode }) {
+export function AppShell({
+  profileId,
+  onSwitchProfile,
+  children,
+}: {
+  profileId: string
+  onSwitchProfile: () => void
+  children: ReactNode
+}) {
   const { themeMode } = useTheme()
   const isOnline = useOnlineStatus()
   const queryClient = useQueryClient()
@@ -24,11 +32,6 @@ export function AppShell({ profileId, children }: { profileId: string; children:
       queryClient.invalidateQueries({ queryKey: ['settings'] }),
     )
   }
-
-  const openProfilePicker = () =>
-    api.settings.update({ currentProfileId: null }).then(() =>
-      queryClient.invalidateQueries({ queryKey: ['settings'] }),
-    )
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -53,7 +56,7 @@ export function AppShell({ profileId, children }: { profileId: string; children:
           {themeMode === 'dark' ? '☾' : '☀'}
         </button>
         {currentProfile && (
-          <button type="button" className="flex cursor-pointer items-center gap-2 border-none bg-transparent" onClick={openProfilePicker}>
+          <button type="button" className="flex cursor-pointer items-center gap-2 border-none bg-transparent" onClick={onSwitchProfile}>
             <Avatar name={currentProfile.name} />
             <span className="text-sm">{currentProfile.name}</span>
           </button>
