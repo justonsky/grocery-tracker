@@ -15,7 +15,7 @@ public static class TripEndpoints
         group.MapGet("/{tripId:guid}", async (Guid profileId, Guid tripId, TripService service, CancellationToken ct) =>
         {
             var trip = await service.GetAsync(profileId, tripId, ct);
-            return trip is null ? Results.NotFound() : Results.Ok(trip);
+            return trip is null ? TripNotFound() : Results.Ok(trip);
         });
 
         group.MapPost("/", async (Guid profileId, TripInput input, TripService service, CancellationToken ct) =>
@@ -24,13 +24,32 @@ public static class TripEndpoints
             return Results.Created($"/api/v1/profiles/{profileId}/trips/{trip.Id}", trip);
         });
 
+        // Idempotent upsert, not update-only: creates the trip with this exact
+        // id if it doesn't exist yet. This is what the offline outbox targets —
+        // a client-generated GUID replayed here is always safe to re-send.
         group.MapPut("/{tripId:guid}", async (Guid profileId, Guid tripId, TripInput input, TripService service, CancellationToken ct) =>
         {
-            var trip = await service.UpdateAsync(profileId, tripId, input, ct);
-            return trip is null ? Results.NotFound() : Results.Ok(trip);
+            if (tripId == Guid.Empty)
+            {
+                return Results.Problem(type: ProblemTypes.Validation, title: "Id must not be empty.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var (result, trip) = await service.UpsertAsync(profileId, tripId, input, ct);
+            return result switch
+            {
+                TripUpsertResult.Created => Results.Created($"/api/v1/profiles/{profileId}/trips/{trip!.Id}", trip),
+                TripUpsertResult.Updated => Results.Ok(trip),
+                TripUpsertResult.CrossProfile => Results.Problem(
+                    type: ProblemTypes.CrossProfile, title: "This trip belongs to a different profile.", statusCode: StatusCodes.Status409Conflict),
+                _ => Results.Problem(
+                    type: ProblemTypes.ProfileNotFound, title: "Profile not found.", statusCode: StatusCodes.Status404NotFound),
+            };
         });
 
         group.MapDelete("/{tripId:guid}", async (Guid profileId, Guid tripId, TripService service, CancellationToken ct) =>
-            await service.DeleteAsync(profileId, tripId, ct) ? Results.NoContent() : Results.NotFound());
+            await service.DeleteAsync(profileId, tripId, ct) ? Results.NoContent() : TripNotFound());
     }
+
+    private static IResult TripNotFound() =>
+        Results.Problem(type: ProblemTypes.TripNotFound, title: "Trip not found.", statusCode: StatusCodes.Status404NotFound);
 }

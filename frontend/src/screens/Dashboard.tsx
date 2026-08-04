@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { TrackedItem } from '../api/types'
+import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 
@@ -35,6 +36,7 @@ export function Dashboard({ profileId }: { profileId: string }) {
     queryKey: ['dashboard', profileId],
     queryFn: () => api.dashboard(profileId),
   })
+  const pendingTripIds = useOutstandingEntityIds('trip')
 
   if (isLoading || !data) {
     return (
@@ -87,7 +89,10 @@ export function Dashboard({ profileId }: { profileId: string }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="card-kicker">{data.recentTrip.date}</div>
-                <div className="card-title">{data.recentTrip.storeName}</div>
+                <div className="card-title flex items-center gap-1.5">
+                  {data.recentTrip.storeName}
+                  {pendingTripIds.has(data.recentTrip.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
+                </div>
               </div>
               <div className="text-right">
                 <div className="font-heading text-xl">{money(data.recentTrip.total)}</div>

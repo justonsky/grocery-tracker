@@ -1,35 +1,79 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
+import type { Profile } from '../api/types'
 import { Avatar } from '../app/AppShell'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
-import { useOnlineStatus } from '../app/useOnlineStatus'
+import { performOrQueue, newClientId } from '../offline/performOrQueue'
 
 export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => void }) {
   const queryClient = useQueryClient()
   const toast = useToast()
   const confirm = useConfirm()
-  const isOnline = useOnlineStatus()
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
 
   const { data: profiles, isLoading } = useQuery({ queryKey: ['profiles'], queryFn: api.profiles.list })
 
   const createProfile = useMutation({
-    mutationFn: (name: string) => api.profiles.create(name),
-    onSuccess: (profile) => {
-      queryClient.invalidateQueries({ queryKey: ['profiles'] })
+    // Without this, TanStack Query pauses the mutation entirely while
+    // onlineManager reports offline — performOrQueue's own fallback-to-queue
+    // logic would never get a chance to run.
+    networkMode: 'always',
+    mutationFn: async (name: string) => {
+      const id = newClientId()
+      const outcome = await performOrQueue(() => api.profiles.upsert(id, name), {
+        entity: 'profile',
+        action: 'put',
+        entityId: id,
+        profileId: null,
+        isCreate: true,
+        payload: { name },
+        label: `Profile "${name}"`,
+      })
+      return { id, name, outcome }
+    },
+    onSuccess: ({ id, name, outcome }) => {
+      if (outcome.sent) {
+        queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      } else {
+        // Not sent to the server yet — splice it in locally so it's
+        // selectable right away. Skipping invalidate here matters: a refetch
+        // would return the old (pre-create) list and silently wipe this back out.
+        queryClient.setQueryData<Profile[]>(['profiles'], (old) => [
+          ...(old ?? []),
+          { id, name, createdAt: new Date().toISOString(), tripCount: 0 },
+        ])
+        toast('success', "Saved on this device — will sync when you're back online.")
+      }
       setCreating(false)
       setNewName('')
-      onSelect(profile.id)
+      onSelect(id)
     },
     onError: () => toast('error', "Couldn't create that profile."),
   })
 
   const deleteProfile = useMutation({
-    mutationFn: (id: string) => api.profiles.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profiles'] }),
+    networkMode: 'always',
+    mutationFn: (id: string) =>
+      performOrQueue(() => api.profiles.delete(id), {
+        entity: 'profile',
+        action: 'delete',
+        entityId: id,
+        profileId: null,
+        isCreate: false,
+        payload: null,
+        label: 'Delete profile',
+      }),
+    onSuccess: (outcome, id) => {
+      queryClient.setQueryData<Profile[]>(['profiles'], (old) => old?.filter((p) => p.id !== id))
+      if (outcome.sent) {
+        queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      } else {
+        toast('success', "Delete saved — will sync when you're back online.")
+      }
+    },
     onError: () => toast('error', "Couldn't delete that profile."),
   })
 
@@ -94,8 +138,7 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
               <button
                 type="button"
                 className="btn btn-primary px-2.5 py-1 text-xs"
-                disabled={!newName.trim() || !isOnline}
-                title={isOnline ? undefined : "Can't create a profile while offline"}
+                disabled={!newName.trim()}
                 onClick={() => createProfile.mutate(newName.trim())}
               >
                 Add
@@ -104,11 +147,8 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
           </div>
         ) : (
           <div
-            className={`card elev-sm w-[150px] items-center justify-center gap-2 border border-dashed border-divider bg-transparent px-3.5 py-5.5 text-center ${
-              isOnline ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-            }`}
-            title={isOnline ? undefined : "Can't create a profile while offline"}
-            onClick={() => isOnline && setCreating(true)}
+            className="card elev-sm w-[150px] cursor-pointer items-center justify-center gap-2 border border-dashed border-divider bg-transparent px-3.5 py-5.5 text-center"
+            onClick={() => setCreating(true)}
           >
             <span className="text-2xl text-accent">+</span>
             <div className="text-[13px] text-accent">Add profile</div>

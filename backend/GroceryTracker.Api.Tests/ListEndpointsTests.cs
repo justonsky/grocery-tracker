@@ -41,20 +41,24 @@ public class ListEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task ToggleListItem_FlipsCheckedState()
+    public async Task CreateList_WithDuplicatePreferredStoreNameDifferentCaseInSamePayload_ResolvesToOneStore()
     {
+        // Same fix as TripEndpointsTests' duplicate-item-name regression test,
+        // but exercising LookupService.ResolveStoreAsync via PreferredStoreName.
         var profileId = await CreateProfileAsync();
         var categoryId = await GetCategoryIdAsync("Produce");
-        var list = await (await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/lists",
-            new GroceryListInput("List", null, [], [new ListItemInput("Bananas", categoryId, null, false)])))
-            .ReadAsAsync<GroceryListDto>();
-        var itemId = list!.Items[0].Id;
 
-        var toggleResponse = await _client.PostAsync($"/api/v1/profiles/{profileId}/lists/{list.Id}/items/{itemId}/toggle", null);
-        toggleResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var input = new GroceryListInput("List", null, ["Costco"],
+        [
+            new ListItemInput("Bananas", categoryId, "Costco", false),
+            new ListItemInput("Apples", categoryId, "costco", false),
+        ]);
 
-        var refreshed = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/lists/{list.Id}")).ReadAsAsync<GroceryListDto>();
-        refreshed!.Items[0].Checked.Should().BeTrue();
+        var response = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/lists", input);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var stores = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/stores")).ReadAsAsync<List<StoreDto>>();
+        stores.Should().ContainSingle(s => s.Name.Equals("costco", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

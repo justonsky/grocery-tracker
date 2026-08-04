@@ -39,4 +39,27 @@ public class ProfileService(GroceryTrackerDbContext db)
         await db.SaveChangesAsync(ct);
         return true;
     }
+
+    // Idempotent create-or-rename, keyed by the caller-supplied id — lets the
+    // offline outbox recreate a profile (e.g. after an orphaned-by-server-
+    // delete recovery) with a single request, same id it always had.
+    public async Task<(ProfileUpsertResult Result, ProfileDto Profile)> UpsertAsync(
+        Guid id, CreateProfileRequest request, CancellationToken ct = default)
+    {
+        var existing = await db.Profiles.FindAsync([id], ct);
+        if (existing is null)
+        {
+            var profile = new Profile { Id = id, Name = request.Name.Trim(), CreatedAt = DateTimeOffset.UtcNow };
+            db.Profiles.Add(profile);
+            await db.SaveChangesAsync(ct);
+            return (ProfileUpsertResult.Created, new ProfileDto(profile.Id, profile.Name, profile.CreatedAt, 0));
+        }
+
+        existing.Name = request.Name.Trim();
+        await db.SaveChangesAsync(ct);
+        var tripCount = await db.Trips.CountAsync(t => t.ProfileId == id, ct);
+        return (ProfileUpsertResult.Updated, new ProfileDto(existing.Id, existing.Name, existing.CreatedAt, tripCount));
+    }
 }
+
+public enum ProfileUpsertResult { Created, Updated }

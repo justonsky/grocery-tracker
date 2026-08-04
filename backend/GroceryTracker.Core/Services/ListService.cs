@@ -38,25 +38,44 @@ public class ListService(GroceryTrackerDbContext db, LookupService lookup)
         return (await GetAsync(profileId, list.Id, ct))!;
     }
 
-    public async Task<GroceryListDto?> UpdateAsync(Guid profileId, Guid listId, GroceryListInput input, CancellationToken ct = default)
+    // Idempotent create-or-replace — see TripService.UpsertAsync for why.
+    public async Task<(ListUpsertResult Result, GroceryListDto? List)> UpsertAsync(
+        Guid profileId, Guid listId, GroceryListInput input, CancellationToken ct = default)
     {
+        var profileExists = await db.Profiles.AnyAsync(p => p.Id == profileId, ct);
+        if (!profileExists) return (ListUpsertResult.ProfileNotFound, null);
+
         var list = await db.GroceryLists
             .Include(l => l.Stores)
             .Include(l => l.Items)
-            .FirstOrDefaultAsync(l => l.ProfileId == profileId && l.Id == listId, ct);
-        if (list is null) return null;
+            .FirstOrDefaultAsync(l => l.Id == listId, ct);
+        if (list is not null && list.ProfileId != profileId)
+        {
+            return (ListUpsertResult.CrossProfile, null);
+        }
 
-        list.Name = input.Name.Trim();
-        list.Date = input.Date;
+        var isCreate = list is null;
 
-        db.ListStores.RemoveRange(list.Stores);
-        db.ListItems.RemoveRange(list.Items);
-        list.Stores.Clear();
-        list.Items.Clear();
+        if (isCreate)
+        {
+            list = new GroceryList { Id = listId, ProfileId = profileId, Name = input.Name.Trim(), Date = input.Date, CreatedAt = DateTimeOffset.UtcNow };
+            db.GroceryLists.Add(list);
+        }
+        else
+        {
+            list!.Name = input.Name.Trim();
+            list.Date = input.Date;
+            db.ListStores.RemoveRange(list.Stores);
+            db.ListItems.RemoveRange(list.Items);
+            list.Stores.Clear();
+            list.Items.Clear();
+        }
+
         await ApplyStoresAndItemsAsync(profileId, list, input, ct);
-
         await db.SaveChangesAsync(ct);
-        return await GetAsync(profileId, list.Id, ct);
+
+        var dto = await GetAsync(profileId, list.Id, ct);
+        return (isCreate ? ListUpsertResult.Created : ListUpsertResult.Updated, dto);
     }
 
     public async Task<bool> DeleteAsync(Guid profileId, Guid listId, CancellationToken ct = default)
@@ -64,17 +83,6 @@ public class ListService(GroceryTrackerDbContext db, LookupService lookup)
         var list = await db.GroceryLists.FirstOrDefaultAsync(l => l.ProfileId == profileId && l.Id == listId, ct);
         if (list is null) return false;
         db.GroceryLists.Remove(list);
-        await db.SaveChangesAsync(ct);
-        return true;
-    }
-
-    public async Task<bool> ToggleItemAsync(Guid profileId, Guid listId, Guid listItemId, CancellationToken ct = default)
-    {
-        var item = await db.ListItems
-            .Include(li => li.List)
-            .FirstOrDefaultAsync(li => li.Id == listItemId && li.ListId == listId && li.List!.ProfileId == profileId, ct);
-        if (item is null) return false;
-        item.Checked = !item.Checked;
         await db.SaveChangesAsync(ct);
         return true;
     }
@@ -130,3 +138,5 @@ public class ListService(GroceryTrackerDbContext db, LookupService lookup)
             i.Id, i.ItemId, i.Item!.Name, i.CategoryId, i.Category!.Name,
             i.PreferredStore?.Name, i.Checked)).ToList());
 }
+
+public enum ListUpsertResult { Created, Updated, ProfileNotFound, CrossProfile }

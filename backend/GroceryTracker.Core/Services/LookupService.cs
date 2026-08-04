@@ -16,11 +16,17 @@ public class LookupService(GroceryTrackerDbContext db)
         var trimmed = name.Trim();
         var normalized = NameNormalizer.Normalize(trimmed);
 
-        var existing = await db.Stores
-            .FirstOrDefaultAsync(s => s.ProfileId == profileId && s.NormalizedName == normalized, ct);
-        if (existing is not null) return existing;
+        // Check the change tracker before the DB: two references to the same
+        // new name within one payload (e.g. trip items "Milk" and "milk")
+        // both miss a DB-only lookup, since neither has been saved yet — the
+        // second then violates the unique index at SaveChangesAsync. `.Local`
+        // sees Added-but-unsaved entities, so the second reference resolves
+        // to the first instead of trying to create a duplicate.
+        var store = db.Stores.Local.FirstOrDefault(s => s.ProfileId == profileId && s.NormalizedName == normalized)
+            ?? await db.Stores.FirstOrDefaultAsync(s => s.ProfileId == profileId && s.NormalizedName == normalized, ct);
+        if (store is not null) return store;
 
-        var store = new Store
+        var created = new Store
         {
             Id = Guid.NewGuid(),
             ProfileId = profileId,
@@ -28,8 +34,8 @@ public class LookupService(GroceryTrackerDbContext db)
             NormalizedName = normalized,
             CreatedAt = DateTimeOffset.UtcNow,
         };
-        db.Stores.Add(store);
-        return store;
+        db.Stores.Add(created);
+        return created;
     }
 
     public async Task<Item> ResolveItemAsync(Guid profileId, string name, Guid? defaultCategoryId, CancellationToken ct = default)
@@ -37,19 +43,20 @@ public class LookupService(GroceryTrackerDbContext db)
         var trimmed = name.Trim();
         var normalized = NameNormalizer.Normalize(trimmed);
 
-        var existing = await db.Items
-            .FirstOrDefaultAsync(i => i.ProfileId == profileId && i.NormalizedName == normalized, ct);
-        if (existing is not null)
+        // See ResolveStoreAsync — same same-payload-duplicate-name fix.
+        var item = db.Items.Local.FirstOrDefault(i => i.ProfileId == profileId && i.NormalizedName == normalized)
+            ?? await db.Items.FirstOrDefaultAsync(i => i.ProfileId == profileId && i.NormalizedName == normalized, ct);
+        if (item is not null)
         {
             // Remember the most recently used category for this item name, for autocomplete UX.
-            if (defaultCategoryId is not null && existing.DefaultCategoryId != defaultCategoryId)
+            if (defaultCategoryId is not null && item.DefaultCategoryId != defaultCategoryId)
             {
-                existing.DefaultCategoryId = defaultCategoryId;
+                item.DefaultCategoryId = defaultCategoryId;
             }
-            return existing;
+            return item;
         }
 
-        var item = new Item
+        var created = new Item
         {
             Id = Guid.NewGuid(),
             ProfileId = profileId,
@@ -58,8 +65,8 @@ public class LookupService(GroceryTrackerDbContext db)
             DefaultCategoryId = defaultCategoryId,
             CreatedAt = DateTimeOffset.UtcNow,
         };
-        db.Items.Add(item);
-        return item;
+        db.Items.Add(created);
+        return created;
     }
 
     public async Task<List<StoreDto>> SearchStoresAsync(Guid profileId, string? search, CancellationToken ct = default)

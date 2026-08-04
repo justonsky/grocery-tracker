@@ -157,3 +157,11 @@ export interface ItemHistory {
 export interface Settings {
   themeMode: 'system' | 'light' | 'dark'
 }
+
+export interface Health {
+  service: string
+  instanceId: string
+  appVersion: string
+  serverTime: string
+  status: string
+}

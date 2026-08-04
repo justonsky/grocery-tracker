@@ -15,7 +15,7 @@ public static class ListEndpoints
         group.MapGet("/{listId:guid}", async (Guid profileId, Guid listId, ListService service, CancellationToken ct) =>
         {
             var list = await service.GetAsync(profileId, listId, ct);
-            return list is null ? Results.NotFound() : Results.Ok(list);
+            return list is null ? ListNotFound() : Results.Ok(list);
         });
 
         group.MapPost("/", async (Guid profileId, GroceryListInput input, ListService service, CancellationToken ct) =>
@@ -24,17 +24,30 @@ public static class ListEndpoints
             return Results.Created($"/api/v1/profiles/{profileId}/lists/{list.Id}", list);
         });
 
+        // Idempotent upsert, not update-only — see TripEndpoints' PUT for why.
         group.MapPut("/{listId:guid}", async (Guid profileId, Guid listId, GroceryListInput input, ListService service, CancellationToken ct) =>
         {
-            var list = await service.UpdateAsync(profileId, listId, input, ct);
-            return list is null ? Results.NotFound() : Results.Ok(list);
+            if (listId == Guid.Empty)
+            {
+                return Results.Problem(type: ProblemTypes.Validation, title: "Id must not be empty.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var (result, list) = await service.UpsertAsync(profileId, listId, input, ct);
+            return result switch
+            {
+                ListUpsertResult.Created => Results.Created($"/api/v1/profiles/{profileId}/lists/{list!.Id}", list),
+                ListUpsertResult.Updated => Results.Ok(list),
+                ListUpsertResult.CrossProfile => Results.Problem(
+                    type: ProblemTypes.CrossProfile, title: "This list belongs to a different profile.", statusCode: StatusCodes.Status409Conflict),
+                _ => Results.Problem(
+                    type: ProblemTypes.ProfileNotFound, title: "Profile not found.", statusCode: StatusCodes.Status404NotFound),
+            };
         });
 
         group.MapDelete("/{listId:guid}", async (Guid profileId, Guid listId, ListService service, CancellationToken ct) =>
-            await service.DeleteAsync(profileId, listId, ct) ? Results.NoContent() : Results.NotFound());
-
-        group.MapPost("/{listId:guid}/items/{listItemId:guid}/toggle", async (
-            Guid profileId, Guid listId, Guid listItemId, ListService service, CancellationToken ct) =>
-            await service.ToggleItemAsync(profileId, listId, listItemId, ct) ? Results.NoContent() : Results.NotFound());
+            await service.DeleteAsync(profileId, listId, ct) ? Results.NoContent() : ListNotFound());
     }
+
+    private static IResult ListNotFound() =>
+        Results.Problem(type: ProblemTypes.ListNotFound, title: "List not found.", statusCode: StatusCodes.Status404NotFound);
 }

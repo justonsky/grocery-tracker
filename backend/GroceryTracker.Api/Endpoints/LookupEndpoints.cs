@@ -18,7 +18,9 @@ public static class LookupEndpoints
             Guid profileId, Guid itemId, ItemHistoryService service, CancellationToken ct) =>
         {
             var history = await service.GetAsync(profileId, itemId, ct);
-            return history is null ? Results.NotFound() : Results.Ok(history);
+            return history is null
+                ? Results.Problem(type: ProblemTypes.ItemNotFound, title: "Item not found.", statusCode: StatusCodes.Status404NotFound)
+                : Results.Ok(history);
         });
     }
 }

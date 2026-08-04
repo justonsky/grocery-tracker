@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { TripSummary } from '../api/types'
+import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 
@@ -27,6 +28,7 @@ export function History({ profileId }: { profileId: string }) {
     queryFn: () => api.trips(profileId).list(),
   })
 
+  const pendingTripIds = useOutstandingEntityIds('trip')
   const groups = trips ? groupByMonth(trips) : []
 
   if (isLoading) {
@@ -71,7 +73,12 @@ export function History({ profileId }: { profileId: string }) {
                   {group.trips.map((trip) => (
                     <tr key={trip.id}>
                       <td>{trip.date}</td>
-                      <td>{trip.storeName}</td>
+                      <td>
+                        <span className="flex items-center gap-1.5">
+                          {trip.storeName}
+                          {pendingTripIds.has(trip.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
+                        </span>
+                      </td>
                       <td>{trip.itemCount}</td>
                       <td className="text-right">{money(trip.total)}</td>
                       <td className="text-right">

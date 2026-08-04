@@ -60,6 +60,33 @@ public class TripEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateTrip_WithDuplicateItemNameDifferentCaseInSamePayload_CreatesOnlyOneItem()
+    {
+        // Regression test: LookupService.ResolveItemAsync used to check only the
+        // database for an existing match, which can't see an Added-but-unsaved
+        // entity — two references to the same new name within one payload both
+        // missed, both got Added, and the second violated the unique index.
+        var profileId = await CreateProfileAsync();
+        var dairyId = await GetCategoryIdAsync("Dairy");
+
+        var input = new TripInput("2026-08-01", "Costco",
+        [
+            new TripItemInput("Milk", dairyId, 3.49m),
+            new TripItemInput("milk", dairyId, 3.59m),
+        ]);
+
+        var response = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips", input);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var trip = await response.ReadAsAsync<TripDto>();
+
+        trip!.Items.Should().HaveCount(2);
+        trip.Items.Select(i => i.ItemId).Distinct().Should().ContainSingle();
+
+        var items = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items")).ReadAsAsync<List<ItemDto>>();
+        items.Should().ContainSingle(i => i.Name.Equals("milk", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task UpdateTrip_ReplacesItems()
     {
         var profileId = await CreateProfileAsync();

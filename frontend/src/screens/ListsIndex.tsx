@@ -1,8 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import type { GroceryList } from '../api/types'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
+import { performOrQueue } from '../offline/performOrQueue'
+import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 
 export function ListsIndex({ profileId }: { profileId: string }) {
   const navigate = useNavigate()
@@ -11,12 +14,31 @@ export function ListsIndex({ profileId }: { profileId: string }) {
   const toast = useToast()
 
   const { data: lists, isLoading } = useQuery({ queryKey: ['lists', profileId], queryFn: () => api.lists(profileId).list() })
+  const pendingListIds = useOutstandingEntityIds('list')
 
   const del = useMutation({
-    mutationFn: (listId: string) => api.lists(profileId).delete(listId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lists', profileId] })
-      toast('success', 'List deleted.')
+    networkMode: 'always',
+    mutationFn: (listId: string) =>
+      performOrQueue(() => api.lists(profileId).delete(listId), {
+        entity: 'list',
+        action: 'delete',
+        entityId: listId,
+        profileId,
+        isCreate: false,
+        payload: null,
+        label: 'Delete list',
+      }),
+    onSuccess: (outcome, listId) => {
+      // Remove it from view immediately either way — staying visible after
+      // the user just deleted it would be confusing even though it's
+      // technically still true until the delete syncs.
+      queryClient.setQueryData<GroceryList[]>(['lists', profileId], (old) => old?.filter((l) => l.id !== listId))
+      if (outcome.sent) {
+        queryClient.invalidateQueries({ queryKey: ['lists', profileId] })
+        toast('success', 'List deleted.')
+      } else {
+        toast('success', "Delete saved — will sync when you're back online.")
+      }
     },
     onError: () => toast('error', "Couldn't delete that list."),
   })
@@ -63,7 +85,10 @@ export function ListsIndex({ profileId }: { profileId: string }) {
               className="card elev-sm flex-row items-center justify-between gap-3 no-underline transition-transform hover:-translate-y-0.5 hover:shadow-md"
             >
               <div>
-                <div className="card-title text-[15px]">{list.name}</div>
+                <div className="card-title flex items-center gap-1.5 text-[15px]">
+                  {list.name}
+                  {pendingListIds.has(list.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
+                </div>
                 <div className="card-meta">
                   {checkedCount}/{list.items.length} checked
                   {list.date ? ` · ${list.date}` : ''}

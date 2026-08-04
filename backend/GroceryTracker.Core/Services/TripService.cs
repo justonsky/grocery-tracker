@@ -62,23 +62,44 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup)
         return (await GetAsync(profileId, trip.Id, ct))!;
     }
 
-    public async Task<TripDto?> UpdateAsync(Guid profileId, Guid tripId, TripInput input, CancellationToken ct = default)
+    // Idempotent create-or-replace, keyed by the caller-supplied tripId rather
+    // than a server-generated one — this is what lets the offline outbox
+    // (client-generated GUIDs) safely re-send the same PUT if a reply is lost,
+    // and lets an offline-created trip "just work" once it reaches the server,
+    // with no separate reconciliation step.
+    public async Task<(TripUpsertResult Result, TripDto? Trip)> UpsertAsync(
+        Guid profileId, Guid tripId, TripInput input, CancellationToken ct = default)
     {
-        var trip = await db.Trips
-            .Include(t => t.Items)
-            .FirstOrDefaultAsync(t => t.ProfileId == profileId && t.Id == tripId, ct);
-        if (trip is null) return null;
+        var profileExists = await db.Profiles.AnyAsync(p => p.Id == profileId, ct);
+        if (!profileExists) return (TripUpsertResult.ProfileNotFound, null);
+
+        var trip = await db.Trips.Include(t => t.Items).FirstOrDefaultAsync(t => t.Id == tripId, ct);
+        if (trip is not null && trip.ProfileId != profileId)
+        {
+            return (TripUpsertResult.CrossProfile, null);
+        }
 
         var store = await lookup.ResolveStoreAsync(profileId, input.StoreName, ct);
-        trip.Date = input.Date;
-        trip.StoreId = store.Id;
+        var isCreate = trip is null;
 
-        db.TripItems.RemoveRange(trip.Items);
-        trip.Items.Clear();
+        if (isCreate)
+        {
+            trip = new Trip { Id = tripId, ProfileId = profileId, Date = input.Date, StoreId = store.Id, CreatedAt = DateTimeOffset.UtcNow };
+            db.Trips.Add(trip);
+        }
+        else
+        {
+            trip!.Date = input.Date;
+            trip.StoreId = store.Id;
+            db.TripItems.RemoveRange(trip.Items);
+            trip.Items.Clear();
+        }
+
         await ApplyItemsAsync(profileId, trip, input.Items, ct);
-
         await db.SaveChangesAsync(ct);
-        return await GetAsync(profileId, trip.Id, ct);
+
+        var dto = await GetAsync(profileId, trip.Id, ct);
+        return (isCreate ? TripUpsertResult.Created : TripUpsertResult.Updated, dto);
     }
 
     public async Task<bool> DeleteAsync(Guid profileId, Guid tripId, CancellationToken ct = default)
@@ -114,3 +135,5 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup)
             i.Id, i.ItemId, i.Item!.Name, i.CategoryId, i.Category!.Name, i.PriceCents / 100m)).ToList(),
         trip.Items.Sum(i => i.PriceCents) / 100m);
 }
+
+public enum TripUpsertResult { Created, Updated, ProfileNotFound, CrossProfile }

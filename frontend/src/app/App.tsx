@@ -1,7 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../api/client'
-import { ToastProvider } from '../components/ui/ToastProvider'
 import { ConfirmProvider } from '../components/ui/ConfirmProvider'
 import { ProfilePicker } from '../screens/ProfilePicker'
 import { Dashboard } from '../screens/Dashboard'
@@ -60,10 +59,8 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <ConfirmProvider>
-        <AppContent />
-      </ConfirmProvider>
-    </ToastProvider>
+    <ConfirmProvider>
+      <AppContent />
+    </ConfirmProvider>
   )
 }

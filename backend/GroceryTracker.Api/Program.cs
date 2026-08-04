@@ -1,3 +1,4 @@
+using GroceryTracker.Api;
 using GroceryTracker.Api.Endpoints;
 using GroceryTracker.Core.Data;
 using GroceryTracker.Core.Services;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<AppExceptionHandler>();
 
 var dataDirectory = builder.Configuration["DataDirectory"]
     ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GroceryTracker");
@@ -17,6 +20,8 @@ builder.Services.AddDbContext<GroceryTrackerDbContext>(options =>
         .AddInterceptors(new SqlitePragmaInterceptor()));
 
 builder.Services.AddSingleton<IClock, SystemClock>();
+builder.Services.AddSingleton<ServerInstanceHolder>();
+builder.Services.AddScoped<ServerInstanceService>();
 builder.Services.AddScoped<LookupService>();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<CategoryService>();
@@ -33,13 +38,21 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GroceryTrackerDbContext>();
     ApplyMigrations(db, dbPath);
+
+    var instanceService = scope.ServiceProvider.GetRequiredService<ServerInstanceService>();
+    var holder = scope.ServiceProvider.GetRequiredService<ServerInstanceHolder>();
+    holder.InstanceId = await instanceService.EnsureInstanceIdAsync();
 }
+
+// Must wrap everything below it, so it's registered before any endpoint mapping.
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+app.MapHealthEndpoints();
 app.MapProfileEndpoints();
 app.MapCategoryEndpoints();
 app.MapLookupEndpoints();

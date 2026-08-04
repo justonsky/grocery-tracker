@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
-import type { TripItemInput } from '../api/types'
+import type { TripInput, TripItemInput } from '../api/types'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
-import { useOnlineStatus } from '../app/useOnlineStatus'
+import { performOrQueue, newClientId } from '../offline/performOrQueue'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
@@ -25,7 +25,6 @@ export function TripEditor({ profileId }: { profileId: string }) {
   const queryClient = useQueryClient()
   const toast = useToast()
   const confirm = useConfirm()
-  const isOnline = useOnlineStatus()
   const isEditing = Boolean(tripId)
 
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
@@ -64,30 +63,65 @@ export function TripEditor({ profileId }: { profileId: string }) {
   const total = rows.reduce((sum, r) => sum + (Number.isFinite(r.price) ? r.price : 0), 0)
 
   const save = useMutation({
-    mutationFn: () => {
+    // Without this, TanStack Query pauses the mutation entirely while
+    // onlineManager reports offline — mutationFn (and performOrQueue's own
+    // fallback-to-queue logic inside it) would never even run.
+    networkMode: 'always',
+    mutationFn: async () => {
       const items = rows.filter((r) => r.itemName.trim()).map(({ key: _key, ...rest }) => rest)
-      const input = { date, storeName: store.trim(), items }
-      return isEditing ? api.trips(profileId).update(tripId!, input) : api.trips(profileId).create(input)
+      const input: TripInput = { date, storeName: store.trim(), items }
+      const id = isEditing ? tripId! : newClientId()
+
+      return performOrQueue(() => api.trips(profileId).upsert(id, input), {
+        entity: 'trip',
+        action: 'put',
+        entityId: id,
+        profileId,
+        isCreate: !isEditing,
+        payload: input,
+        // Harmless even when these categories are already synced — only
+        // blocks the trip if a matching category op is itself failed/blocked.
+        dependsOn: Array.from(new Set(items.map((i) => i.categoryId))),
+        label: `Trip at ${input.storeName || 'unknown store'} — ${input.date}`,
+      })
     },
-    onSuccess: () => {
+    onSuccess: (outcome) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
       queryClient.invalidateQueries({ queryKey: ['trips', profileId] })
       queryClient.invalidateQueries({ queryKey: ['items', profileId] })
       queryClient.invalidateQueries({ queryKey: ['stores', profileId] })
-      toast('success', isEditing ? 'Trip updated.' : 'Trip logged.')
+      toast(
+        'success',
+        outcome.sent
+          ? isEditing
+            ? 'Trip updated.'
+            : 'Trip logged.'
+          : "Saved on this device — will sync when you're back online.",
+      )
       navigate('/')
     },
     onError: () => toast('error', "Couldn't save this trip."),
   })
 
   const del = useMutation({
-    mutationFn: () => api.trips(profileId).delete(tripId!),
-    onSuccess: () => {
+    networkMode: 'always',
+    mutationFn: () =>
+      performOrQueue(() => api.trips(profileId).delete(tripId!), {
+        entity: 'trip',
+        action: 'delete',
+        entityId: tripId!,
+        profileId,
+        isCreate: false,
+        payload: null,
+        label: `Delete trip — ${date}`,
+      }),
+    onSuccess: (outcome) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
       queryClient.invalidateQueries({ queryKey: ['trips', profileId] })
-      toast('success', 'Trip deleted.')
+      toast('success', outcome.sent ? 'Trip deleted.' : "Delete saved — will sync when you're back online.")
       navigate('/')
     },
+    onError: () => toast('error', "Couldn't delete this trip."),
   })
 
   const askDelete = async () => {
@@ -212,8 +246,7 @@ export function TripEditor({ profileId }: { profileId: string }) {
           <button
             type="button"
             className="btn btn-primary"
-            disabled={!store.trim() || save.isPending || !isOnline}
-            title={isOnline ? undefined : "Can't save while offline"}
+            disabled={!store.trim() || save.isPending}
             onClick={() => save.mutate()}
           >
             Save trip

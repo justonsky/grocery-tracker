@@ -1,22 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useConnectivity } from './ConnectivityProvider'
 
-// Tracks connectivity to the local server (a shared self-hosted backend, not a
-// per-device copy — see the architecture plan's local-first tradeoff). Drives
-// the nav's sync-status indicator and disables mutating actions while offline
-// rather than silently queuing them for later.
-export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
-
-  useEffect(() => {
-    const goOnline = () => setIsOnline(true)
-    const goOffline = () => setIsOnline(false)
-    window.addEventListener('online', goOnline)
-    window.addEventListener('offline', goOffline)
-    return () => {
-      window.removeEventListener('online', goOnline)
-      window.removeEventListener('offline', goOffline)
-    }
-  }, [])
-
-  return isOnline
+// Thin shim over ConnectivityProvider's real reachability probe (a `/health`
+// round-trip, not navigator.onLine — see ConnectivityProvider for why),
+// kept so existing disabled={!isOnline}-style call sites don't need to
+// change. 'wrong-server' counts as NOT online: a server we can't verify as
+// ours isn't safe to write to, even though *something* answered.
+export function useOnlineStatus(): boolean {
+  const { status } = useConnectivity()
+  return status === 'online'
 }

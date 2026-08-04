@@ -3,11 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toJpeg, toPng } from 'html-to-image'
 import { api } from '../api/client'
-import type { ListItemInput } from '../api/types'
+import type { GroceryListInput, ListItemInput } from '../api/types'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { ShareableListCard } from '../components/ShareableListCard'
-import { useOnlineStatus } from '../app/useOnlineStatus'
+import { performOrQueue, newClientId } from '../offline/performOrQueue'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 
@@ -28,7 +28,6 @@ export function ListEditor({ profileId }: { profileId: string }) {
   const queryClient = useQueryClient()
   const toast = useToast()
   const confirm = useConfirm()
-  const isOnline = useOnlineStatus()
   const isEditing = Boolean(listId)
 
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
@@ -70,28 +69,60 @@ export function ListEditor({ profileId }: { profileId: string }) {
   const defaultCategoryId = categories?.[0]?.id ?? ''
 
   const save = useMutation({
-    mutationFn: () => {
+    // See TripEditor's save — without this, useMutation pauses entirely while
+    // offline instead of ever reaching performOrQueue's own fallback logic.
+    networkMode: 'always',
+    mutationFn: async () => {
       const cleanItems = items.filter((r) => r.itemName.trim()).map(({ key: _key, ...rest }) => rest)
-      const input = { name: name.trim() || 'Grocery List', date: date || null, stores, items: cleanItems }
-      return isEditing ? api.lists(profileId).update(listId!, input) : api.lists(profileId).create(input)
+      const input: GroceryListInput = { name: name.trim() || 'Grocery List', date: date || null, stores, items: cleanItems }
+      const id = isEditing ? listId! : newClientId()
+
+      return performOrQueue(() => api.lists(profileId).upsert(id, input), {
+        entity: 'list',
+        action: 'put',
+        entityId: id,
+        profileId,
+        isCreate: !isEditing,
+        payload: input,
+        dependsOn: Array.from(new Set(cleanItems.map((i) => i.categoryId))),
+        label: `List "${input.name}"`,
+      })
     },
-    onSuccess: () => {
+    onSuccess: (outcome) => {
       queryClient.invalidateQueries({ queryKey: ['lists', profileId] })
       queryClient.invalidateQueries({ queryKey: ['items', profileId] })
       queryClient.invalidateQueries({ queryKey: ['stores', profileId] })
-      toast('success', isEditing ? 'List updated.' : 'List created.')
+      toast(
+        'success',
+        outcome.sent
+          ? isEditing
+            ? 'List updated.'
+            : 'List created.'
+          : "Saved on this device — will sync when you're back online.",
+      )
       navigate('/lists')
     },
     onError: () => toast('error', "Couldn't save this list."),
   })
 
   const del = useMutation({
-    mutationFn: () => api.lists(profileId).delete(listId!),
-    onSuccess: () => {
+    networkMode: 'always',
+    mutationFn: () =>
+      performOrQueue(() => api.lists(profileId).delete(listId!), {
+        entity: 'list',
+        action: 'delete',
+        entityId: listId!,
+        profileId,
+        isCreate: false,
+        payload: null,
+        label: `Delete list "${name}"`,
+      }),
+    onSuccess: (outcome) => {
       queryClient.invalidateQueries({ queryKey: ['lists', profileId] })
-      toast('success', 'List deleted.')
+      toast('success', outcome.sent ? 'List deleted.' : "Delete saved — will sync when you're back online.")
       navigate('/lists')
     },
+    onError: () => toast('error', "Couldn't delete this list."),
   })
 
   const askDelete = async () => {
@@ -258,13 +289,7 @@ export function ListEditor({ profileId }: { profileId: string }) {
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/lists')}>
             Cancel
           </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={save.isPending || !isOnline}
-            title={isOnline ? undefined : "Can't save while offline"}
-            onClick={() => save.mutate()}
-          >
+          <button type="button" className="btn btn-primary" disabled={save.isPending} onClick={() => save.mutate()}>
             Save list
           </button>
         </div>
