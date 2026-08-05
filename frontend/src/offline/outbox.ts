@@ -1,9 +1,6 @@
 import { getOutboxDb } from './db'
+import { newId } from './id'
 import type { OutboxAction, OutboxEntity, OutboxOp } from './types'
-
-function newOpId(): string {
-  return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
-}
 
 // Lets SyncProvider react immediately to an enqueue from anywhere in the app
 // (a screen's mutationFn) without polling — it has no other reference back to
@@ -90,7 +87,7 @@ function mergeDependsOn(a: string[], b: string[] | undefined): string[] {
 
 function newOp(input: EnqueueInput, now: number, isCreate: boolean): Omit<OutboxOp, 'seq'> {
   return {
-    opId: newOpId(),
+    opId: newId(),
     status: 'pending',
     entity: input.entity,
     action: input.action,

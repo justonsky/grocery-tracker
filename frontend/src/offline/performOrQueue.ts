@@ -1,4 +1,5 @@
 import { ApiError } from '../api/client'
+import { newId } from './id'
 import { enqueue, type EnqueueInput } from './outbox'
 
 export type PerformOrQueueResult<T> = { sent: true; result: T } | { sent: false }
@@ -21,6 +22,4 @@ export async function performOrQueue<T>(send: () => Promise<T>, queueInput: Enqu
   }
 }
 
-export function newClientId(): string {
-  return typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
-}
+export const newClientId = newId
