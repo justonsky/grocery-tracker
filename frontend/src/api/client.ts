@@ -102,6 +102,13 @@ export const api = {
 
   dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),
 
+  trackedItems: (profileId: string) => ({
+    search: (search?: string) =>
+      get<import('./types').TrackedItem[]>(
+        `/profiles/${profileId}/dashboard/tracked-items${search ? `?search=${encodeURIComponent(search)}` : ''}`
+      ),
+  }),
+
   trips: (profileId: string) => ({
     list: (from?: string, to?: string) => {
       const params = new URLSearchParams()

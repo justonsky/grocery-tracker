@@ -8,4 +8,5 @@ public record ItemHistoryDto(
     decimal Lowest, string LowestMeta,
     decimal Highest, string HighestMeta,
     decimal Average,
+    decimal Variance, decimal VariancePct,
     List<PurchasePointDto> History);

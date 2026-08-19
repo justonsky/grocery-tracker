@@ -1,8 +1,10 @@
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { TrackedItem } from '../api/types'
 import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
+import { useDebounce } from '../hooks/useDebounce'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 
@@ -32,10 +34,25 @@ const TREND_LABEL = (item: TrackedItem) => {
 }
 
 export function Dashboard({ profileId }: { profileId: string }) {
+  const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 250)
+
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard', profileId],
     queryFn: () => api.dashboard(profileId),
   })
+
+  const { data: searchResults } = useQuery({
+    queryKey: ['tracked-items', profileId, debouncedSearch],
+    queryFn: () => api.trackedItems(profileId).search(debouncedSearch),
+    enabled: !!debouncedSearch,
+  })
+
+  const trackedItems: TrackedItem[] = useMemo(() => {
+    if (!debouncedSearch) return data?.trackedItems ?? []
+    return searchResults ?? []
+  }, [data?.trackedItems, debouncedSearch, searchResults])
+
   const pendingTripIds = useOutstandingEntityIds('trip')
 
   if (isLoading || !data) {
@@ -130,11 +147,26 @@ export function Dashboard({ profileId }: { profileId: string }) {
         )}
       </div>
 
-      {data.trackedItems.length > 0 && (
+      {(data?.trackedItems.length ?? 0) > 0 && (
         <div>
-          <h3 className="m-0 mb-3">Items you're tracking</h3>
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <h3 className="m-0">Items you're tracking</h3>
+            <div className="field">
+              <input
+                className="input"
+                type="search"
+                placeholder="Search purchased items…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ maxWidth: '240px' }}
+              />
+            </div>
+          </div>
+          {debouncedSearch && trackedItems.length === 0 && (
+            <p className="text-text/70">No purchased items match "{searchQuery}".</p>
+          )}
           <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-            {data.trackedItems.map((item) => (
+            {trackedItems.map((item) => (
               <Link
                 to={`/items/${item.itemId}`}
                 key={item.itemId}

@@ -24,7 +24,7 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
 
         if (purchases.Count == 0)
         {
-            return new ItemHistoryDto(item.Id, item.Name, "Other", 0, 0, "", 0, "", 0, []);
+            return new ItemHistoryDto(item.Id, item.Name, "Other", 0, 0, "", 0, "", 0, 0, 0, []);
         }
 
         var ordered = purchases.OrderBy(p => p.Date, StringComparer.Ordinal).ToList();
@@ -42,12 +42,22 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
         var current = ordered[^1];
         var average = ordered.Sum(p => p.PriceCents) / 100m / ordered.Count;
 
+        decimal variance = 0m, variancePct = 0m;
+        if (ordered.Count > 1)
+        {
+            var avgCents = ordered.Sum(p => p.PriceCents) / (decimal)ordered.Count;
+            variance = (decimal)Math.Sqrt((double)ordered.Sum(p => decimal.CreateChecked(Math.Pow((double)(p.PriceCents - avgCents), 2))) / ordered.Count);
+            variance /= 100m;
+            if (average > 0m) variancePct = variance / average * 100m;
+        }
+
         return new ItemHistoryDto(
             item.Id, item.Name, current.CategoryName,
             current.PriceCents / 100m,
             lowest.PriceCents / 100m, $"{lowest.StoreName} · {lowest.Date}",
             highest.PriceCents / 100m, $"{highest.StoreName} · {highest.Date}",
             average,
+            variance, variancePct,
             Enumerable.Reverse(ascendingHistory).ToList()); // most recent purchase first
     }
 }

@@ -61,7 +61,7 @@ export function ItemDetail({ profileId }: { profileId: string }) {
         <LineChart points={ascendingForChart} />
       </div>
 
-      <div className="my-4.5 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+      <div className="my-4.5 grid grid-cols-2 gap-3.5 lg:grid-cols-5">
         <div className="card elev-sm">
           <div className="card-kicker">Current</div>
           <div className="card-title">{money(history.current)}</div>
@@ -79,6 +79,11 @@ export function ItemDetail({ profileId }: { profileId: string }) {
         <div className="card elev-sm">
           <div className="card-kicker">Avg overall</div>
           <div className="card-title">{money(history.average)}</div>
+        </div>
+        <div className="card elev-sm">
+          <div className="card-kicker">Variance</div>
+          <div className="card-title">{money(history.variance)}</div>
+          <div className="card-meta">±{history.variancePct.toFixed(1)}% of average</div>
         </div>
       </div>
 

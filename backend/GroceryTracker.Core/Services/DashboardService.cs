@@ -54,7 +54,7 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
 
     private static decimal SumCents(IEnumerable<int> cents) => cents.Sum() / 100m;
 
-    private async Task<List<TrackedItemDto>> BuildTrackedItemsAsync(Guid profileId, CancellationToken ct)
+    public async Task<List<TrackedItemDto>> GetTrackedItemsAsync(Guid profileId, string? search = null, CancellationToken ct = default)
     {
         var purchases = await db.TripItems
             .Where(ti => ti.Trip!.ProfileId == profileId)
@@ -62,13 +62,14 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
             {
                 ti.ItemId,
                 ItemName = ti.Item!.Name,
+                NormalizedName = ti.Item!.NormalizedName,
                 CategoryName = ti.Category!.Name,
                 ti.PriceCents,
                 Date = ti.Trip!.Date,
             })
             .ToListAsync(ct);
 
-        return purchases
+        var grouped = purchases
             .GroupBy(p => p.ItemId)
             .Select(g =>
             {
@@ -78,11 +79,20 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
                 decimal? delta = ordered.Count >= 2 ? (ordered[^1].PriceCents - ordered[^2].PriceCents) / 100m : null;
                 var trend = delta switch { > 0 => "up", < 0 => "down", _ => "flat" };
                 var dto = new TrackedItemDto(g.Key, last.ItemName, last.CategoryName, last.PriceCents / 100m, recentPrices, trend, delta);
-                return (SortDate: last.Date, Dto: dto);
+                return (SortDate: last.Date, NormalizedName: g.First().NormalizedName, Dto: dto);
             })
             .OrderByDescending(x => x.SortDate, StringComparer.Ordinal)
-            .Take(TrackedItemCount)
-            .Select(x => x.Dto)
             .ToList();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var normalizedSearch = NameNormalizer.Normalize(search);
+            return grouped.Where(x => x.NormalizedName.Contains(normalizedSearch)).Select(x => x.Dto).ToList();
+        }
+
+        return grouped.Take(TrackedItemCount).Select(x => x.Dto).ToList();
     }
+
+    private async Task<List<TrackedItemDto>> BuildTrackedItemsAsync(Guid profileId, CancellationToken ct)
+        => await GetTrackedItemsAsync(profileId, null, ct);
 }

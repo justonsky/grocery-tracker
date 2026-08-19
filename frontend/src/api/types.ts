@@ -151,6 +151,8 @@ export interface ItemHistory {
   highest: number
   highestMeta: string
   average: number
+  variance: number
+  variancePct: number
   history: PurchasePoint[]
 }
 
