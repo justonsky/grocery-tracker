@@ -1,5 +1,5 @@
 import { api, ApiError } from '../api/client'
-import type { GroceryListInput, TripInput } from '../api/types'
+import type { TripInput } from '../api/types'
 import { getOutboxDb } from './db'
 import { classifyFailure } from './errors'
 import { getAllOps, getOpsByStatus, removeOp, updateOp } from './outbox'
@@ -192,7 +192,7 @@ async function remapCategoryId(oldId: string, newId: string): Promise<void> {
       changed = true
     }
 
-    if ((op.entity === 'trip' || op.entity === 'list') && op.payload && typeof op.payload === 'object') {
+    if (op.entity === 'trip' && op.payload && typeof op.payload === 'object') {
       const payload = op.payload as { items?: Array<{ categoryId?: string }> }
       if (Array.isArray(payload.items)) {
         for (const item of payload.items) {
@@ -215,8 +215,6 @@ async function execute(op: OutboxOp): Promise<void> {
     switch (op.entity) {
       case 'trip':
         return api.trips(op.profileId!).delete(op.entityId)
-      case 'list':
-        return api.lists(op.profileId!).delete(op.entityId)
       case 'profile':
         return api.profiles.delete(op.entityId)
       case 'category':
@@ -227,9 +225,6 @@ async function execute(op: OutboxOp): Promise<void> {
   switch (op.entity) {
     case 'trip':
       await api.trips(op.profileId!).upsert(op.entityId, op.payload as TripInput)
-      return
-    case 'list':
-      await api.lists(op.profileId!).upsert(op.entityId, op.payload as GroceryListInput)
       return
     case 'profile':
       await api.profiles.upsert(op.entityId, (op.payload as { name: string }).name)

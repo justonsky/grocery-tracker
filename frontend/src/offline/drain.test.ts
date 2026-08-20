@@ -129,7 +129,7 @@ describe('drainOnce', () => {
 
   it('marks all outstanding ops for a profile orphaned when the profile is gone server-side', async () => {
     await enqueue({ entity: 'trip', action: 'put', entityId: 't1', profileId: 'p1', isCreate: true, payload: {}, label: 'a' })
-    await enqueue({ entity: 'list', action: 'put', entityId: 'l1', profileId: 'p1', isCreate: true, payload: {}, label: 'b' })
+    await enqueue({ entity: 'category', action: 'put', entityId: 'c1', profileId: 'p1', isCreate: true, payload: {}, label: 'b' })
 
     const deps: DrainDeps = {
       execute: async () => {

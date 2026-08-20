@@ -15,28 +15,22 @@ public class ExportService(GroceryTrackerDbContext db)
             .Select(p => new { p.Name, p.CreatedAt })
             .ToListAsync(ct);
 
-        var trips = await db.TripItems
+        // One row per item line. Lists and trips are the same record now, so a single
+        // sheet covers both planned and bought items — PickedUp/Price tell them apart.
+        var tripItems = await db.TripItems
+            .OrderBy(ti => ti.Trip!.Date)
             .Select(ti => new
             {
                 Profile = ti.Trip!.Profile!.Name,
+                Trip = ti.Trip!.Name,
                 ti.Trip!.Date,
-                Store = ti.Trip!.Store!.Name,
+                TripStores = ti.Trip!.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).ToList(),
+                BudgetCents = ti.Trip!.BudgetCents,
                 Item = ti.Item!.Name,
                 Category = ti.Category!.Name,
+                Store = ti.Store != null ? ti.Store.Name : null,
+                ti.Checked,
                 ti.PriceCents,
-            })
-            .ToListAsync(ct);
-
-        var listItems = await db.ListItems
-            .Select(li => new
-            {
-                Profile = li.List!.Profile!.Name,
-                List = li.List!.Name,
-                li.List!.Date,
-                Item = li.Item!.Name,
-                Category = li.Category!.Name,
-                PreferredStore = li.PreferredStore != null ? li.PreferredStore.Name : null,
-                li.Checked,
             })
             .ToListAsync(ct);
 
@@ -53,31 +47,22 @@ public class ExportService(GroceryTrackerDbContext db)
         }
 
         var tripsSheet = workbook.Worksheets.Add("Trips");
-        WriteHeader(tripsSheet, "Profile", "Date", "Store", "Item", "Category", "Price");
+        WriteHeader(tripsSheet, "Profile", "Date", "Trip", "Trip Stores", "Budget",
+            "Item", "Category", "Store", "Picked Up", "Price");
         row = 2;
-        foreach (var t in trips)
+        foreach (var t in tripItems)
         {
             tripsSheet.Cell(row, 1).Value = t.Profile;
             tripsSheet.Cell(row, 2).Value = t.Date;
-            tripsSheet.Cell(row, 3).Value = t.Store;
-            tripsSheet.Cell(row, 4).Value = t.Item;
-            tripsSheet.Cell(row, 5).Value = t.Category;
-            tripsSheet.Cell(row, 6).Value = t.PriceCents / 100m;
-            row++;
-        }
-
-        var listsSheet = workbook.Worksheets.Add("Lists");
-        WriteHeader(listsSheet, "Profile", "List", "Planned Date", "Item", "Category", "Preferred Store", "Checked");
-        row = 2;
-        foreach (var l in listItems)
-        {
-            listsSheet.Cell(row, 1).Value = l.Profile;
-            listsSheet.Cell(row, 2).Value = l.List;
-            listsSheet.Cell(row, 3).Value = l.Date ?? "";
-            listsSheet.Cell(row, 4).Value = l.Item;
-            listsSheet.Cell(row, 5).Value = l.Category;
-            listsSheet.Cell(row, 6).Value = l.PreferredStore ?? "";
-            listsSheet.Cell(row, 7).Value = l.Checked;
+            tripsSheet.Cell(row, 3).Value = t.Trip ?? "";
+            tripsSheet.Cell(row, 4).Value = string.Join(", ", t.TripStores);
+            if (t.BudgetCents is { } budget) tripsSheet.Cell(row, 5).Value = budget / 100m;
+            tripsSheet.Cell(row, 6).Value = t.Item;
+            tripsSheet.Cell(row, 7).Value = t.Category;
+            tripsSheet.Cell(row, 8).Value = t.Store ?? "";
+            tripsSheet.Cell(row, 9).Value = t.Checked;
+            // Left blank rather than 0.00 for an item that has not been bought yet.
+            if (t.PriceCents is { } price) tripsSheet.Cell(row, 10).Value = price / 100m;
             row++;
         }
 

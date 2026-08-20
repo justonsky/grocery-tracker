@@ -27,7 +27,7 @@ public class DashboardEndpointsTests : IDisposable
 
         async Task CreateTripAsync(string date, decimal price) =>
             await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-                new TripInput(date, "Store", [new TripItemInput("Milk", categoryId, price)]));
+                TestTrips.At(date, "Store", TestTrips.Bought("Milk", categoryId, price)));
 
         await CreateTripAsync("2026-08-15", 10.00m); // today
         await CreateTripAsync("2026-08-05", 5.00m);  // this month, not today

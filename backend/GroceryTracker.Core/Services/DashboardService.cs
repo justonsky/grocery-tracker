@@ -21,9 +21,10 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
             .Select(t => new
             {
                 t.Id,
+                t.Name,
                 t.Date,
                 t.CreatedAt,
-                StoreName = t.Store!.Name,
+                Stores = t.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).ToList(),
                 Items = t.Items.Select(i => new { i.PriceCents, ItemName = i.Item!.Name, CategoryName = i.Category!.Name }).ToList(),
             })
             .ToListAsync(ct);
@@ -40,9 +41,11 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
         RecentTripDto? recentTrip = recentTripRaw is null
             ? null
             : new RecentTripDto(
-                recentTripRaw.Id, recentTripRaw.Date, recentTripRaw.StoreName, recentTripRaw.Items.Count,
+                recentTripRaw.Id, recentTripRaw.Name, recentTripRaw.Date,
+                recentTripRaw.Stores.Count > 0 ? string.Join(", ", recentTripRaw.Stores) : "—",
+                recentTripRaw.Items.Count,
                 SumCents(recentTripRaw.Items.Select(i => i.PriceCents)),
-                recentTripRaw.Items.Select(i => new TripLineDto(i.ItemName, i.CategoryName, i.PriceCents / 100m)).ToList());
+                recentTripRaw.Items.Select(i => new TripLineDto(i.ItemName, i.CategoryName, (i.PriceCents ?? 0) / 100m)).ToList());
 
         return new DashboardSummaryDto(
             SumCents(todayTrips.SelectMany(t => t.Items.Select(i => i.PriceCents))), todayTrips.Count,
@@ -52,22 +55,25 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
             await BuildTrackedItemsAsync(profileId, ct));
     }
 
-    private static decimal SumCents(IEnumerable<int> cents) => cents.Sum() / 100m;
+    // Items still being planned have no price yet and simply do not count toward spend.
+    private static decimal SumCents(IEnumerable<int?> cents) => (cents.Sum() ?? 0) / 100m;
 
     public async Task<List<TrackedItemDto>> GetTrackedItemsAsync(Guid profileId, string? search = null, CancellationToken ct = default)
     {
-        var purchases = await db.TripItems
-            .Where(ti => ti.Trip!.ProfileId == profileId)
-            .Select(ti => new
-            {
-                ti.ItemId,
-                ItemName = ti.Item!.Name,
-                NormalizedName = ti.Item!.NormalizedName,
-                CategoryName = ti.Category!.Name,
-                ti.PriceCents,
-                Date = ti.Trip!.Date,
-            })
-            .ToListAsync(ct);
+        var purchases = (await db.TripItems
+                .Where(ti => ti.Trip!.ProfileId == profileId && ti.PriceCents != null && ti.PriceCents > 0)
+                .Select(ti => new
+                {
+                    ti.ItemId,
+                    ItemName = ti.Item!.Name,
+                    NormalizedName = ti.Item!.NormalizedName,
+                    ti.PriceCents,
+                    CategoryName = ti.Category!.Name,
+                    Date = ti.Trip!.Date,
+                })
+                .ToListAsync(ct))
+            .Select(x => new { x.ItemId, x.ItemName, x.NormalizedName, x.CategoryName, x.Date, PriceCents = x.PriceCents!.Value })
+            .ToList();
 
         var grouped = purchases
             .GroupBy(p => p.ItemId)

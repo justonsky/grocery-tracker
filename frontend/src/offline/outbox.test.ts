@@ -76,14 +76,14 @@ describe('outbox enqueue + coalescing', () => {
 
   it('does not touch operations for unrelated entities', async () => {
     await enqueue({ entity: 'trip', action: 'put', entityId: 't1', profileId: 'p1', isCreate: true, payload: {}, label: 'trip' })
-    await enqueue({ entity: 'list', action: 'put', entityId: 'l1', profileId: 'p1', isCreate: true, payload: {}, label: 'list' })
+    await enqueue({ entity: 'category', action: 'put', entityId: 'c1', profileId: 'p1', isCreate: true, payload: {}, label: 'category' })
 
     expect(await getAllOps()).toHaveLength(2)
   })
 
   it('countOutstanding counts pending, inflight, and blocked but not failed', async () => {
     await enqueue({ entity: 'trip', action: 'put', entityId: 't1', profileId: 'p1', isCreate: true, payload: {}, label: 'a' })
-    await enqueue({ entity: 'list', action: 'put', entityId: 'l1', profileId: 'p1', isCreate: true, payload: {}, label: 'b' })
+    await enqueue({ entity: 'category', action: 'put', entityId: 'c1', profileId: 'p1', isCreate: true, payload: {}, label: 'b' })
     const ops = await getAllOps()
     await updateOp({ ...ops[1], status: 'failed' })
 

@@ -132,31 +132,6 @@ namespace GroceryTracker.Core.Migrations
                         });
                 });
 
-            modelBuilder.Entity("GroceryTracker.Core.Entities.GroceryList", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Date")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileId");
-
-                    b.ToTable("GroceryLists");
-                });
-
             modelBuilder.Entity("GroceryTracker.Core.Entities.Item", b =>
                 {
                     b.Property<Guid>("Id")
@@ -187,64 +162,6 @@ namespace GroceryTracker.Core.Migrations
                         .IsUnique();
 
                     b.ToTable("Items");
-                });
-
-            modelBuilder.Entity("GroceryTracker.Core.Entities.ListItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Checked")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ItemId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ListId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PreferredStoreId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("ListId");
-
-                    b.HasIndex("PreferredStoreId");
-
-                    b.ToTable("ListItems");
-                });
-
-            modelBuilder.Entity("GroceryTracker.Core.Entities.ListStore", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ListId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ListId");
-
-                    b.ToTable("ListStores");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Profile", b =>
@@ -296,6 +213,9 @@ namespace GroceryTracker.Core.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("BudgetCents")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -303,15 +223,13 @@ namespace GroceryTracker.Core.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("ProfileId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("StoreId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("StoreId");
 
                     b.HasIndex("ProfileId", "Date");
 
@@ -326,14 +244,20 @@ namespace GroceryTracker.Core.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("Checked")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("PriceCents")
+                    b.Property<int?>("PriceCents")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("TripId")
                         .HasColumnType("TEXT");
@@ -344,20 +268,33 @@ namespace GroceryTracker.Core.Migrations
 
                     b.HasIndex("ItemId");
 
+                    b.HasIndex("StoreId");
+
                     b.HasIndex("TripId");
 
                     b.ToTable("TripItems");
                 });
 
-            modelBuilder.Entity("GroceryTracker.Core.Entities.GroceryList", b =>
+            modelBuilder.Entity("GroceryTracker.Core.Entities.TripStore", b =>
                 {
-                    b.HasOne("GroceryTracker.Core.Entities.Profile", "Profile")
-                        .WithMany("Lists")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
-                    b.Navigation("Profile");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("TripId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TripId");
+
+                    b.ToTable("TripStores");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Item", b =>
@@ -376,51 +313,6 @@ namespace GroceryTracker.Core.Migrations
                     b.Navigation("DefaultCategory");
 
                     b.Navigation("Profile");
-                });
-
-            modelBuilder.Entity("GroceryTracker.Core.Entities.ListItem", b =>
-                {
-                    b.HasOne("GroceryTracker.Core.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("GroceryTracker.Core.Entities.Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GroceryTracker.Core.Entities.GroceryList", "List")
-                        .WithMany("Items")
-                        .HasForeignKey("ListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GroceryTracker.Core.Entities.Store", "PreferredStore")
-                        .WithMany()
-                        .HasForeignKey("PreferredStoreId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Item");
-
-                    b.Navigation("List");
-
-                    b.Navigation("PreferredStore");
-                });
-
-            modelBuilder.Entity("GroceryTracker.Core.Entities.ListStore", b =>
-                {
-                    b.HasOne("GroceryTracker.Core.Entities.GroceryList", "List")
-                        .WithMany("Stores")
-                        .HasForeignKey("ListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("List");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Store", b =>
@@ -442,15 +334,7 @@ namespace GroceryTracker.Core.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GroceryTracker.Core.Entities.Store", "Store")
-                        .WithMany()
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Profile");
-
-                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.TripItem", b =>
@@ -467,6 +351,11 @@ namespace GroceryTracker.Core.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GroceryTracker.Core.Entities.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GroceryTracker.Core.Entities.Trip", "Trip")
                         .WithMany("Items")
                         .HasForeignKey("TripId")
@@ -477,21 +366,25 @@ namespace GroceryTracker.Core.Migrations
 
                     b.Navigation("Item");
 
+                    b.Navigation("Store");
+
                     b.Navigation("Trip");
                 });
 
-            modelBuilder.Entity("GroceryTracker.Core.Entities.GroceryList", b =>
+            modelBuilder.Entity("GroceryTracker.Core.Entities.TripStore", b =>
                 {
-                    b.Navigation("Items");
+                    b.HasOne("GroceryTracker.Core.Entities.Trip", "Trip")
+                        .WithMany("Stores")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Stores");
+                    b.Navigation("Trip");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Profile", b =>
                 {
                     b.Navigation("Items");
-
-                    b.Navigation("Lists");
 
                     b.Navigation("Stores");
 
@@ -501,6 +394,8 @@ namespace GroceryTracker.Core.Migrations
             modelBuilder.Entity("GroceryTracker.Core.Entities.Trip", b =>
                 {
                     b.Navigation("Items");
+
+                    b.Navigation("Stores");
                 });
 #pragma warning restore 612, 618
         }

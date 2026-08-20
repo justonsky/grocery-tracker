@@ -7,7 +7,6 @@ public static class ProblemTypes
 {
     public const string ProfileNotFound = "/errors/profile-not-found";
     public const string TripNotFound = "/errors/trip-not-found";
-    public const string ListNotFound = "/errors/list-not-found";
     public const string ItemNotFound = "/errors/item-not-found";
     public const string CategoryNotFound = "/errors/category-not-found";
     public const string CategoryNameConflict = "/errors/category-name-conflict";

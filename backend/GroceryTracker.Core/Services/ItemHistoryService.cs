@@ -11,16 +11,28 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
         var item = await db.Items.FirstOrDefaultAsync(i => i.Id == itemId && i.ProfileId == profileId, ct);
         if (item is null) return null;
 
-        var purchases = await db.TripItems
-            .Where(ti => ti.ItemId == itemId && ti.Trip!.ProfileId == profileId)
-            .Select(ti => new
+        // Only items that were actually bought have a price and belong in history —
+        // a planned item on an upcoming trip is not a data point yet.
+        var purchases = (await db.TripItems
+                .Where(ti => ti.ItemId == itemId && ti.Trip!.ProfileId == profileId
+                             && ti.PriceCents != null && ti.PriceCents > 0)
+                .Select(ti => new
+                {
+                    ti.PriceCents,
+                    Date = ti.Trip!.Date,
+                    ItemStoreName = ti.Store!.Name,
+                    TripStoreName = ti.Trip!.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).FirstOrDefault(),
+                    CategoryName = ti.Category!.Name,
+                })
+                .ToListAsync(ct))
+            .Select(x => new
             {
-                ti.PriceCents,
-                Date = ti.Trip!.Date,
-                StoreName = ti.Trip!.Store!.Name,
-                CategoryName = ti.Category!.Name,
+                PriceCents = x.PriceCents!.Value,
+                x.Date,
+                StoreName = x.ItemStoreName ?? x.TripStoreName ?? "—",
+                x.CategoryName,
             })
-            .ToListAsync(ct);
+            .ToList();
 
         if (purchases.Count == 0)
         {

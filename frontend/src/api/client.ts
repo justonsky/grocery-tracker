@@ -1,8 +1,6 @@
 import type {
   Category,
   DashboardSummary,
-  GroceryList,
-  GroceryListInput,
   Health,
   Item,
   ItemHistory,
@@ -124,12 +122,4 @@ export const api = {
     delete: (tripId: string) => del(`/profiles/${profileId}/trips/${tripId}`),
   }),
 
-  lists: (profileId: string) => ({
-    list: () => get<GroceryList[]>(`/profiles/${profileId}/lists`),
-    get: (listId: string) => get<GroceryList>(`/profiles/${profileId}/lists/${listId}`),
-    create: (input: GroceryListInput) => post<GroceryList>(`/profiles/${profileId}/lists`, input),
-    upsert: (listId: string, input: GroceryListInput) =>
-      put<GroceryList>(`/profiles/${profileId}/lists/${listId}`, input),
-    delete: (listId: string) => del(`/profiles/${profileId}/lists/${listId}`),
-  }),
 }

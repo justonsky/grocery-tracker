@@ -11,7 +11,7 @@ import { IosInstallHint } from './IosInstallHint'
 const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: '⌂' },
   { to: '/history', label: 'History', icon: '≡' },
-  { to: '/lists', label: 'Lists', icon: '☰' },
+  { to: '/trips', label: 'Trips', icon: '☰' },
 ]
 
 export function AppShell({
@@ -30,8 +30,8 @@ export function AppShell({
   const currentProfile = profiles?.find((p) => p.id === profileId)
   const [failuresOpen, setFailuresOpen] = useState(false)
 
-  // Cache warmer: mounting these here (not just lazily inside TripEditor/
-  // ListEditor) means the full item/store/category lists are already in the
+  // Cache warmer: mounting these here (not just lazily inside TripEditor)
+  // means the full item/store/category lists are already in the
   // persisted cache by the time someone goes offline — autocomplete and the
   // editors still work from cache even with no connection.
   useQuery({ queryKey: ['categories'], queryFn: api.categories.list })

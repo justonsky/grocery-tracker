@@ -37,4 +37,9 @@
     <Copy SourceFiles="@(FrontendDistFiles)" DestinationFolder="$(PublishDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
 
+  <ItemGroup>
+    <!-- Ships beside the published app so a fresh install starts with real data. -->
+    <Content Update="SeedData/seed-data.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

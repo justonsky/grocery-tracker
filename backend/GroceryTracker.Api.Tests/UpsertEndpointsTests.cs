@@ -32,7 +32,7 @@ public class UpsertEndpointsTests : IDisposable
         var tripId = Guid.NewGuid();
 
         var response = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}",
-            new TripInput("2026-08-01", "Aldi", [new TripItemInput("Milk", categoryId, 3.49m)]));
+            TestTrips.At("2026-08-01", "Aldi", TestTrips.Bought("Milk", categoryId, 3.49m)));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var trip = await response.ReadAsAsync<TripDto>();
@@ -45,7 +45,7 @@ public class UpsertEndpointsTests : IDisposable
         var profileId = await CreateProfileAsync();
         var categoryId = await GetCategoryIdAsync("Dairy");
         var tripId = Guid.NewGuid();
-        var input = new TripInput("2026-08-01", "Aldi", [new TripItemInput("Milk", categoryId, 3.49m)]);
+        var input = TestTrips.At("2026-08-01", "Aldi", TestTrips.Bought("Milk", categoryId, 3.49m));
 
         var first = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}", input);
         first.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -65,10 +65,10 @@ public class UpsertEndpointsTests : IDisposable
         var tripId = Guid.NewGuid();
 
         await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}",
-            new TripInput("2026-08-01", "Aldi", [new TripItemInput("Milk", categoryId, 3.49m)]));
+            TestTrips.At("2026-08-01", "Aldi", TestTrips.Bought("Milk", categoryId, 3.49m)));
 
         var updateResponse = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}",
-            new TripInput("2026-08-02", "Aldi", [new TripItemInput("Eggs", categoryId, 4.29m)]));
+            TestTrips.At("2026-08-02", "Aldi", TestTrips.Bought("Eggs", categoryId, 4.29m)));
 
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var trip = await updateResponse.ReadAsAsync<TripDto>();
@@ -85,15 +85,15 @@ public class UpsertEndpointsTests : IDisposable
         var tripId = Guid.NewGuid();
 
         await _client.PutJsonAsync($"/api/v1/profiles/{profileA}/trips/{tripId}",
-            new TripInput("2026-08-01", "Aldi", [new TripItemInput("Milk", categoryId, 3.49m)]));
+            TestTrips.At("2026-08-01", "Aldi", TestTrips.Bought("Milk", categoryId, 3.49m)));
 
         var hijackAttempt = await _client.PutJsonAsync($"/api/v1/profiles/{profileB}/trips/{tripId}",
-            new TripInput("2026-08-05", "Costco", [new TripItemInput("Eggs", categoryId, 5.99m)]));
+            TestTrips.At("2026-08-05", "Costco", TestTrips.Bought("Eggs", categoryId, 5.99m)));
 
         hijackAttempt.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         var stillOwnedByA = await (await _client.GetAsync($"/api/v1/profiles/{profileA}/trips/{tripId}")).ReadAsAsync<TripDto>();
-        stillOwnedByA!.StoreName.Should().Be("Aldi");
+        stillOwnedByA!.Stores.Should().BeEquivalentTo(["Aldi"]);
     }
 
     [Fact]
@@ -103,24 +103,24 @@ public class UpsertEndpointsTests : IDisposable
         var categoryId = await GetCategoryIdAsync("Dairy");
 
         var response = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{Guid.Empty}",
-            new TripInput("2026-08-01", "Aldi", [new TripItemInput("Milk", categoryId, 3.49m)]));
+            TestTrips.At("2026-08-01", "Aldi", TestTrips.Bought("Milk", categoryId, 3.49m)));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task PutList_WithClientGeneratedId_CreatesAtThatId()
+    public async Task PutPlannedTrip_WithClientGeneratedId_CreatesAtThatId()
     {
         var profileId = await CreateProfileAsync();
         var categoryId = await GetCategoryIdAsync("Produce");
-        var listId = Guid.NewGuid();
+        var tripId = Guid.NewGuid();
 
-        var response = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/lists/{listId}",
-            new GroceryListInput("Weekly", null, [], [new ListItemInput("Bananas", categoryId, null, false)]));
+        var response = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}",
+            new TripInput("Weekly", "2026-08-05", null, [], [TestTrips.Planned("Bananas", categoryId)]));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var list = await response.ReadAsAsync<GroceryListDto>();
-        list!.Id.Should().Be(listId);
+        var trip = await response.ReadAsAsync<TripDto>();
+        trip!.Id.Should().Be(tripId);
     }
 
     [Fact]

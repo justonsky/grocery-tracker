@@ -55,8 +55,6 @@ public class CategoryService(GroceryTrackerDbContext db)
 
         await db.TripItems.Where(ti => ti.CategoryId == id)
             .ExecuteUpdateAsync(s => s.SetProperty(ti => ti.CategoryId, other.Id), ct);
-        await db.ListItems.Where(li => li.CategoryId == id)
-            .ExecuteUpdateAsync(s => s.SetProperty(li => li.CategoryId, other.Id), ct);
         await db.Items.Where(i => i.DefaultCategoryId == id)
             .ExecuteUpdateAsync(s => s.SetProperty(i => i.DefaultCategoryId, other.Id), ct);
 

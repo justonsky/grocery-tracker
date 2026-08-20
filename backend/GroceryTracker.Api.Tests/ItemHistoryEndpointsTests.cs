@@ -22,14 +22,14 @@ public class ItemHistoryEndpointsTests : IDisposable
             .First(c => c.Name == "Dairy").Id;
 
         var firstTrip = await (await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-07-01", "Costco", [new TripItemInput("Whole Milk", categoryId, 3.00m)])))
+            TestTrips.At("2026-07-01", "Costco", TestTrips.Bought("Whole Milk", categoryId, 3.00m))))
             .ReadAsAsync<TripDto>();
         var itemId = firstTrip!.Items[0].ItemId;
 
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-07-15", "Safeway", [new TripItemInput("Whole Milk", categoryId, 4.50m)]));
+            TestTrips.At("2026-07-15", "Safeway", TestTrips.Bought("Whole Milk", categoryId, 4.50m)));
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-08-01", "Costco", [new TripItemInput("Whole Milk", categoryId, 2.50m)]));
+            TestTrips.At("2026-08-01", "Costco", TestTrips.Bought("Whole Milk", categoryId, 2.50m)));
 
         var history = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items/{itemId}/history"))
             .ReadAsAsync<ItemHistoryDto>();

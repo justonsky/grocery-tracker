@@ -34,25 +34,26 @@ public class TripEndpointsTests : IDisposable
         var dairyId = await GetCategoryIdAsync("Dairy");
         var produceId = await GetCategoryIdAsync("Produce");
 
-        var input = new TripInput("2026-08-01", "Trader Joe's",
-        [
-            new TripItemInput("Whole Milk", dairyId, 3.49m),
-            new TripItemInput("Bananas", produceId, 0.59m),
-        ]);
+        var input = TestTrips.At("2026-08-01", "Trader Joe's", 
+            TestTrips.Bought("Whole Milk", dairyId, 3.49m),
+            TestTrips.Bought("Bananas", produceId, 0.59m)
+        );
 
         var createResponse = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips", input);
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var trip = await createResponse.ReadAsAsync<TripDto>();
 
-        trip!.StoreName.Should().Be("Trader Joe's");
+        trip!.Stores.Should().BeEquivalentTo(["Trader Joe's"]);
         trip.Items.Should().HaveCount(2);
         trip.Total.Should().Be(4.08m);
 
         // Item/store rows should be reused (soft-normalized), not duplicated, on a second trip.
         var second = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-08-08", "trader joe's", [new TripItemInput("whole milk", dairyId, 3.59m)]));
+            TestTrips.At("2026-08-08", "trader joe's", TestTrips.Bought("whole milk", dairyId, 3.59m)));
         var secondTrip = await second.ReadAsAsync<TripDto>();
-        secondTrip!.StoreId.Should().Be(trip.StoreId);
+        // The trip's own store list keeps whatever was typed, but the per-item store
+        // resolves through the shared lookup table — same row, original casing.
+        secondTrip!.Items[0].StoreName.Should().Be("Trader Joe's");
         secondTrip.Items[0].ItemId.Should().Be(trip.Items.First(i => i.ItemName == "Whole Milk").ItemId);
 
         var stores = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/stores")).ReadAsAsync<List<StoreDto>>();
@@ -69,11 +70,10 @@ public class TripEndpointsTests : IDisposable
         var profileId = await CreateProfileAsync();
         var dairyId = await GetCategoryIdAsync("Dairy");
 
-        var input = new TripInput("2026-08-01", "Costco",
-        [
-            new TripItemInput("Milk", dairyId, 3.49m),
-            new TripItemInput("milk", dairyId, 3.59m),
-        ]);
+        var input = TestTrips.At("2026-08-01", "Costco", 
+            TestTrips.Bought("Milk", dairyId, 3.49m),
+            TestTrips.Bought("milk", dairyId, 3.59m)
+        );
 
         var response = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips", input);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -93,11 +93,11 @@ public class TripEndpointsTests : IDisposable
         var categoryId = await GetCategoryIdAsync("Pantry");
 
         var created = await (await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-08-01", "Costco", [new TripItemInput("Pasta", categoryId, 1.79m)])))
+            TestTrips.At("2026-08-01", "Costco", TestTrips.Bought("Pasta", categoryId, 1.79m))))
             .ReadAsAsync<TripDto>();
 
         var updateResponse = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{created!.Id}",
-            new TripInput("2026-08-02", "Costco", [new TripItemInput("Rice", categoryId, 4.99m)]));
+            TestTrips.At("2026-08-02", "Costco", TestTrips.Bought("Rice", categoryId, 4.99m)));
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var updated = await updateResponse.ReadAsAsync<TripDto>();
 
@@ -111,7 +111,7 @@ public class TripEndpointsTests : IDisposable
         var profileId = await CreateProfileAsync();
         var categoryId = await GetCategoryIdAsync("Bakery");
         var created = await (await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-08-01", "Safeway", [new TripItemInput("Bread", categoryId, 3.29m)])))
+            TestTrips.At("2026-08-01", "Safeway", TestTrips.Bought("Bread", categoryId, 3.29m))))
             .ReadAsAsync<TripDto>();
 
         var deleteResponse = await _client.DeleteAsync($"/api/v1/profiles/{profileId}/trips/{created!.Id}");
@@ -130,7 +130,7 @@ public class TripEndpointsTests : IDisposable
         var profileId = await CreateProfileAsync("Cascade Tester");
         var categoryId = await GetCategoryIdAsync("Frozen");
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-08-01", "Target", [new TripItemInput("Frozen Pizza", categoryId, 5.49m)]));
+            TestTrips.At("2026-08-01", "Target", TestTrips.Bought("Frozen Pizza", categoryId, 5.49m)));
 
         var deleteResponse = await _client.DeleteAsync($"/api/v1/profiles/{profileId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);

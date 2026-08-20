@@ -92,14 +92,9 @@ export function Dashboard({ profileId }: { profileId: string }) {
       <div>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="m-0">Most recent trip</h3>
-          <div className="flex gap-2">
-            <Link to="/lists/new" className="btn btn-secondary">
-              New list
-            </Link>
-            <Link to="/trips/new" className="btn btn-primary">
-              + Log a trip
-            </Link>
-          </div>
+          <Link to="/trips/new" className="btn btn-primary">
+            + Log a trip
+          </Link>
         </div>
         {data.recentTrip ? (
           <div className="card elev-sm">
@@ -107,7 +102,7 @@ export function Dashboard({ profileId }: { profileId: string }) {
               <div>
                 <div className="card-kicker">{data.recentTrip.date}</div>
                 <div className="card-title flex items-center gap-1.5">
-                  {data.recentTrip.storeName}
+                  {data.recentTrip.name || data.recentTrip.storeName}
                   {pendingTripIds.has(data.recentTrip.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
                 </div>
               </div>

@@ -25,6 +25,9 @@ export interface Item {
   id: string
   name: string
   defaultCategoryId: string | null
+  // Most recently paid price, or null when never purchased. Backs the grocery
+  // list editor's estimated-cost summary.
+  lastPrice: number | null
 }
 
 export interface TripItemLine {
@@ -33,69 +36,50 @@ export interface TripItemLine {
   itemName: string
   categoryId: string
   categoryName: string
-  price: number
+  // null = "any store"
+  storeName: string | null
+  // Whether the item has actually been picked up.
+  checked: boolean
+  // null until the item is actually bought — a planned item has no price yet.
+  price: number | null
 }
 
 export interface TripItemInput {
   itemName: string
   categoryId: string
-  price: number
+  storeName: string | null
+  checked: boolean
+  price: number | null
 }
 
 export interface Trip {
   id: string
+  // Optional label ("Weekly stock-up"); falls back to the date in the UI.
+  name: string | null
   date: string
-  storeId: string
-  storeName: string
+  budget: number | null
+  stores: string[]
   items: TripItemLine[]
   total: number
 }
 
 export interface TripInput {
+  name: string | null
   date: string
-  storeName: string
+  budget: number | null
+  stores: string[]
   items: TripItemInput[]
 }
 
 export interface TripSummary {
   id: string
+  name: string | null
   date: string
-  storeId: string
-  storeName: string
+  stores: string[]
   itemCount: number
+  checkedCount: number
   total: number
-}
-
-export interface ListItemLine {
-  id: string
-  itemId: string
-  itemName: string
-  categoryId: string
-  categoryName: string
-  preferredStoreName: string | null
-  checked: boolean
-}
-
-export interface ListItemInput {
-  itemName: string
-  categoryId: string
-  preferredStoreName: string | null
-  checked: boolean
-}
-
-export interface GroceryList {
-  id: string
-  name: string
-  date: string | null
-  stores: string[]
-  items: ListItemLine[]
-}
-
-export interface GroceryListInput {
-  name: string
-  date: string | null
-  stores: string[]
-  items: ListItemInput[]
+  budget: number | null
 }
 
 export interface TripLine {
@@ -106,6 +90,7 @@ export interface TripLine {
 
 export interface RecentTrip {
   id: string
+  name: string | null
   date: string
   storeName: string
   itemCount: number

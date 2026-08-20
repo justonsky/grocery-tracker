@@ -16,6 +16,8 @@ public class GroceryTrackerApiFactory(DateTimeOffset? fixedNow = null) : WebAppl
     {
         Directory.CreateDirectory(_dataDirectory);
         builder.UseSetting("DataDirectory", _dataDirectory);
+        // Tests build their own fixtures; the shipped seed data would skew every assertion.
+        builder.UseSetting("SeedData:Enabled", "false");
 
         if (fixedNow is { } now)
         {

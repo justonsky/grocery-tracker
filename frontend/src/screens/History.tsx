@@ -63,7 +63,7 @@ export function History({ profileId }: { profileId: string }) {
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Store</th>
+                    <th>Trip</th>
                     <th>Items</th>
                     <th className="text-right">Total</th>
                     <th></th>
@@ -75,7 +75,7 @@ export function History({ profileId }: { profileId: string }) {
                       <td>{trip.date}</td>
                       <td>
                         <span className="flex items-center gap-1.5">
-                          {trip.storeName}
+                          {trip.name || trip.stores.join(', ') || '—'}
                           {pendingTripIds.has(trip.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
                         </span>
                       </td>

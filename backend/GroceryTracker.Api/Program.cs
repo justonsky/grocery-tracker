@@ -27,10 +27,10 @@ builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<TripService>();
-builder.Services.AddScoped<ListService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<ItemHistoryService>();
 builder.Services.AddScoped<ExportService>();
+builder.Services.AddScoped<SeedDataService>();
 
 var app = builder.Build();
 
@@ -42,6 +42,15 @@ using (var scope = app.Services.CreateScope())
     var instanceService = scope.ServiceProvider.GetRequiredService<ServerInstanceService>();
     var holder = scope.ServiceProvider.GetRequiredService<ServerInstanceHolder>();
     holder.InstanceId = await instanceService.EnsureInstanceIdAsync();
+
+    // First run on a fresh database gets the shipped grocery history. Disabled in
+    // integration tests, which assert against databases they populate themselves.
+    if (builder.Configuration.GetValue("SeedData:Enabled", true))
+    {
+        var seedPath = builder.Configuration["SeedData:Path"]
+            ?? Path.Combine(app.Environment.ContentRootPath, "SeedData", "seed-data.json");
+        await scope.ServiceProvider.GetRequiredService<SeedDataService>().SeedIfEmptyAsync(seedPath);
+    }
 }
 
 // Must wrap everything below it, so it's registered before any endpoint mapping.
@@ -57,7 +66,6 @@ app.MapProfileEndpoints();
 app.MapCategoryEndpoints();
 app.MapLookupEndpoints();
 app.MapTripEndpoints();
-app.MapListEndpoints();
 app.MapSettingsEndpoints();
 app.MapDashboardEndpoints();
 app.MapExportEndpoints();

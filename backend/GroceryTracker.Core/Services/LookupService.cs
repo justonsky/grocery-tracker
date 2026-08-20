@@ -90,8 +90,25 @@ public class LookupService(GroceryTrackerDbContext db)
             var normalized = NameNormalizer.Normalize(search);
             query = query.Where(i => i.NormalizedName.Contains(normalized));
         }
-        return await query.OrderBy(i => i.Name)
-            .Select(i => new ItemDto(i.Id, i.Name, i.DefaultCategoryId))
+        var items = await query.OrderBy(i => i.Name)
+            .Select(i => new { i.Id, i.Name, i.DefaultCategoryId })
             .ToListAsync(ct);
+
+        // Most recently paid price per item, so the grocery-list editor can estimate a
+        // list's cost without a round trip per row. Trip.Date is an ISO yyyy-MM-dd
+        // string, so ordinal string ordering is chronological.
+        var lastPrices = (await db.TripItems
+                .Where(ti => ti.Trip!.ProfileId == profileId && ti.PriceCents != null && ti.PriceCents > 0)
+                .Select(ti => new { ti.ItemId, ti.PriceCents, Date = ti.Trip!.Date, ti.Trip!.CreatedAt })
+                .ToListAsync(ct))
+            .GroupBy(ti => ti.ItemId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(x => x.Date, StringComparer.Ordinal).ThenBy(x => x.CreatedAt).Last().PriceCents!.Value / 100m);
+
+        return items
+            .Select(i => new ItemDto(i.Id, i.Name, i.DefaultCategoryId,
+                lastPrices.TryGetValue(i.Id, out var price) ? price : null))
+            .ToList();
     }
 }

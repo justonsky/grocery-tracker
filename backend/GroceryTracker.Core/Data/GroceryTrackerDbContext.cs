@@ -11,9 +11,7 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
     public DbSet<Item> Items => Set<Item>();
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<TripItem> TripItems => Set<TripItem>();
-    public DbSet<GroceryList> GroceryLists => Set<GroceryList>();
-    public DbSet<ListStore> ListStores => Set<ListStore>();
-    public DbSet<ListItem> ListItems => Set<ListItem>();
+    public DbSet<TripStore> TripStores => Set<TripStore>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -58,10 +56,15 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             e.HasIndex(t => new { t.ProfileId, t.Date });
             e.HasOne(t => t.Profile).WithMany(p => p.Trips)
                 .HasForeignKey(t => t.ProfileId).OnDelete(DeleteBehavior.Cascade);
-            // Store is Profile-owned and itself cascades from Profile, so this must also
-            // cascade rather than Restrict — see the ItemId comment on TripItem below.
-            e.HasOne(t => t.Store).WithMany()
-                .HasForeignKey(t => t.StoreId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TripStore>(e =>
+        {
+            e.HasKey(ts => ts.Id);
+            e.Property(ts => ts.Id).ValueGeneratedNever();
+            e.HasIndex(ts => ts.TripId);
+            e.HasOne(ts => ts.Trip).WithMany(t => t.Stores)
+                .HasForeignKey(ts => ts.TripId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TripItem>(e =>
@@ -80,41 +83,10 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
                 .HasForeignKey(ti => ti.ItemId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(ti => ti.Category).WithMany()
                 .HasForeignKey(ti => ti.CategoryId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(ti => ti.Store).WithMany()
+                .HasForeignKey(ti => ti.StoreId).OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<GroceryList>(e =>
-        {
-            e.HasKey(l => l.Id);
-            e.Property(l => l.Id).ValueGeneratedNever();
-            e.HasIndex(l => l.ProfileId);
-            e.HasOne(l => l.Profile).WithMany(p => p.Lists)
-                .HasForeignKey(l => l.ProfileId).OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<ListStore>(e =>
-        {
-            e.HasKey(ls => ls.Id);
-            e.Property(ls => ls.Id).ValueGeneratedNever();
-            e.HasIndex(ls => ls.ListId);
-            e.HasOne(ls => ls.List).WithMany(l => l.Stores)
-                .HasForeignKey(ls => ls.ListId).OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<ListItem>(e =>
-        {
-            e.HasKey(li => li.Id);
-            e.Property(li => li.Id).ValueGeneratedNever();
-            e.HasIndex(li => li.ListId);
-            e.HasOne(li => li.List).WithMany(l => l.Items)
-                .HasForeignKey(li => li.ListId).OnDelete(DeleteBehavior.Cascade);
-            // Same cascade-vs-restrict reasoning as TripItem.ItemId above.
-            e.HasOne(li => li.Item).WithMany()
-                .HasForeignKey(li => li.ItemId).OnDelete(DeleteBehavior.Cascade);
-            e.HasOne(li => li.Category).WithMany()
-                .HasForeignKey(li => li.CategoryId).OnDelete(DeleteBehavior.Restrict);
-            e.HasOne(li => li.PreferredStore).WithMany()
-                .HasForeignKey(li => li.PreferredStoreId).OnDelete(DeleteBehavior.SetNull);
-        });
 
         modelBuilder.Entity<AppSetting>(e =>
         {

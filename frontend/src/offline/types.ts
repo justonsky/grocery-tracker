@@ -1,4 +1,4 @@
-export type OutboxEntity = 'trip' | 'list' | 'profile' | 'category'
+export type OutboxEntity = 'trip' | 'profile' | 'category'
 export type OutboxAction = 'put' | 'delete'
 export type OutboxStatus = 'pending' | 'inflight' | 'failed' | 'blocked' | 'orphaned'
 

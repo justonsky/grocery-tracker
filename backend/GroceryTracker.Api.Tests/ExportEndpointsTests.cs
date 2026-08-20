@@ -15,7 +15,7 @@ public class ExportEndpointsTests : IDisposable
     public void Dispose() => _factory.Dispose();
 
     [Fact]
-    public async Task ExportXlsx_ContainsProfilesTripsAndListsSheets()
+    public async Task ExportXlsx_ContainsProfilesAndTripsSheets()
     {
         var profileId = (await (await _client.PostJsonAsync("/api/v1/profiles", new CreateProfileRequest("Export Tester")))
             .ReadAsAsync<ProfileDto>())!.Id;
@@ -23,9 +23,9 @@ public class ExportEndpointsTests : IDisposable
             .First(c => c.Name == "Dairy").Id;
 
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
-            new TripInput("2026-08-01", "Costco", [new TripItemInput("Whole Milk", categoryId, 3.49m)]));
-        await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/lists",
-            new GroceryListInput("Weekly stock-up", null, [], [new ListItemInput("Bananas", categoryId, null, false)]));
+            TestTrips.At("2026-08-01", "Costco", TestTrips.Bought("Whole Milk", categoryId, 3.49m)));
+        await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
+            new TripInput("Weekly stock-up", "2026-08-02", null, [], [TestTrips.Planned("Bananas", categoryId)]));
 
         var response = await _client.GetAsync("/api/v1/export/data.xlsx");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -36,17 +36,25 @@ public class ExportEndpointsTests : IDisposable
         using var stream = new MemoryStream(bytes);
         using var workbook = new XLWorkbook(stream);
 
-        workbook.Worksheets.Select(w => w.Name).Should().BeEquivalentTo(["Profiles", "Trips", "Lists"]);
+        // Lists and trips are one thing now, so one sheet carries both.
+        workbook.Worksheets.Select(w => w.Name).Should().BeEquivalentTo(["Profiles", "Trips"]);
 
         var profilesSheet = workbook.Worksheet("Profiles");
         profilesSheet.Cell(2, 1).GetString().Should().Be("Export Tester");
 
+        // Columns: Profile, Date, Trip, Trip Stores, Budget, Item, Category, Store, Picked Up, Price
         var tripsSheet = workbook.Worksheet("Trips");
-        tripsSheet.Cell(2, 4).GetString().Should().Be("Whole Milk");
-        tripsSheet.Cell(2, 6).GetDouble().Should().Be(3.49);
+        var rows = tripsSheet.RowsUsed().Skip(1).ToList();
 
-        var listsSheet = workbook.Worksheet("Lists");
-        listsSheet.Cell(2, 4).GetString().Should().Be("Bananas");
+        var bought = rows.Single(r => r.Cell(6).GetString() == "Whole Milk");
+        bought.Cell(9).GetBoolean().Should().BeTrue();
+        bought.Cell(10).GetDouble().Should().Be(3.49);
+
+        // The planned item lands in the same sheet, unticked and with no price.
+        var planned = rows.Single(r => r.Cell(6).GetString() == "Bananas");
+        planned.Cell(3).GetString().Should().Be("Weekly stock-up");
+        planned.Cell(9).GetBoolean().Should().BeFalse();
+        planned.Cell(10).IsEmpty().Should().BeTrue();
     }
 
     [Fact]
@@ -58,6 +66,7 @@ public class ExportEndpointsTests : IDisposable
         var bytes = await response.Content.ReadAsByteArrayAsync();
         using var stream = new MemoryStream(bytes);
         using var workbook = new XLWorkbook(stream);
-        workbook.Worksheets.Select(w => w.Name).Should().BeEquivalentTo(["Profiles", "Trips", "Lists"]);
+        // Lists and trips are one thing now, so one sheet carries both.
+        workbook.Worksheets.Select(w => w.Name).Should().BeEquivalentTo(["Profiles", "Trips"]);
     }
 }
