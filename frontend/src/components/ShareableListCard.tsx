@@ -14,7 +14,7 @@ interface Props {
   date: string
   items: PreviewItem[]
   // Rendered as a summary line at the foot of the card so it survives PNG/JPG
-  // export. Omitted when no listed item has any price history to estimate from.
+  // export. Omitted when no item on the trip has an estimate.
   // The over-budget warning is deliberately NOT shown here — it is editor-only
   // context, not something to bake into a list shared with someone else.
   estimatedCostLabel?: string | null

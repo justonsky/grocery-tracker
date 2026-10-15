@@ -20,6 +20,7 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
         {
             e.HasKey(p => p.Id);
             e.Property(p => p.Id).ValueGeneratedNever();
+            e.Property(p => p.Theme).HasMaxLength(32).HasDefaultValue(Profile.DefaultTheme);
         });
 
         modelBuilder.Entity<Category>(e =>
@@ -54,6 +55,9 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             e.HasKey(t => t.Id);
             e.Property(t => t.Id).ValueGeneratedNever();
             e.HasIndex(t => new { t.ProfileId, t.Date });
+            // Stored as text ("Planned"/"Shopping"/"Done") so the .db file stays
+            // readable and reordering the enum can never reinterpret old rows.
+            e.Property(t => t.Status).HasConversion<string>().HasMaxLength(16);
             e.HasOne(t => t.Profile).WithMany(p => p.Trips)
                 .HasForeignKey(t => t.ProfileId).OnDelete(DeleteBehavior.Cascade);
         });

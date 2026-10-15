@@ -18,6 +18,10 @@ public static class ProfileEndpoints
             {
                 return Results.Problem(type: ProblemTypes.Validation, title: "Name is required.", statusCode: StatusCodes.Status400BadRequest);
             }
+            if (!ProfileService.IsValidTheme(request.Theme))
+            {
+                return InvalidTheme();
+            }
             var profile = await service.CreateAsync(request, ct);
             return Results.Created($"/api/v1/profiles/{profile.Id}", profile);
         });
@@ -36,6 +40,10 @@ public static class ProfileEndpoints
             {
                 return Results.Problem(type: ProblemTypes.Validation, title: "Name is required.", statusCode: StatusCodes.Status400BadRequest);
             }
+            if (!ProfileService.IsValidTheme(request.Theme))
+            {
+                return InvalidTheme();
+            }
 
             var (result, profile) = await service.UpsertAsync(id, request, ct);
             return result == ProfileUpsertResult.Created
@@ -48,4 +56,7 @@ public static class ProfileEndpoints
                 ? Results.NoContent()
                 : Results.Problem(type: ProblemTypes.ProfileNotFound, title: "Profile not found.", statusCode: StatusCodes.Status404NotFound));
     }
+
+    private static IResult InvalidTheme() =>
+        Results.Problem(type: ProblemTypes.Validation, title: "Theme is not a valid theme id.", statusCode: StatusCodes.Status400BadRequest);
 }

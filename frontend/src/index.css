@@ -7,8 +7,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Design tokens ported verbatim from the Claude Design mockup ("Nocturne" design
-   system + the app page's light/dark overrides) — see Grocery Tracker.dc.html. */
-:root {
+   system + the app page's light/dark overrides) — see Grocery Tracker.dc.html.
+   This is also the "nocturne" profile theme; other themes are further down. */
+:root, [data-theme="nocturne"] {
   --bg: #f2f1f7;
   --surface: #ffffff;
   --text: #1d1e29;
@@ -55,7 +56,7 @@
   --shadow-elev-lg: 0 0 0 1px #cfd3e5, 0 16px 40px rgba(30, 20, 60, 0.16);
 }
 
-.dark {
+.dark, .dark [data-theme="nocturne"] {
   --bg: #161826;
   --surface: #232532;
   --text: #e9e9ed;
@@ -100,6 +101,94 @@
   --shadow-elev-sm: 0 0 0 1px #3f424d;
   --shadow-elev-md: 0 0 0 1px #595d6c, 0 6px 18px rgba(0, 0, 0, 0.55);
   --shadow-elev-lg: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+
+/* Per-profile color themes (ids in app/themes.ts). Nocturne is the hand-tuned
+   palette above. Every other theme only sets a hue and chroma for each accent;
+   the two rule blocks below expand those into the full light/dark scales in
+   OKLCH, so the steps stay evenly spaced in lightness whatever the hue. Neutrals,
+   danger and shadows are shared. data-theme also works on any element (the
+   profile picker themes each card its own way), which is why the Nocturne
+   values are restated for a nested [data-theme="nocturne"]. */
+[data-theme="iris"]       { --th-h: 275; --th-c: 0.17;  --th-h2: 300; --th-c2: 0.07; }
+[data-theme="ocean"]      { --th-h: 245; --th-c: 0.14;  --th-h2: 220; --th-c2: 0.06; }
+[data-theme="lagoon"]     { --th-h: 215; --th-c: 0.12;  --th-h2: 190; --th-c2: 0.05; }
+[data-theme="teal"]       { --th-h: 190; --th-c: 0.10;  --th-h2: 165; --th-c2: 0.05; }
+[data-theme="mint"]       { --th-h: 165; --th-c: 0.12;  --th-h2: 145; --th-c2: 0.05; }
+[data-theme="forest"]     { --th-h: 145; --th-c: 0.13;  --th-h2: 120; --th-c2: 0.05; }
+[data-theme="sage"]       { --th-h: 140; --th-c: 0.055; --th-h2: 110; --th-c2: 0.03; }
+[data-theme="olive"]      { --th-h: 115; --th-c: 0.10;  --th-h2: 90;  --th-c2: 0.05; }
+[data-theme="honey"]      { --th-h: 85;  --th-c: 0.13;  --th-h2: 60;  --th-c2: 0.05; }
+[data-theme="amber"]      { --th-h: 65;  --th-c: 0.15;  --th-h2: 45;  --th-c2: 0.06; }
+[data-theme="tangerine"]  { --th-h: 48;  --th-c: 0.17;  --th-h2: 30;  --th-c2: 0.06; }
+[data-theme="terracotta"] { --th-h: 35;  --th-c: 0.11;  --th-h2: 60;  --th-c2: 0.04; }
+[data-theme="coral"]      { --th-h: 25;  --th-c: 0.16;  --th-h2: 5;   --th-c2: 0.06; }
+[data-theme="ruby"]       { --th-h: 15;  --th-c: 0.18;  --th-h2: 350; --th-c2: 0.06; }
+[data-theme="rose"]       { --th-h: 0;   --th-c: 0.14;  --th-h2: 330; --th-c2: 0.05; }
+[data-theme="magenta"]    { --th-h: 340; --th-c: 0.18;  --th-h2: 310; --th-c2: 0.07; }
+[data-theme="orchid"]     { --th-h: 315; --th-c: 0.15;  --th-h2: 290; --th-c2: 0.06; }
+[data-theme="slate"]      { --th-h: 250; --th-c: 0.035; --th-h2: 250; --th-c2: 0.02; }
+[data-theme="cocoa"]      { --th-h: 55;  --th-c: 0.06;  --th-h2: 40;  --th-c2: 0.03; }
+[data-theme="mono"]       { --th-h: 0;   --th-c: 0;     --th-h2: 0;   --th-c2: 0; }
+
+[data-theme]:not([data-theme="nocturne"]) {
+  --bg: oklch(0.965 calc(var(--th-c) * 0.08) var(--th-h));
+  --surface: oklch(0.995 calc(var(--th-c) * 0.02) var(--th-h));
+  --text: oklch(0.23 calc(var(--th-c) * 0.2) var(--th-h));
+  --accent: oklch(0.52 var(--th-c) var(--th-h));
+  --accent-2: oklch(0.55 var(--th-c2) var(--th-h2));
+  --divider: color-mix(in srgb, var(--text) 14%, transparent);
+
+  --accent-100: oklch(0.27 calc(var(--th-c) * 0.55) var(--th-h));
+  --accent-200: oklch(0.36 calc(var(--th-c) * 0.75) var(--th-h));
+  --accent-300: oklch(0.45 calc(var(--th-c) * 0.9) var(--th-h));
+  --accent-400: oklch(0.56 var(--th-c) var(--th-h));
+  --accent-500: oklch(0.66 calc(var(--th-c) * 0.9) var(--th-h));
+  --accent-600: oklch(0.76 calc(var(--th-c) * 0.75) var(--th-h));
+  --accent-700: oklch(0.85 calc(var(--th-c) * 0.5) var(--th-h));
+  --accent-800: oklch(0.93 calc(var(--th-c) * 0.25) var(--th-h));
+  --accent-900: oklch(0.975 calc(var(--th-c) * 0.1) var(--th-h));
+
+  --accent-2-100: oklch(0.27 calc(var(--th-c2) * 0.55) var(--th-h2));
+  --accent-2-200: oklch(0.36 calc(var(--th-c2) * 0.75) var(--th-h2));
+  --accent-2-300: oklch(0.45 calc(var(--th-c2) * 0.9) var(--th-h2));
+  --accent-2-400: oklch(0.56 var(--th-c2) var(--th-h2));
+  --accent-2-500: oklch(0.66 calc(var(--th-c2) * 0.9) var(--th-h2));
+  --accent-2-600: oklch(0.76 calc(var(--th-c2) * 0.75) var(--th-h2));
+  --accent-2-700: oklch(0.85 calc(var(--th-c2) * 0.5) var(--th-h2));
+  --accent-2-800: oklch(0.93 calc(var(--th-c2) * 0.25) var(--th-h2));
+  --accent-2-900: oklch(0.975 calc(var(--th-c2) * 0.1) var(--th-h2));
+}
+
+/* More specific than the light block above, so dark wins on the same element. */
+.dark[data-theme]:not([data-theme="nocturne"]),
+.dark [data-theme]:not([data-theme="nocturne"]) {
+  --bg: oklch(0.2 calc(var(--th-c) * 0.15) var(--th-h));
+  --surface: oklch(0.255 calc(var(--th-c) * 0.15) var(--th-h));
+  --text: oklch(0.94 calc(var(--th-c) * 0.05) var(--th-h));
+  --accent: oklch(0.72 calc(var(--th-c) * 0.9) var(--th-h));
+  --accent-2: oklch(0.74 var(--th-c2) var(--th-h2));
+  --divider: color-mix(in srgb, var(--text) 16%, transparent);
+
+  --accent-100: oklch(0.975 calc(var(--th-c) * 0.1) var(--th-h));
+  --accent-200: oklch(0.93 calc(var(--th-c) * 0.25) var(--th-h));
+  --accent-300: oklch(0.85 calc(var(--th-c) * 0.5) var(--th-h));
+  --accent-400: oklch(0.76 calc(var(--th-c) * 0.75) var(--th-h));
+  --accent-500: oklch(0.66 calc(var(--th-c) * 0.9) var(--th-h));
+  --accent-600: oklch(0.56 var(--th-c) var(--th-h));
+  --accent-700: oklch(0.45 calc(var(--th-c) * 0.9) var(--th-h));
+  --accent-800: oklch(0.36 calc(var(--th-c) * 0.75) var(--th-h));
+  --accent-900: oklch(0.27 calc(var(--th-c) * 0.55) var(--th-h));
+
+  --accent-2-100: oklch(0.975 calc(var(--th-c2) * 0.1) var(--th-h2));
+  --accent-2-200: oklch(0.93 calc(var(--th-c2) * 0.25) var(--th-h2));
+  --accent-2-300: oklch(0.85 calc(var(--th-c2) * 0.5) var(--th-h2));
+  --accent-2-400: oklch(0.76 calc(var(--th-c2) * 0.75) var(--th-h2));
+  --accent-2-500: oklch(0.66 calc(var(--th-c2) * 0.9) var(--th-h2));
+  --accent-2-600: oklch(0.56 var(--th-c2) var(--th-h2));
+  --accent-2-700: oklch(0.45 calc(var(--th-c2) * 0.9) var(--th-h2));
+  --accent-2-800: oklch(0.36 calc(var(--th-c2) * 0.75) var(--th-h2));
+  --accent-2-900: oklch(0.27 calc(var(--th-c2) * 0.55) var(--th-h2));
 }
 
 @theme inline {
@@ -278,7 +367,7 @@ h1, h2, h3, h4, h5, h6 {
     @apply fixed inset-0 z-50 grid place-items-center bg-neutral-900/50 p-4;
   }
   .dialog {
-    @apply flex w-full max-w-[440px] flex-col gap-3 rounded-lg bg-surface p-4;
+    @apply flex max-h-[calc(100dvh-2rem)] w-full max-w-[440px] flex-col gap-3 overflow-y-auto rounded-lg bg-surface p-4;
     box-shadow: var(--shadow-lg);
   }
   .dialog-title {

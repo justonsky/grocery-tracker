@@ -43,6 +43,32 @@ public class ProfileEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Theme_DefaultsToNocturne_IsSetByUpsert_AndSurvivesARename()
+    {
+        var id = Guid.NewGuid();
+
+        var created = await (await _client.PutJsonAsync($"/api/v1/profiles/{id}", new CreateProfileRequest("Sam")))
+            .ReadAsAsync<ProfileDto>();
+        created!.Theme.Should().Be("nocturne");
+
+        var themed = await (await _client.PutJsonAsync($"/api/v1/profiles/{id}", new CreateProfileRequest("Sam", "ocean")))
+            .ReadAsAsync<ProfileDto>();
+        themed!.Theme.Should().Be("ocean");
+
+        // A rename that doesn't mention the theme (e.g. an older queued op) keeps it.
+        await _client.PutJsonAsync($"/api/v1/profiles/{id}", new CreateProfileRequest("Sammy"));
+        var profiles = await (await _client.GetAsync("/api/v1/profiles")).ReadAsAsync<List<ProfileDto>>();
+        profiles.Should().ContainSingle(p => p.Id == id).Which.Theme.Should().Be("ocean");
+    }
+
+    [Fact]
+    public async Task Theme_WithInvalidId_IsRejected()
+    {
+        var response = await _client.PutJsonAsync($"/api/v1/profiles/{Guid.NewGuid()}", new CreateProfileRequest("Sam", "Not A Theme!"));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task DeleteProfile_WhenMissing_ReturnsNotFound()
     {
         var response = await _client.DeleteAsync($"/api/v1/profiles/{Guid.NewGuid()}");

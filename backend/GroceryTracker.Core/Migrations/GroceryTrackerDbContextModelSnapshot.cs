@@ -176,6 +176,13 @@ namespace GroceryTracker.Core.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Theme")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("nocturne");
+
                     b.HasKey("Id");
 
                     b.ToTable("Profiles");
@@ -216,6 +223,9 @@ namespace GroceryTracker.Core.Migrations
                     b.Property<int?>("BudgetCents")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -227,6 +237,11 @@ namespace GroceryTracker.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ProfileId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -247,11 +262,17 @@ namespace GroceryTracker.Core.Migrations
                     b.Property<bool>("Checked")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("EstimateCents")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("ItemId")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("PriceCents")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("PricedAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");

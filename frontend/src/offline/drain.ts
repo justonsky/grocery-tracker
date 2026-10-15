@@ -180,7 +180,7 @@ async function orphanOpsForProfile(profileId: string | null): Promise<void> {
 }
 
 // Rewrites every other queued op that referenced the failed client-side
-// category id — both as a dependency and inside trip/list line items — to
+// category id — both as a dependency and inside trip line items — to
 // point at the real server category id instead.
 async function remapCategoryId(oldId: string, newId: string): Promise<void> {
   const all = await getAllOps()
@@ -227,7 +227,7 @@ async function execute(op: OutboxOp): Promise<void> {
       await api.trips(op.profileId!).upsert(op.entityId, op.payload as TripInput)
       return
     case 'profile':
-      await api.profiles.upsert(op.entityId, (op.payload as { name: string }).name)
+      await api.profiles.upsert(op.entityId, (op.payload as { name: string }).name, (op.payload as { theme?: string }).theme)
       return
     case 'category':
       await api.categories.upsert(op.entityId, (op.payload as { name: string }).name)

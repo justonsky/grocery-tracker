@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 import { useTheme } from './useTheme'
+import { useDocumentTheme } from './themes'
 import { useToast } from '../components/ui/ToastProvider'
 import { SyncStatusPill, SyncStatusStrip } from './SyncStatusIndicator'
 import { SyncFailuresDialog } from './SyncFailuresDialog'
@@ -29,6 +30,7 @@ export function AppShell({
   const { data: profiles } = useQuery({ queryKey: ['profiles'], queryFn: api.profiles.list })
   const currentProfile = profiles?.find((p) => p.id === profileId)
   const [failuresOpen, setFailuresOpen] = useState(false)
+  useDocumentTheme(currentProfile?.theme)
 
   // Cache warmer: mounting these here (not just lazily inside TripEditor)
   // means the full item/store/category lists are already in the

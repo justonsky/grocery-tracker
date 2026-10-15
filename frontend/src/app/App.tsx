@@ -48,7 +48,7 @@ function AppContent() {
         <Route path="/trips/new" element={<TripEditor profileId={profileId} />} />
         <Route path="/trips/:tripId" element={<TripEditor profileId={profileId} />} />
         <Route path="/items/:itemId" element={<ItemDetail profileId={profileId} />} />
-        <Route path="/settings" element={<SettingsDialog />} />
+        <Route path="/settings" element={<SettingsDialog profileId={profileId} />} />
       </Routes>
     </AppShell>
   )

@@ -15,8 +15,8 @@ public class ExportService(GroceryTrackerDbContext db)
             .Select(p => new { p.Name, p.CreatedAt })
             .ToListAsync(ct);
 
-        // One row per item line. Lists and trips are the same record now, so a single
-        // sheet covers both planned and bought items — PickedUp/Price tell them apart.
+        // One row per item line. A trip is both the plan and the log, so a single
+        // sheet covers planned and bought items — Status, Picked Up and Price tell them apart.
         var tripItems = await db.TripItems
             .OrderBy(ti => ti.Trip!.Date)
             .Select(ti => new
@@ -26,10 +26,12 @@ public class ExportService(GroceryTrackerDbContext db)
                 ti.Trip!.Date,
                 TripStores = ti.Trip!.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).ToList(),
                 BudgetCents = ti.Trip!.BudgetCents,
+                ti.Trip!.Status,
                 Item = ti.Item!.Name,
                 Category = ti.Category!.Name,
                 Store = ti.Store != null ? ti.Store.Name : null,
                 ti.Checked,
+                ti.EstimateCents,
                 ti.PriceCents,
             })
             .ToListAsync(ct);
@@ -48,7 +50,7 @@ public class ExportService(GroceryTrackerDbContext db)
 
         var tripsSheet = workbook.Worksheets.Add("Trips");
         WriteHeader(tripsSheet, "Profile", "Date", "Trip", "Trip Stores", "Budget",
-            "Item", "Category", "Store", "Picked Up", "Price");
+            "Status", "Item", "Category", "Store", "Picked Up", "Estimate", "Price");
         row = 2;
         foreach (var t in tripItems)
         {
@@ -57,12 +59,14 @@ public class ExportService(GroceryTrackerDbContext db)
             tripsSheet.Cell(row, 3).Value = t.Trip ?? "";
             tripsSheet.Cell(row, 4).Value = string.Join(", ", t.TripStores);
             if (t.BudgetCents is { } budget) tripsSheet.Cell(row, 5).Value = budget / 100m;
-            tripsSheet.Cell(row, 6).Value = t.Item;
-            tripsSheet.Cell(row, 7).Value = t.Category;
-            tripsSheet.Cell(row, 8).Value = t.Store ?? "";
-            tripsSheet.Cell(row, 9).Value = t.Checked;
+            tripsSheet.Cell(row, 6).Value = t.Status.ToString();
+            tripsSheet.Cell(row, 7).Value = t.Item;
+            tripsSheet.Cell(row, 8).Value = t.Category;
+            tripsSheet.Cell(row, 9).Value = t.Store ?? "";
+            tripsSheet.Cell(row, 10).Value = t.Checked;
+            if (t.EstimateCents is { } estimate) tripsSheet.Cell(row, 11).Value = estimate / 100m;
             // Left blank rather than 0.00 for an item that has not been bought yet.
-            if (t.PriceCents is { } price) tripsSheet.Cell(row, 10).Value = price / 100m;
+            if (t.PriceCents is { } price) tripsSheet.Cell(row, 12).Value = price / 100m;
             row++;
         }
 

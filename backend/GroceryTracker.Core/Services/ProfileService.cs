@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using GroceryTracker.Core.Data;
 using GroceryTracker.Core.Dtos;
 using GroceryTracker.Core.Entities;
@@ -5,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GroceryTracker.Core.Services;
 
-public class ProfileService(GroceryTrackerDbContext db)
+public partial class ProfileService(GroceryTrackerDbContext db)
 {
     public async Task<List<ProfileDto>> ListAsync(CancellationToken ct = default)
     {
         // SQLite/EF Core can't translate ORDER BY on DateTimeOffset — sort in-memory
         // after fetching (profile counts are tiny, so this is cheap).
         var profiles = await db.Profiles
-            .Select(p => new ProfileDto(p.Id, p.Name, p.CreatedAt, p.Trips.Count))
+            .Select(p => new ProfileDto(p.Id, p.Name, p.CreatedAt, p.Trips.Count, p.Theme))
             .ToListAsync(ct);
         return profiles.OrderBy(p => p.CreatedAt).ToList();
     }
@@ -23,11 +24,12 @@ public class ProfileService(GroceryTrackerDbContext db)
         {
             Id = Guid.NewGuid(),
             Name = request.Name.Trim(),
+            Theme = request.Theme ?? Profile.DefaultTheme,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         db.Profiles.Add(profile);
         await db.SaveChangesAsync(ct);
-        return new ProfileDto(profile.Id, profile.Name, profile.CreatedAt, 0);
+        return new ProfileDto(profile.Id, profile.Name, profile.CreatedAt, 0, profile.Theme);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
@@ -35,7 +37,7 @@ public class ProfileService(GroceryTrackerDbContext db)
         var profile = await db.Profiles.FindAsync([id], ct);
         if (profile is null) return false;
 
-        db.Profiles.Remove(profile); // cascades Stores/Items/Trips/Lists via FK config
+        db.Profiles.Remove(profile); // cascades Stores/Items/Trips via FK config
         await db.SaveChangesAsync(ct);
         return true;
     }
@@ -49,17 +51,29 @@ public class ProfileService(GroceryTrackerDbContext db)
         var existing = await db.Profiles.FindAsync([id], ct);
         if (existing is null)
         {
-            var profile = new Profile { Id = id, Name = request.Name.Trim(), CreatedAt = DateTimeOffset.UtcNow };
+            var profile = new Profile
+            {
+                Id = id, Name = request.Name.Trim(),
+                Theme = request.Theme ?? Profile.DefaultTheme, CreatedAt = DateTimeOffset.UtcNow,
+            };
             db.Profiles.Add(profile);
             await db.SaveChangesAsync(ct);
-            return (ProfileUpsertResult.Created, new ProfileDto(profile.Id, profile.Name, profile.CreatedAt, 0));
+            return (ProfileUpsertResult.Created, new ProfileDto(profile.Id, profile.Name, profile.CreatedAt, 0, profile.Theme));
         }
 
         existing.Name = request.Name.Trim();
+        if (request.Theme is not null) existing.Theme = request.Theme;
         await db.SaveChangesAsync(ct);
         var tripCount = await db.Trips.CountAsync(t => t.ProfileId == id, ct);
-        return (ProfileUpsertResult.Updated, new ProfileDto(existing.Id, existing.Name, existing.CreatedAt, tripCount));
+        return (ProfileUpsertResult.Updated, new ProfileDto(existing.Id, existing.Name, existing.CreatedAt, tripCount, existing.Theme));
     }
+
+    // Only the shape is checked here, not membership: the theme catalogue lives in
+    // the frontend, which falls back to the default for an id it doesn't know.
+    public static bool IsValidTheme(string? theme) => theme is null || ThemePattern().IsMatch(theme);
+
+    [GeneratedRegex("^[a-z][a-z0-9-]{0,31}$")]
+    private static partial Regex ThemePattern();
 }
 
 public enum ProfileUpsertResult { Created, Updated }

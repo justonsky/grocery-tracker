@@ -20,6 +20,7 @@ public static class TripEndpoints
 
         group.MapPost("/", async (Guid profileId, TripInput input, TripService service, CancellationToken ct) =>
         {
+            if (!TripService.IsValidStatus(input.Status)) return InvalidStatus();
             var trip = await service.CreateAsync(profileId, input, ct);
             return Results.Created($"/api/v1/profiles/{profileId}/trips/{trip.Id}", trip);
         });
@@ -33,6 +34,7 @@ public static class TripEndpoints
             {
                 return Results.Problem(type: ProblemTypes.Validation, title: "Id must not be empty.", statusCode: StatusCodes.Status400BadRequest);
             }
+            if (!TripService.IsValidStatus(input.Status)) return InvalidStatus();
 
             var (result, trip) = await service.UpsertAsync(profileId, tripId, input, ct);
             return result switch
@@ -41,6 +43,10 @@ public static class TripEndpoints
                 TripUpsertResult.Updated => Results.Ok(trip),
                 TripUpsertResult.CrossProfile => Results.Problem(
                     type: ProblemTypes.CrossProfile, title: "This trip belongs to a different profile.", statusCode: StatusCodes.Status409Conflict),
+                TripUpsertResult.PriceLocked => Results.Problem(
+                    type: ProblemTypes.PriceLocked,
+                    title: $"Bought items become read-only {TripService.PriceEditWindow.TotalDays:0} days after their price is entered.",
+                    statusCode: StatusCodes.Status409Conflict),
                 _ => Results.Problem(
                     type: ProblemTypes.ProfileNotFound, title: "Profile not found.", statusCode: StatusCodes.Status404NotFound),
             };
@@ -49,6 +55,9 @@ public static class TripEndpoints
         group.MapDelete("/{tripId:guid}", async (Guid profileId, Guid tripId, TripService service, CancellationToken ct) =>
             await service.DeleteAsync(profileId, tripId, ct) ? Results.NoContent() : TripNotFound());
     }
+
+    private static IResult InvalidStatus() =>
+        Results.Problem(type: ProblemTypes.Validation, title: "Status must be planned, shopping or done.", statusCode: StatusCodes.Status400BadRequest);
 
     private static IResult TripNotFound() =>
         Results.Problem(type: ProblemTypes.TripNotFound, title: "Trip not found.", statusCode: StatusCodes.Status404NotFound);

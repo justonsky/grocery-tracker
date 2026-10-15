@@ -94,21 +94,24 @@ public class LookupService(GroceryTrackerDbContext db)
             .Select(i => new { i.Id, i.Name, i.DefaultCategoryId })
             .ToListAsync(ct);
 
-        // Most recently paid price per item, so the grocery-list editor can estimate a
-        // list's cost without a round trip per row. Trip.Date is an ISO yyyy-MM-dd
+        // Last and average paid price per item, so the trip editor can estimate a
+        // trip's cost without a round trip per row. Trip.Date is an ISO yyyy-MM-dd
         // string, so ordinal string ordering is chronological.
-        var lastPrices = (await db.TripItems
+        var prices = (await db.TripItems
                 .Where(ti => ti.Trip!.ProfileId == profileId && ti.PriceCents != null && ti.PriceCents > 0)
                 .Select(ti => new { ti.ItemId, ti.PriceCents, Date = ti.Trip!.Date, ti.Trip!.CreatedAt })
                 .ToListAsync(ct))
             .GroupBy(ti => ti.ItemId)
             .ToDictionary(
                 g => g.Key,
-                g => g.OrderBy(x => x.Date, StringComparer.Ordinal).ThenBy(x => x.CreatedAt).Last().PriceCents!.Value / 100m);
+                g => (
+                    Last: g.OrderBy(x => x.Date, StringComparer.Ordinal).ThenBy(x => x.CreatedAt).Last().PriceCents!.Value / 100m,
+                    Average: Math.Round(g.Average(x => (decimal)x.PriceCents!.Value) / 100m, 2, MidpointRounding.AwayFromZero)));
 
         return items
-            .Select(i => new ItemDto(i.Id, i.Name, i.DefaultCategoryId,
-                lastPrices.TryGetValue(i.Id, out var price) ? price : null))
+            .Select(i => prices.TryGetValue(i.Id, out var p)
+                ? new ItemDto(i.Id, i.Name, i.DefaultCategoryId, p.Last, p.Average)
+                : new ItemDto(i.Id, i.Name, i.DefaultCategoryId, null, null))
             .ToList();
     }
 }

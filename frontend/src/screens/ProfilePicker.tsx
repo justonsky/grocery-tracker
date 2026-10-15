@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 import type { Profile } from '../api/types'
 import { Avatar } from '../app/AppShell'
+import { DEFAULT_THEME, themeOf, useDocumentTheme } from '../app/themes'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
@@ -15,6 +16,9 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
   const [newName, setNewName] = useState('')
 
   const { data: profiles, isLoading } = useQuery({ queryKey: ['profiles'], queryFn: api.profiles.list })
+  // Nobody is signed in here, so the page itself uses the default theme; each
+  // profile card below carries its own.
+  useDocumentTheme(DEFAULT_THEME)
 
   const createProfile = useMutation({
     // Without this, TanStack Query pauses the mutation entirely while
@@ -43,7 +47,7 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
         // would return the old (pre-create) list and silently wipe this back out.
         queryClient.setQueryData<Profile[]>(['profiles'], (old) => [
           ...(old ?? []),
-          { id, name, createdAt: new Date().toISOString(), tripCount: 0 },
+          { id, name, createdAt: new Date().toISOString(), tripCount: 0, theme: DEFAULT_THEME },
         ])
         toast('success', "Saved on this device — will sync when you're back online.")
       }
@@ -80,7 +84,7 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
   const askDelete = async (id: string, name: string) => {
     const ok = await confirm({
       title: `Delete ${name}?`,
-      body: 'This permanently deletes their trips, lists, and price history on this device.',
+      body: 'This permanently deletes their trips and price history on this device.',
     })
     if (ok) deleteProfile.mutate(id)
   }
@@ -96,6 +100,7 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
           profiles?.map((p) => (
             <div
               key={p.id}
+              data-theme={themeOf(p.theme)}
               className="card elev-sm relative w-[150px] cursor-pointer items-center px-3.5 py-5.5 text-center transition-transform hover:-translate-y-0.5 hover:shadow-md"
               onClick={() => onSelect(p.id)}
             >

@@ -36,25 +36,27 @@ public class ExportEndpointsTests : IDisposable
         using var stream = new MemoryStream(bytes);
         using var workbook = new XLWorkbook(stream);
 
-        // Lists and trips are one thing now, so one sheet carries both.
+        // A trip is both the plan and the log, so one sheet carries both.
         workbook.Worksheets.Select(w => w.Name).Should().BeEquivalentTo(["Profiles", "Trips"]);
 
         var profilesSheet = workbook.Worksheet("Profiles");
         profilesSheet.Cell(2, 1).GetString().Should().Be("Export Tester");
 
-        // Columns: Profile, Date, Trip, Trip Stores, Budget, Item, Category, Store, Picked Up, Price
+        // Columns: Profile, Date, Trip, Trip Stores, Budget, Status, Item, Category, Store,
+        // Picked Up, Estimate, Price
         var tripsSheet = workbook.Worksheet("Trips");
         var rows = tripsSheet.RowsUsed().Skip(1).ToList();
 
-        var bought = rows.Single(r => r.Cell(6).GetString() == "Whole Milk");
-        bought.Cell(9).GetBoolean().Should().BeTrue();
-        bought.Cell(10).GetDouble().Should().Be(3.49);
+        var bought = rows.Single(r => r.Cell(7).GetString() == "Whole Milk");
+        bought.Cell(10).GetBoolean().Should().BeTrue();
+        bought.Cell(12).GetDouble().Should().Be(3.49);
 
         // The planned item lands in the same sheet, unticked and with no price.
-        var planned = rows.Single(r => r.Cell(6).GetString() == "Bananas");
+        var planned = rows.Single(r => r.Cell(7).GetString() == "Bananas");
         planned.Cell(3).GetString().Should().Be("Weekly stock-up");
-        planned.Cell(9).GetBoolean().Should().BeFalse();
-        planned.Cell(10).IsEmpty().Should().BeTrue();
+        planned.Cell(6).GetString().Should().Be("Planned");
+        planned.Cell(10).GetBoolean().Should().BeFalse();
+        planned.Cell(12).IsEmpty().Should().BeTrue();
     }
 
     [Fact]
@@ -66,7 +68,7 @@ public class ExportEndpointsTests : IDisposable
         var bytes = await response.Content.ReadAsByteArrayAsync();
         using var stream = new MemoryStream(bytes);
         using var workbook = new XLWorkbook(stream);
-        // Lists and trips are one thing now, so one sheet carries both.
+        // A trip is both the plan and the log, so one sheet carries both.
         workbook.Worksheets.Select(w => w.Name).Should().BeEquivalentTo(["Profiles", "Trips"]);
     }
 }

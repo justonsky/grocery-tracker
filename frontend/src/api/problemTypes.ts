@@ -4,12 +4,12 @@
 export const ProblemTypes = {
   ProfileNotFound: '/errors/profile-not-found',
   TripNotFound: '/errors/trip-not-found',
-  ListNotFound: '/errors/list-not-found',
   ItemNotFound: '/errors/item-not-found',
   CategoryNotFound: '/errors/category-not-found',
   CategoryNameConflict: '/errors/category-name-conflict',
   CategoryBuiltIn: '/errors/category-built-in',
   CrossProfile: '/errors/cross-profile',
+  PriceLocked: '/errors/price-locked',
   Validation: '/errors/validation',
   DbUpdate: '/errors/db-update',
   Unexpected: '/errors/unexpected',

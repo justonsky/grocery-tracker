@@ -71,7 +71,8 @@ export const api = {
     // Idempotent create-or-rename at a caller-supplied id — what the offline
     // outbox targets, so a create can be composed while offline and safely
     // replayed. `.create` (POST) is unchanged and still server-assigns an id.
-    upsert: (id: string, name: string) => put<Profile>(`/profiles/${id}`, { name }),
+    // A null/omitted theme keeps the profile's current one.
+    upsert: (id: string, name: string, theme?: string | null) => put<Profile>(`/profiles/${id}`, { name, theme: theme ?? null }),
     delete: (id: string) => del(`/profiles/${id}`),
   },
 

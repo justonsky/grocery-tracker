@@ -22,10 +22,10 @@ const queryClient = new QueryClient({
 // Bump this when the shape of anything in the persisted cache changes, so a
 // stale/incompatible cache from an older build is discarded on load instead
 // of crashing a screen that expects a field the old cache doesn't have.
-const CACHE_BUSTER = 'v2-offline-outbox'
+const CACHE_BUSTER = 'v3-trip-status-estimates'
 
-// Persists the query cache to localStorage so the last-fetched dashboard/trip/
-// list data still renders (visibly stale) if the local server drops off
+// Persists the query cache to localStorage so the last-fetched dashboard/trip
+// data still renders (visibly stale) if the local server drops off
 // mid-session — this app is local-first relative to one shared server, not a
 // per-device offline copy, so this is what "offline" resilience looks like here.
 // maxAge is 30 days, not 24h: a user away for a couple of days must not come

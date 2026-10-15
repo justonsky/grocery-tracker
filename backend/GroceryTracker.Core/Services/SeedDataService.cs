@@ -98,12 +98,22 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
             {
                 if (seedTrip.Items.Count == 0) continue;
 
+                // Seeded history was bought on the trip's date, not today, so its
+                // prices (and completion) are stamped then — and come in already locked.
+                var shoppedAt = DateTimeOffset.TryParse($"{seedTrip.Date}T12:00:00Z", out var parsed) ? parsed : now;
+                var settled = seedTrip.Items.Count(i => i.Checked || i.Price is not null);
+                var status = settled == 0 ? TripStatus.Planned
+                    : settled == seedTrip.Items.Count ? TripStatus.Done
+                    : TripStatus.Shopping;
+
                 var trip = new Trip
                 {
                     Id = Guid.NewGuid(), ProfileId = profile.Id,
                     Name = string.IsNullOrWhiteSpace(seedTrip.Name) ? null : seedTrip.Name!.Trim(),
                     Date = seedTrip.Date,
                     BudgetCents = ToCents(seedTrip.Budget),
+                    Status = status,
+                    CompletedAt = status == TripStatus.Done ? shoppedAt : null,
                     // Ordering trips logged on the same day follows insertion order.
                     CreatedAt = now.AddMilliseconds(trips),
                 };
@@ -126,6 +136,7 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
                 foreach (var line in seedTrip.Items)
                 {
                     var categoryId = CategoryId(line.Category);
+                    var priceCents = ToCents(line.Price);
                     db.TripItems.Add(new TripItem
                     {
                         Id = Guid.NewGuid(), TripId = trip.Id,
@@ -133,7 +144,8 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
                         CategoryId = categoryId,
                         StoreId = string.IsNullOrWhiteSpace(line.Store) ? null : ResolveStore(line.Store!).Id,
                         Checked = line.Checked,
-                        PriceCents = ToCents(line.Price),
+                        PriceCents = priceCents,
+                        PricedAt = priceCents is null ? null : shoppedAt,
                         SortOrder = order++,
                     });
                     lines++;

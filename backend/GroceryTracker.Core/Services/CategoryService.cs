@@ -37,7 +37,7 @@ public class CategoryService(GroceryTrackerDbContext db)
         return new CategoryDto(category.Id, category.Name, category.IsBuiltIn, category.SortOrder);
     }
 
-    // Never cascades a delete of purchase/list history: any TripItem/ListItem/Item
+    // Never cascades a delete of purchase history: any TripItem/Item
     // still referencing this category is reassigned to the built-in "Other" category first.
     public async Task<CategoryDeleteResult> DeleteAsync(Guid id, CancellationToken ct = default)
     {

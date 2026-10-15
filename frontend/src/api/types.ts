@@ -7,6 +7,8 @@ export interface Profile {
   name: string
   createdAt: string
   tripCount: number
+  // Color theme id (see app/themes.ts); unknown ids fall back to the default.
+  theme: string
 }
 
 export interface Category {
@@ -25,10 +27,15 @@ export interface Item {
   id: string
   name: string
   defaultCategoryId: string | null
-  // Most recently paid price, or null when never purchased. Backs the grocery
-  // list editor's estimated-cost summary.
+  // Most recently paid and mean paid price; both null when never purchased.
+  // averagePrice backs the trip editor's "fill estimates" button.
   lastPrice: number | null
+  averagePrice: number | null
 }
+
+// planned: a shopping list, nothing bought yet. shopping: in the store.
+// done: the shop is over and the trip is history.
+export type TripStatus = 'planned' | 'shopping' | 'done'
 
 export interface TripItemLine {
   id: string
@@ -42,14 +49,24 @@ export interface TripItemLine {
   checked: boolean
   // null until the item is actually bought — a planned item has no price yet.
   price: number | null
+  // What the shopper expects to pay; null = no estimate.
+  estimate: number | null
+  // When the line becomes read-only (7 days after its price was first entered);
+  // null while there is no price. priceLocked is the server's verdict right now.
+  priceLocksAt: string | null
+  priceLocked: boolean
 }
 
 export interface TripItemInput {
+  // The existing line's id when editing; null/absent for a new line. Lets the
+  // server tell an edited line from a removed-and-re-added one.
+  id?: string | null
   itemName: string
   categoryId: string
   storeName: string | null
   checked: boolean
   price: number | null
+  estimate?: number | null
 }
 
 export interface Trip {
@@ -61,6 +78,12 @@ export interface Trip {
   stores: string[]
   items: TripItemLine[]
   total: number
+  status: TripStatus
+  completedAt: string | null
+  estimatedTotal: number
+  // Estimate minus price over lines that have both; positive = under estimate.
+  // null when no line has both.
+  savings: number | null
 }
 
 export interface TripInput {
@@ -69,6 +92,8 @@ export interface TripInput {
   budget: number | null
   stores: string[]
   items: TripItemInput[]
+  // Omitted keeps the trip's current status.
+  status?: TripStatus
 }
 
 export interface TripSummary {
@@ -80,6 +105,9 @@ export interface TripSummary {
   checkedCount: number
   total: number
   budget: number | null
+  status: TripStatus
+  estimatedTotal: number
+  savings: number | null
 }
 
 export interface TripLine {

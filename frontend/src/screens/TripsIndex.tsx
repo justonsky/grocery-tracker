@@ -1,13 +1,33 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import type { TripSummary } from '../api/types'
+import type { TripStatus, TripSummary } from '../api/types'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
 import { performOrQueue } from '../offline/performOrQueue'
 import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 
 const money = (n: number) => `$${n.toFixed(2)}`
+const STATUS_TAG: Record<TripStatus, string> = { planned: 'Planned', shopping: 'Shopping', done: 'Done' }
+
+// What's worth knowing at a glance depends on the stage: a plan's estimate,
+// progress through a shop, or how a finished trip compared with its estimate.
+function describe(trip: TripSummary): string {
+  const parts = [
+    `${trip.stores.length} ${trip.stores.length === 1 ? 'store' : 'stores'}`,
+    `${trip.itemCount} ${trip.itemCount === 1 ? 'item' : 'items'}`,
+  ]
+  if (trip.status === 'planned') {
+    if (trip.estimatedTotal > 0) parts.push(`est. ${money(trip.estimatedTotal)}`)
+  } else {
+    parts.push(money(trip.total))
+    if (trip.status === 'shopping') parts.push(`${trip.checkedCount}/${trip.itemCount} picked up`)
+    if (trip.savings != null && trip.savings !== 0) {
+      parts.push(trip.savings > 0 ? `${money(trip.savings)} under estimate` : `${money(-trip.savings)} over estimate`)
+    }
+  }
+  return parts.join(' · ')
+}
 
 export function TripsIndex({ profileId }: { profileId: string }) {
   const navigate = useNavigate()
@@ -65,28 +85,23 @@ export function TripsIndex({ profileId }: { profileId: string }) {
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="m-0">Trips</h3>
         <button type="button" className="btn btn-primary" onClick={() => navigate('/trips/new')}>
-          + New trip
+          + New list
         </button>
       </div>
 
       {trips?.length === 0 && (
         <div className="card elev-sm items-center gap-2.5 px-8 py-8 text-center">
-          <p className="m-0 mb-2.5 text-text/70">No trips yet.</p>
+          <p className="m-0 mb-2.5 text-text/70">No trips yet. Start with a shopping list, or log a shop you've already done.</p>
           <button type="button" className="btn btn-primary" onClick={() => navigate('/trips/new')}>
-            Log your first trip
+            Start a shopping list
           </button>
         </div>
       )}
 
       <div className="grid gap-3">
         {trips?.map((trip) => {
-          // A trip written ahead of time has nothing ticked off yet.
           const label = trip.name || trip.date
-          const summary = [
-            `${trip.stores.length} ${trip.stores.length === 1 ? 'store' : 'stores'}`,
-            `${trip.itemCount} ${trip.itemCount === 1 ? 'item' : 'items'}`,
-            money(trip.total),
-          ].join(' · ')
+          const summary = describe(trip)
           return (
             <Link
               to={`/trips/${trip.id}`}
@@ -96,15 +111,28 @@ export function TripsIndex({ profileId }: { profileId: string }) {
               <div>
                 <div className="card-title flex items-center gap-1.5 text-[15px]">
                   {label}
-                  {trip.checkedCount < trip.itemCount && <span className="tag tag-outline text-[10px]">Planned</span>}
+                  <span className={`tag text-[10px] ${trip.status === 'done' ? 'tag-neutral' : 'tag-outline'}`}>
+                    {STATUS_TAG[trip.status]}
+                  </span>
                   {pendingTripIds.has(trip.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
                 </div>
                 <div className="card-meta">
                   {/* An unnamed trip already shows its date as the title. */}
                   {trip.name ? `${trip.date} · ${summary}` : summary}
-                  {trip.checkedCount < trip.itemCount && ` · ${trip.checkedCount}/${trip.itemCount} picked up`}
                 </div>
               </div>
+              <button
+                type="button"
+                aria-label="Shop again from this trip"
+                title="Shop again — new list with these items"
+                className="btn btn-ghost btn-icon ml-auto"
+                onClick={(e) => {
+                  e.preventDefault()
+                  navigate(`/trips/new?from=${trip.id}`)
+                }}
+              >
+                ↻
+              </button>
               <button
                 type="button"
                 aria-label="Delete trip"

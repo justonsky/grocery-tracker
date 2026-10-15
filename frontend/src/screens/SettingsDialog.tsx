@@ -2,15 +2,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
-import type { Category } from '../api/types'
+import type { Category, Profile } from '../api/types'
 import { Dialog } from '../components/ui/Dialog'
 import { useToast } from '../components/ui/ToastProvider'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { timeAgo } from '../offline/timeAgo'
 import { useConnectivity } from '../app/ConnectivityProvider'
 import { useSync } from '../app/SyncProvider'
+import { THEMES, themeOf } from '../app/themes'
 
-export function SettingsDialog() {
+export function SettingsDialog({ profileId }: { profileId: string }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -18,6 +19,8 @@ export function SettingsDialog() {
 
   const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: api.settings.get })
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
+  const { data: profiles } = useQuery({ queryKey: ['profiles'], queryFn: api.profiles.list })
+  const profile = profiles?.find((p) => p.id === profileId)
   const { status } = useConnectivity()
   const { lastSyncAt, pendingCount } = useSync()
   const canExport = status === 'online'
@@ -30,6 +33,32 @@ export function SettingsDialog() {
   const setTheme = useMutation({
     mutationFn: (themeMode: 'system' | 'light' | 'dark') => api.settings.update({ themeMode }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings'] }),
+  })
+
+  // Unlike light/dark, the color theme belongs to the profile, so it goes
+  // through the outbox like any other profile edit and applies immediately.
+  const setProfileTheme = useMutation({
+    networkMode: 'always',
+    mutationFn: (theme: string) => {
+      const name = profile!.name
+      queryClient.setQueryData<Profile[]>(['profiles'], (old) => old?.map((p) => (p.id === profileId ? { ...p, theme } : p)))
+      return performOrQueue(() => api.profiles.upsert(profileId, name, theme), {
+        entity: 'profile',
+        action: 'put',
+        entityId: profileId,
+        profileId: null,
+        isCreate: false,
+        payload: { name, theme },
+        label: `Theme for "${name}"`,
+      })
+    },
+    onSuccess: (outcome) => {
+      if (outcome.sent) queryClient.invalidateQueries({ queryKey: ['profiles'] })
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      toast('error', "Couldn't change the theme.")
+    },
   })
 
   const addCategory = useMutation({
@@ -54,7 +83,7 @@ export function SettingsDialog() {
       if (outcome.sent) {
         queryClient.invalidateQueries({ queryKey: ['categories'] })
       } else {
-        // Splice it in locally so it's selectable in trip/list editors right
+        // Splice it in locally so it's selectable in the trip editor right
         // away — skip invalidate, which would otherwise refetch the old list
         // and wipe this back out before the create has actually synced.
         queryClient.setQueryData<Category[]>(['categories'], (old) => [
@@ -106,6 +135,35 @@ export function SettingsDialog() {
           ))}
         </div>
       </div>
+
+      {profile && (
+        <div className="field">
+          <label>Color theme for {profile.name}</label>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-1.5" role="radiogroup" aria-label="Color theme">
+            {THEMES.map((t) => {
+              const selected = themeOf(profile.theme) === t.id
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  data-theme={t.id}
+                  onClick={() => !selected && setProfileTheme.mutate(t.id)}
+                  className={`flex cursor-pointer items-center gap-2 rounded-md border bg-surface px-2 py-1.5 text-left text-xs text-text ${
+                    selected ? 'border-accent shadow-[inset_0_0_0_1px_var(--color-accent)]' : 'border-divider hover:border-text/45'
+                  }`}
+                >
+                  <span className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full bg-accent">
+                    <span className="absolute inset-y-0 right-0 w-1/2 bg-accent-2" />
+                  </span>
+                  {t.name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="field">
         <label>Categories</label>

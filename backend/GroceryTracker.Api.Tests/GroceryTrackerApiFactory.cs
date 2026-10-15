@@ -12,6 +12,9 @@ public class GroceryTrackerApiFactory(DateTimeOffset? fixedNow = null) : WebAppl
     private readonly string _dataDirectory =
         Path.Combine(Path.GetTempPath(), "grocery-tracker-tests", Guid.NewGuid().ToString("N"));
 
+    // Only set when constructed with fixedNow; tests move it forward with Advance.
+    public FakeClock? Clock { get; } = fixedNow is { } start ? new FakeClock(start) : null;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         Directory.CreateDirectory(_dataDirectory);
@@ -19,12 +22,11 @@ public class GroceryTrackerApiFactory(DateTimeOffset? fixedNow = null) : WebAppl
         // Tests build their own fixtures; the shipped seed data would skew every assertion.
         builder.UseSetting("SeedData:Enabled", "false");
 
-        if (fixedNow is { } now)
+        if (Clock is { } clock)
         {
             // Registered after Program.cs's own AddSingleton<IClock, SystemClock>() runs,
             // so this later registration wins when IClock is resolved.
-            builder.ConfigureServices(services =>
-                services.AddSingleton<IClock>(new FakeClock(now)));
+            builder.ConfigureServices(services => services.AddSingleton<IClock>(clock));
         }
     }
 
@@ -40,5 +42,7 @@ public class GroceryTrackerApiFactory(DateTimeOffset? fixedNow = null) : WebAppl
 
 public class FakeClock(DateTimeOffset now) : IClock
 {
-    public DateTimeOffset UtcNow => now;
+    public DateTimeOffset UtcNow { get; private set; } = now;
+
+    public void Advance(TimeSpan by) => UtcNow += by;
 }
