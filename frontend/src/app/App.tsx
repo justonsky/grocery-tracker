@@ -10,6 +10,7 @@ import { TripEditor } from '../screens/TripEditor'
 import { ItemDetail } from '../screens/ItemDetail'
 import { SettingsDialog } from '../screens/SettingsDialog'
 import { AppShell } from './AppShell'
+import { WrongServerBanner } from './WrongServerBanner'
 import { useCurrentProfileId } from './useCurrentProfileId'
 
 function AppContent() {
@@ -57,6 +58,7 @@ function AppContent() {
 export default function App() {
   return (
     <ConfirmProvider>
+      <WrongServerBanner />
       <AppContent />
     </ConfirmProvider>
   )

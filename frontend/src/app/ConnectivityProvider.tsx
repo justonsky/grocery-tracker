@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { onlineManager } from '@tanstack/react-query'
+import { onlineManager, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 
 export type ConnectivityStatus = 'checking' | 'online' | 'offline' | 'wrong-server'
@@ -9,6 +9,9 @@ interface ConnectivityContextValue {
   lastCheckedAt: number | null
   serverInstanceId: string | null
   checkNow: () => void
+  // Accepts the server currently answering as this device's home server — for
+  // when it was reset or reinstalled (a fresh database gets a new instance id).
+  adoptCurrentServer: () => Promise<void>
 }
 
 const ConnectivityContext = createContext<ConnectivityContextValue | null>(null)
@@ -167,7 +170,19 @@ export function ConnectivityProvider({ children }: { children: ReactNode }) {
     void probeRef.current()
   }, [])
 
-  return <ConnectivityContext.Provider value={{ ...state, checkNow }}>{children}</ConnectivityContext.Provider>
+  const queryClient = useQueryClient()
+  const adoptCurrentServer = useCallback(async () => {
+    if (!state.serverInstanceId) return
+    localStorage.setItem(KNOWN_SERVER_KEY, state.serverInstanceId)
+    await probeRef.current()
+    // Everything cached came from the old server's database; drop it and
+    // refetch from this one.
+    await queryClient.resetQueries()
+  }, [state.serverInstanceId, queryClient])
+
+  return (
+    <ConnectivityContext.Provider value={{ ...state, checkNow, adoptCurrentServer }}>{children}</ConnectivityContext.Provider>
+  )
 }
 
 export function useConnectivity() {
