@@ -96,8 +96,10 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   })
   // Full item/store lists back native <datalist> autocomplete below — small
   // enough per profile that fetching once beats debouncing per keystroke.
-  const { data: itemSuggestions } = useQuery({ queryKey: ['items', profileId], queryFn: () => api.items(profileId).search() })
-  const { data: storeSuggestions } = useQuery({ queryKey: ['stores', profileId], queryFn: () => api.stores(profileId).search() })
+  // Household-wide, so these (and the averages behind "fill estimates") include
+  // what every profile has bought.
+  const { data: itemSuggestions } = useQuery({ queryKey: ['items'], queryFn: () => api.items.search() })
+  const { data: storeSuggestions } = useQuery({ queryKey: ['stores'], queryFn: () => api.stores.search() })
 
   const [name, setName] = useState('')
   const [date, setDate] = useState(todayIso())
@@ -192,8 +194,9 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     onSuccess: (outcome, { status: nextStatus, leave }) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
       queryClient.invalidateQueries({ queryKey: ['trips', profileId] })
-      queryClient.invalidateQueries({ queryKey: ['items', profileId] })
-      queryClient.invalidateQueries({ queryKey: ['stores', profileId] })
+      queryClient.invalidateQueries({ queryKey: ['items'] })
+      queryClient.invalidateQueries({ queryKey: ['stores'] })
+      queryClient.invalidateQueries({ queryKey: ['item-history'] })
       setPersisted(true)
       setStatus(nextStatus)
 
@@ -485,7 +488,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
 
         <div className="grid gap-2.5">
           <div className="hidden grid-cols-[auto_1.5fr_1fr_1fr_0.8fr_0.8fr_auto] gap-2 text-[11px] tracking-wide text-text/60 uppercase sm:grid">
-            <span className="w-4.5" />
+            <span className="w-6" />
             <span>Item</span>
             <span>Category</span>
             <span>Store</span>
@@ -510,7 +513,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
                   checked={item.checked}
                   disabled={item.locked}
                   onChange={(e) => updateItem(item.key, { checked: e.target.checked })}
-                  className={`accent-accent ${status === 'shopping' ? 'h-6 w-6' : 'h-4.5 w-4.5'}`}
+                  className="h-6 w-6 shrink-0 accent-accent"
                 />
                 <input
                   className={`input col-span-2 sm:col-span-1 ${item.checked && status !== 'planned' ? 'text-text/60 line-through' : ''}`}
@@ -578,7 +581,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
                   inputMode="decimal"
                   placeholder={average != null ? `avg ${average.toFixed(2)}` : 'Estimate'}
                   aria-label="Estimate"
-                  title={average != null ? `You've paid ${money(average)} on average` : 'No price history for this item yet'}
+                  title={average != null ? `Household average: ${money(average)}` : 'No price history for this item yet'}
                   value={item.estimate}
                   disabled={item.locked}
                   onChange={(e) => updateItem(item.key, { estimate: e.target.value })}

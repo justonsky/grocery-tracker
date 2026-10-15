@@ -151,14 +151,11 @@ namespace GroceryTracker.Core.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DefaultCategoryId");
 
-                    b.HasIndex("ProfileId", "NormalizedName")
+                    b.HasIndex("NormalizedName")
                         .IsUnique();
 
                     b.ToTable("Items");
@@ -204,12 +201,9 @@ namespace GroceryTracker.Core.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ProfileId")
-                        .HasColumnType("TEXT");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ProfileId", "NormalizedName")
+                    b.HasIndex("NormalizedName")
                         .IsUnique();
 
                     b.ToTable("Stores");
@@ -325,26 +319,7 @@ namespace GroceryTracker.Core.Migrations
                         .HasForeignKey("DefaultCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("GroceryTracker.Core.Entities.Profile", "Profile")
-                        .WithMany("Items")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("DefaultCategory");
-
-                    b.Navigation("Profile");
-                });
-
-            modelBuilder.Entity("GroceryTracker.Core.Entities.Store", b =>
-                {
-                    b.HasOne("GroceryTracker.Core.Entities.Profile", "Profile")
-                        .WithMany("Stores")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Trip", b =>
@@ -405,10 +380,6 @@ namespace GroceryTracker.Core.Migrations
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Profile", b =>
                 {
-                    b.Navigation("Items");
-
-                    b.Navigation("Stores");
-
                     b.Navigation("Trips");
                 });
 

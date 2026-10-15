@@ -127,7 +127,7 @@ public class TripPlanningTests : IDisposable
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
             TestTrips.At("2026-08-01", "Safeway", TestTrips.Bought("Whole Milk", dairyId, 4.25m)));
 
-        var items = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items")).ReadAsAsync<List<ItemDto>>();
+        var items = await (await _client.GetAsync($"/api/v1/items")).ReadAsAsync<List<ItemDto>>();
 
         // Most recent purchase wins, so a trip's estimate reflects today's prices.
         items!.Should().ContainSingle(i => i.Name == "Whole Milk").Which.LastPrice.Should().Be(4.25m);
@@ -143,7 +143,7 @@ public class TripPlanningTests : IDisposable
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
             new TripInput("Planning", "2026-08-05", null, [], [TestTrips.Planned("Saffron", dairyId)]));
 
-        var items = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items")).ReadAsAsync<List<ItemDto>>();
+        var items = await (await _client.GetAsync($"/api/v1/items")).ReadAsAsync<List<ItemDto>>();
         items!.Should().ContainSingle(i => i.Name == "Saffron").Which.LastPrice.Should().BeNull();
     }
 
@@ -181,7 +181,7 @@ public class TripPlanningTests : IDisposable
         var response = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips", input);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var stores = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/stores")).ReadAsAsync<List<StoreDto>>();
+        var stores = await (await _client.GetAsync($"/api/v1/stores")).ReadAsAsync<List<StoreDto>>();
         stores.Should().ContainSingle(s => s.Name.Equals("costco", StringComparison.OrdinalIgnoreCase));
     }
 

@@ -37,8 +37,8 @@ export function AppShell({
   // persisted cache by the time someone goes offline — autocomplete and the
   // editors still work from cache even with no connection.
   useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
-  useQuery({ queryKey: ['items', profileId], queryFn: () => api.items(profileId).search() })
-  useQuery({ queryKey: ['stores', profileId], queryFn: () => api.stores(profileId).search() })
+  useQuery({ queryKey: ['items'], queryFn: () => api.items.search() })
+  useQuery({ queryKey: ['stores'], queryFn: () => api.stores.search() })
 
   const toggleTheme = async () => {
     const isDark = document.documentElement.classList.contains('dark')

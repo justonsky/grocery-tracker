@@ -106,7 +106,7 @@ public class TripBudgetingTests : IDisposable
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
             new TripInput("Plan", "2026-08-05", null, [], [TestTrips.Planned("Saffron", dairyId)]));
 
-        var items = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items")).ReadAsAsync<List<ItemDto>>();
+        var items = await (await _client.GetAsync($"/api/v1/items")).ReadAsAsync<List<ItemDto>>();
 
         items!.Single(i => i.Name == "Whole Milk").AveragePrice.Should().Be(3.63m); // 3.625 rounded
         items!.Single(i => i.Name == "Saffron").AveragePrice.Should().BeNull();

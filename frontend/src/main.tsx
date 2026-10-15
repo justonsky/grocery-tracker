@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 // Bump this when the shape of anything in the persisted cache changes, so a
 // stale/incompatible cache from an older build is discarded on load instead
 // of crashing a screen that expects a field the old cache doesn't have.
-const CACHE_BUSTER = 'v3-trip-status-estimates'
+const CACHE_BUSTER = 'v4-shared-catalogue'
 
 // Persists the query cache to localStorage so the last-fetched dashboard/trip
 // data still renders (visibly stale) if the local server drops off

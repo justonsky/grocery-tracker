@@ -56,7 +56,7 @@ public class TripEndpointsTests : IDisposable
         secondTrip!.Items[0].StoreName.Should().Be("Trader Joe's");
         secondTrip.Items[0].ItemId.Should().Be(trip.Items.First(i => i.ItemName == "Whole Milk").ItemId);
 
-        var stores = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/stores")).ReadAsAsync<List<StoreDto>>();
+        var stores = await (await _client.GetAsync($"/api/v1/stores")).ReadAsAsync<List<StoreDto>>();
         stores.Should().ContainSingle(s => s.Name == "Trader Joe's");
     }
 
@@ -82,7 +82,7 @@ public class TripEndpointsTests : IDisposable
         trip!.Items.Should().HaveCount(2);
         trip.Items.Select(i => i.ItemId).Distinct().Should().ContainSingle();
 
-        var items = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items")).ReadAsAsync<List<ItemDto>>();
+        var items = await (await _client.GetAsync($"/api/v1/items")).ReadAsAsync<List<ItemDto>>();
         items.Should().ContainSingle(i => i.Name.Equals("milk", StringComparison.OrdinalIgnoreCase));
     }
 

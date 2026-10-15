@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GroceryTracker.Core.Services;
 
-// "Soft normalization": Store/Item are first-class per-profile lookup tables, but
+// "Soft normalization": Store/Item are first-class household-wide lookup tables, but
 // callers only ever pass free text — this resolves an existing row by
 // case-insensitive name or transparently creates one, so typing a new store/item
 // name anywhere never feels more rigid than the original prototype's plain text fields.
 public class LookupService(GroceryTrackerDbContext db)
 {
-    public async Task<Store> ResolveStoreAsync(Guid profileId, string name, CancellationToken ct = default)
+    public async Task<Store> ResolveStoreAsync(string name, CancellationToken ct = default)
     {
         var trimmed = name.Trim();
         var normalized = NameNormalizer.Normalize(trimmed);
@@ -22,14 +22,13 @@ public class LookupService(GroceryTrackerDbContext db)
         // second then violates the unique index at SaveChangesAsync. `.Local`
         // sees Added-but-unsaved entities, so the second reference resolves
         // to the first instead of trying to create a duplicate.
-        var store = db.Stores.Local.FirstOrDefault(s => s.ProfileId == profileId && s.NormalizedName == normalized)
-            ?? await db.Stores.FirstOrDefaultAsync(s => s.ProfileId == profileId && s.NormalizedName == normalized, ct);
+        var store = db.Stores.Local.FirstOrDefault(s => s.NormalizedName == normalized)
+            ?? await db.Stores.FirstOrDefaultAsync(s => s.NormalizedName == normalized, ct);
         if (store is not null) return store;
 
         var created = new Store
         {
             Id = Guid.NewGuid(),
-            ProfileId = profileId,
             Name = trimmed,
             NormalizedName = normalized,
             CreatedAt = DateTimeOffset.UtcNow,
@@ -38,14 +37,14 @@ public class LookupService(GroceryTrackerDbContext db)
         return created;
     }
 
-    public async Task<Item> ResolveItemAsync(Guid profileId, string name, Guid? defaultCategoryId, CancellationToken ct = default)
+    public async Task<Item> ResolveItemAsync(string name, Guid? defaultCategoryId, CancellationToken ct = default)
     {
         var trimmed = name.Trim();
         var normalized = NameNormalizer.Normalize(trimmed);
 
         // See ResolveStoreAsync — same same-payload-duplicate-name fix.
-        var item = db.Items.Local.FirstOrDefault(i => i.ProfileId == profileId && i.NormalizedName == normalized)
-            ?? await db.Items.FirstOrDefaultAsync(i => i.ProfileId == profileId && i.NormalizedName == normalized, ct);
+        var item = db.Items.Local.FirstOrDefault(i => i.NormalizedName == normalized)
+            ?? await db.Items.FirstOrDefaultAsync(i => i.NormalizedName == normalized, ct);
         if (item is not null)
         {
             // Remember the most recently used category for this item name, for autocomplete UX.
@@ -59,7 +58,6 @@ public class LookupService(GroceryTrackerDbContext db)
         var created = new Item
         {
             Id = Guid.NewGuid(),
-            ProfileId = profileId,
             Name = trimmed,
             NormalizedName = normalized,
             DefaultCategoryId = defaultCategoryId,
@@ -69,9 +67,9 @@ public class LookupService(GroceryTrackerDbContext db)
         return created;
     }
 
-    public async Task<List<StoreDto>> SearchStoresAsync(Guid profileId, string? search, CancellationToken ct = default)
+    public async Task<List<StoreDto>> SearchStoresAsync(string? search, CancellationToken ct = default)
     {
-        var query = db.Stores.Where(s => s.ProfileId == profileId);
+        IQueryable<Store> query = db.Stores;
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalized = NameNormalizer.Normalize(search);
@@ -82,9 +80,9 @@ public class LookupService(GroceryTrackerDbContext db)
             .ToListAsync(ct);
     }
 
-    public async Task<List<ItemDto>> SearchItemsAsync(Guid profileId, string? search, CancellationToken ct = default)
+    public async Task<List<ItemDto>> SearchItemsAsync(string? search, CancellationToken ct = default)
     {
-        var query = db.Items.Where(i => i.ProfileId == profileId);
+        IQueryable<Item> query = db.Items;
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalized = NameNormalizer.Normalize(search);
@@ -94,11 +92,11 @@ public class LookupService(GroceryTrackerDbContext db)
             .Select(i => new { i.Id, i.Name, i.DefaultCategoryId })
             .ToListAsync(ct);
 
-        // Last and average paid price per item, so the trip editor can estimate a
-        // trip's cost without a round trip per row. Trip.Date is an ISO yyyy-MM-dd
-        // string, so ordinal string ordering is chronological.
+        // Last and average paid price per item across the whole household, so the
+        // trip editor can estimate a trip's cost without a round trip per row.
+        // Trip.Date is an ISO yyyy-MM-dd string, so ordinal ordering is chronological.
         var prices = (await db.TripItems
-                .Where(ti => ti.Trip!.ProfileId == profileId && ti.PriceCents != null && ti.PriceCents > 0)
+                .Where(ti => ti.PriceCents != null && ti.PriceCents > 0)
                 .Select(ti => new { ti.ItemId, ti.PriceCents, Date = ti.Trip!.Date, ti.Trip!.CreatedAt })
                 .ToListAsync(ct))
             .GroupBy(ti => ti.ItemId)

@@ -88,16 +88,15 @@ export const api = {
     update: (patch: Partial<Settings>) => put<Settings>('/settings', patch),
   },
 
-  stores: (profileId: string) => ({
-    search: (search?: string) =>
-      get<Store[]>(`/profiles/${profileId}/stores${search ? `?search=${encodeURIComponent(search)}` : ''}`),
-  }),
+  // Household-wide catalogue, shared by every profile — not under /profiles.
+  stores: {
+    search: (search?: string) => get<Store[]>(`/stores${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  },
 
-  items: (profileId: string) => ({
-    search: (search?: string) =>
-      get<Item[]>(`/profiles/${profileId}/items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
-    history: (itemId: string) => get<ItemHistory>(`/profiles/${profileId}/items/${itemId}/history`),
-  }),
+  items: {
+    search: (search?: string) => get<Item[]>(`/items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+    history: (itemId: string) => get<ItemHistory>(`/items/${itemId}/history`),
+  },
 
   dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),
 

@@ -31,7 +31,7 @@ public class ItemHistoryEndpointsTests : IDisposable
         await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
             TestTrips.At("2026-08-01", "Costco", TestTrips.Bought("Whole Milk", categoryId, 2.50m)));
 
-        var history = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/items/{itemId}/history"))
+        var history = await (await _client.GetAsync($"/api/v1/items/{itemId}/history"))
             .ReadAsAsync<ItemHistoryDto>();
 
         history!.Current.Should().Be(2.50m);
@@ -50,7 +50,7 @@ public class ItemHistoryEndpointsTests : IDisposable
         var profileId = (await (await _client.PostJsonAsync("/api/v1/profiles", new CreateProfileRequest("No Item")))
             .ReadAsAsync<ProfileDto>())!.Id;
 
-        var response = await _client.GetAsync($"/api/v1/profiles/{profileId}/items/{Guid.NewGuid()}/history");
+        var response = await _client.GetAsync($"/api/v1/items/{Guid.NewGuid()}/history");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

@@ -268,11 +268,11 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
                 continue;
             }
 
-            var item = await lookup.ResolveItemAsync(profileId, itemInput.ItemName, itemInput.CategoryId, ct);
+            var item = await lookup.ResolveItemAsync(itemInput.ItemName, itemInput.CategoryId, ct);
             Store? store = null;
             if (!string.IsNullOrWhiteSpace(itemInput.StoreName))
             {
-                store = await lookup.ResolveStoreAsync(profileId, itemInput.StoreName, ct);
+                store = await lookup.ResolveStoreAsync(itemInput.StoreName, ct);
             }
 
             if (line is null)

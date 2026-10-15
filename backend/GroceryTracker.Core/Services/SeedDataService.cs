@@ -46,53 +46,49 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
         var trips = 0;
         var lines = 0;
 
+        // Household-wide lookup tables, shared by every seeded profile and resolved
+        // once up front rather than per row.
+        var stores = new Dictionary<string, Store>(StringComparer.Ordinal);
+        var items = new Dictionary<string, Item>(StringComparer.Ordinal);
+
+        Store ResolveStore(string name)
+        {
+            var normalized = NameNormalizer.Normalize(name);
+            if (stores.TryGetValue(normalized, out var existing)) return existing;
+            var created = new Store { Id = Guid.NewGuid(), Name = name.Trim(), NormalizedName = normalized, CreatedAt = now };
+            stores[normalized] = created;
+            db.Stores.Add(created);
+            return created;
+        }
+
+        Item ResolveItem(string name, Guid categoryId)
+        {
+            var normalized = NameNormalizer.Normalize(name);
+            if (items.TryGetValue(normalized, out var existing))
+            {
+                // Mirrors LookupService: remember the most recently used category.
+                existing.DefaultCategoryId = categoryId;
+                return existing;
+            }
+            var created = new Item
+            {
+                Id = Guid.NewGuid(), Name = name.Trim(), NormalizedName = normalized,
+                DefaultCategoryId = categoryId, CreatedAt = now,
+            };
+            items[normalized] = created;
+            db.Items.Add(created);
+            return created;
+        }
+
+        Guid CategoryId(string? name) =>
+            name is not null && categoriesByName.TryGetValue(NameNormalizer.Normalize(name), out var id)
+                ? id
+                : fallbackCategoryId;
+
         foreach (var seedProfile in seed.Profiles)
         {
             var profile = new Profile { Id = Guid.NewGuid(), Name = seedProfile.Name, CreatedAt = now };
             db.Profiles.Add(profile);
-
-            // Per-profile lookup tables, resolved once up front rather than per row.
-            var stores = new Dictionary<string, Store>(StringComparer.Ordinal);
-            var items = new Dictionary<string, Item>(StringComparer.Ordinal);
-
-            Store ResolveStore(string name)
-            {
-                var normalized = NameNormalizer.Normalize(name);
-                if (stores.TryGetValue(normalized, out var existing)) return existing;
-                var created = new Store
-                {
-                    Id = Guid.NewGuid(), ProfileId = profile.Id,
-                    Name = name.Trim(), NormalizedName = normalized, CreatedAt = now,
-                };
-                stores[normalized] = created;
-                db.Stores.Add(created);
-                return created;
-            }
-
-            Item ResolveItem(string name, Guid categoryId)
-            {
-                var normalized = NameNormalizer.Normalize(name);
-                if (items.TryGetValue(normalized, out var existing))
-                {
-                    // Mirrors LookupService: remember the most recently used category.
-                    existing.DefaultCategoryId = categoryId;
-                    return existing;
-                }
-                var created = new Item
-                {
-                    Id = Guid.NewGuid(), ProfileId = profile.Id,
-                    Name = name.Trim(), NormalizedName = normalized,
-                    DefaultCategoryId = categoryId, CreatedAt = now,
-                };
-                items[normalized] = created;
-                db.Items.Add(created);
-                return created;
-            }
-
-            Guid CategoryId(string? name) =>
-                name is not null && categoriesByName.TryGetValue(NameNormalizer.Normalize(name), out var id)
-                    ? id
-                    : fallbackCategoryId;
 
             foreach (var seedTrip in seedProfile.Trips)
             {
@@ -129,7 +125,7 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
                         Id = Guid.NewGuid(), TripId = trip.Id,
                         Name = storeName.Trim(), SortOrder = storeOrder++,
                     });
-                    ResolveStore(storeName); // keep the profile-wide store lookup populated
+                    ResolveStore(storeName); // keep the household store lookup populated
                 }
 
                 var order = 0;

@@ -6,16 +6,17 @@ namespace GroceryTracker.Core.Services;
 
 public class ItemHistoryService(GroceryTrackerDbContext db)
 {
-    public async Task<ItemHistoryDto?> GetAsync(Guid profileId, Guid itemId, CancellationToken ct = default)
+    // Household-wide: every profile's purchases of the item, so the averages here
+    // match the ones the trip editor fills estimates from.
+    public async Task<ItemHistoryDto?> GetAsync(Guid itemId, CancellationToken ct = default)
     {
-        var item = await db.Items.FirstOrDefaultAsync(i => i.Id == itemId && i.ProfileId == profileId, ct);
+        var item = await db.Items.FirstOrDefaultAsync(i => i.Id == itemId, ct);
         if (item is null) return null;
 
         // Only items that were actually bought have a price and belong in history —
         // a planned item on an upcoming trip is not a data point yet.
         var purchases = (await db.TripItems
-                .Where(ti => ti.ItemId == itemId && ti.Trip!.ProfileId == profileId
-                             && ti.PriceCents != null && ti.PriceCents > 0)
+                .Where(ti => ti.ItemId == itemId && ti.PriceCents != null && ti.PriceCents > 0)
                 .Select(ti => new
                 {
                     ti.PriceCents,

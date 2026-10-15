@@ -34,18 +34,14 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
         {
             e.HasKey(s => s.Id);
             e.Property(s => s.Id).ValueGeneratedNever();
-            e.HasIndex(s => new { s.ProfileId, s.NormalizedName }).IsUnique();
-            e.HasOne(s => s.Profile).WithMany(p => p.Stores)
-                .HasForeignKey(s => s.ProfileId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(s => s.NormalizedName).IsUnique();
         });
 
         modelBuilder.Entity<Item>(e =>
         {
             e.HasKey(i => i.Id);
             e.Property(i => i.Id).ValueGeneratedNever();
-            e.HasIndex(i => new { i.ProfileId, i.NormalizedName }).IsUnique();
-            e.HasOne(i => i.Profile).WithMany(p => p.Items)
-                .HasForeignKey(i => i.ProfileId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(i => i.NormalizedName).IsUnique();
             e.HasOne(i => i.DefaultCategory).WithMany()
                 .HasForeignKey(i => i.DefaultCategoryId).OnDelete(DeleteBehavior.SetNull);
         });
@@ -78,11 +74,8 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             e.HasIndex(ti => ti.ItemId); // powers item price-history queries
             e.HasOne(ti => ti.Trip).WithMany(t => t.Items)
                 .HasForeignKey(ti => ti.TripId).OnDelete(DeleteBehavior.Cascade);
-            // Item is Profile-owned and itself cascades from Profile. Deleting a profile
-            // cascades to both Items and Trips/TripItems in the same statement; SQLite
-            // checks RESTRICT immediately (not deferred to statement end), so Restrict
-            // here would risk a transient FK violation depending on cascade processing
-            // order. Cascade instead — nothing ever deletes an Item independently anyway.
+            // Items are household-wide and nothing ever deletes one, so this cascade
+            // never fires in practice; deleting a profile removes its trips, not items.
             e.HasOne(ti => ti.Item).WithMany()
                 .HasForeignKey(ti => ti.ItemId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(ti => ti.Category).WithMany()

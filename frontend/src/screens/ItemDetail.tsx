@@ -28,13 +28,14 @@ function LineChart({ points }: { points: { date: string; price: number }[] }) {
   )
 }
 
-export function ItemDetail({ profileId }: { profileId: string }) {
+// Household-wide: every profile's purchases of this item.
+export function ItemDetail() {
   const { itemId } = useParams()
   const navigate = useNavigate()
 
   const { data: history, isLoading } = useQuery({
-    queryKey: ['item-history', profileId, itemId],
-    queryFn: () => api.items(profileId).history(itemId!),
+    queryKey: ['item-history', itemId],
+    queryFn: () => api.items.history(itemId!),
   })
 
   if (isLoading || !history) {

@@ -37,7 +37,9 @@ public partial class ProfileService(GroceryTrackerDbContext db)
         var profile = await db.Profiles.FindAsync([id], ct);
         if (profile is null) return false;
 
-        db.Profiles.Remove(profile); // cascades Stores/Items/Trips via FK config
+        // Cascades to the profile's trips. Items and stores are household-wide and
+        // stay, along with the price history other profiles built up.
+        db.Profiles.Remove(profile);
         await db.SaveChangesAsync(ct);
         return true;
     }
