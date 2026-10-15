@@ -13,6 +13,7 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
     public DbSet<TripItem> TripItems => Set<TripItem>();
     public DbSet<TripStore> TripStores => Set<TripStore>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
+    public DbSet<TrackedItem> TrackedItems => Set<TrackedItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +85,16 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
                 .HasForeignKey(ti => ti.StoreId).OnDelete(DeleteBehavior.SetNull);
         });
 
+
+        modelBuilder.Entity<TrackedItem>(e =>
+        {
+            e.HasKey(ti => new { ti.ProfileId, ti.ItemId });
+            e.HasOne(ti => ti.Profile).WithMany(p => p.TrackedItems)
+                .HasForeignKey(ti => ti.ProfileId).OnDelete(DeleteBehavior.Cascade);
+            // Deleting an item (Items portal) or merging it away unpins it everywhere.
+            e.HasOne(ti => ti.Item).WithMany()
+                .HasForeignKey(ti => ti.ItemId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<AppSetting>(e =>
         {

@@ -10,9 +10,58 @@ This application is meant to run on a trusted home network and should NOT be exp
 
 Stack: **React + Tailwind** (frontend), **C# / ASP.NET Core + EF Core** (backend),
 **SQLite** (data store). One process serves both the API and the built frontend;
-any device's browser on the same network connects to it. See
-`docs`-equivalent context in the original architecture plan for the reasoning
-behind this deployment model (self-hosted web app rather than native apps).
+any device's browser on the same network connects to it — a self-hosted web app
+(installable as a PWA) rather than native apps.
+
+## Features
+
+- **Profiles** — one per household member, each with its own color theme (21 to
+  choose from, in Settings). Light/dark mode is a household setting.
+- **Shopping lists and trips are one thing.** A trip starts as a list
+  (*Planned*), becomes *Shopping* once you tick something off or enter a price,
+  and is *Done* when you finish it. "Shop again" starts a new list from any past
+  trip. Long lists are grouped by store; while shopping, ticked items collapse
+  into "in the cart".
+- **Estimates and savings** — give each item an estimate (or fill them all from
+  the household's average prices), enter what you actually paid, and see
+  subtotals per store plus estimated savings against your estimate and budget.
+- **Price lock** — a price becomes read-only in the trip editor 7 days after it
+  was entered, so history and averages stop shifting. The Items page can still
+  correct it, with an explicit confirmation.
+- **Shared item catalogue** — items and stores are household-wide; prices,
+  averages and price history combine everyone's purchases. Spend totals stay
+  per profile.
+- **Dashboard** — spend today/this month/this year, the latest trip, and a grid
+  of tracked items: your 8 most recent purchases by default, or your own picks
+  (Edit → add/remove, or reset to automatic).
+- **Item price history** — a chart with date/price axes and hover read-outs,
+  filterable by date range (presets or custom); every statistic recalculates for
+  the range.
+- **Items page** — rename items or change their category, add or delete items,
+  fix their purchase records (price, store, which trip), and merge duplicates
+  ("milk" into "whole milk"), optionally only the records from one store.
+- **Works offline** — see [Offline and sync](#offline-and-sync).
+- **Backup** — download everything as an .xlsx from Settings.
+
+## Offline and sync
+
+Each device keeps a cached copy of what it last saw, so screens still render
+without a connection. Changes made offline (trips, profiles, categories,
+dashboard grids, themes) wait in a queue on the device and are sent, in order,
+once the home server is reachable again — automatically, and retried about
+every 30 seconds while anything is waiting. The sync pill in the header shows
+what's pending or needs attention.
+
+The Items page edits the server directly and is read-only while offline.
+
+Each server has an identity. If a device reaches a server that isn't the one it
+last used — typically because the server was reinstalled or its database
+replaced — a banner asks before anything is loaded from or sent to it: **Use
+this server** adopts it and reloads the device's data.
+
+Known limitation: a trip is saved as a whole, so the last save wins. Editing the
+same trip on two devices (or in the trip editor while fixing its records on the
+Items page) keeps whichever is saved last.
 
 ## Project layout
 
@@ -47,12 +96,21 @@ location with the `DataDirectory` environment variable.
 ### Tests
 
 ```bash
-cd backend && dotnet test
+cd backend && dotnet test               # API integration tests
+cd frontend && npm test && npm run lint # unit tests (offline queue, cost math, autocomplete) + lint
 ```
 
-Run this after every backend change — the integration tests spin up the real
+Run the backend tests after every backend change — they spin up the real
 ASP.NET Core pipeline against a fresh temp SQLite file per test, so they catch
 migration and query-translation issues (not just logic bugs).
+
+### Seed data
+
+A fresh, empty database is filled from
+`backend/GroceryTracker.Api/SeedData/seed-data.json` on first start (the
+household's spreadsheet history; regenerate it with `tools/seed/`). Seeding
+never runs once any profile exists. Turn it off with `SeedData:Enabled=false`,
+or point `SeedData:Path` at another file.
 
 ## Production deployment
 
@@ -115,5 +173,9 @@ to get a copy:
 - **Settings → Download my data (.xlsx)** in the app itself.
 - Copy the file directly from wherever `DataDirectory` points (the volume
   mount in Docker, or `/var/lib/grocery-tracker` in the systemd example).
-  EF Core also writes a `.bak` sidecar next to it automatically before
-  applying any schema migration.
+  The app also copies it to `grocerytracker.db.bak` before applying any
+  schema migration on startup.
+
+Replacing the database (restoring a backup, or starting fresh to re-seed) gives
+the server a new identity, so each device shows the "isn't the server this
+device last used" banner once — choose **Use this server**.

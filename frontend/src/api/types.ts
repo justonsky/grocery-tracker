@@ -113,7 +113,8 @@ export interface TripSummary {
 export interface TripLine {
   itemName: string
   categoryName: string
-  price: number
+  // null for an item that hasn't been bought (yet).
+  price: number | null
 }
 
 export interface RecentTrip {
@@ -126,11 +127,12 @@ export interface RecentTrip {
   items: TripLine[]
 }
 
+// Prices are household-wide. lastPrice is null for a pinned item nobody has bought.
 export interface TrackedItem {
   itemId: string
   itemName: string
   categoryName: string
-  lastPrice: number
+  lastPrice: number | null
   recentPrices: number[]
   trend: 'up' | 'down' | 'flat'
   deltaFromPrevious: number | null
@@ -145,13 +147,19 @@ export interface DashboardSummary {
   yearCount: number
   recentTrip: RecentTrip | null
   trackedItems: TrackedItem[]
+  // false while the grid follows recent purchases; true once items were added/removed.
+  trackedItemsCustomized: boolean
 }
 
 export interface PurchasePoint {
   date: string
   storeName: string
   price: number
+  // Compared with the previous purchase even if that one is outside the range.
   deltaFromPrevious: number | null
+  lineId: string
+  tripId: string
+  profileName: string
 }
 
 export interface ItemHistory {
@@ -166,7 +174,74 @@ export interface ItemHistory {
   average: number
   variance: number
   variancePct: number
+  // Most recent first. Every statistic covers only purchases between from and to.
   history: PurchasePoint[]
+  purchaseCount: number
+  from: string | null
+  to: string | null
+  // Span of all the item's purchases, whatever the range.
+  firstDate: string | null
+  lastDate: string | null
+}
+
+// --- Items portal ---
+
+export interface CatalogItem {
+  id: string
+  name: string
+  defaultCategoryId: string | null
+  categoryName: string
+  // Every trip line using the item (planned too) vs. only priced ones.
+  lineCount: number
+  purchaseCount: number
+  lastPurchased: string | null
+  averagePrice: number | null
+}
+
+export interface SaveItemRequest {
+  name: string
+  defaultCategoryId: string | null
+}
+
+export interface ItemLine {
+  id: string
+  tripId: string
+  tripName: string | null
+  tripDate: string
+  tripStatus: TripStatus
+  profileId: string
+  profileName: string
+  // The line's own store (null = any); effectiveStoreName falls back to the trip's first store.
+  storeName: string | null
+  effectiveStoreName: string | null
+  checked: boolean
+  price: number | null
+  estimate: number | null
+  priceLocked: boolean
+  priceLocksAt: string | null
+}
+
+export interface SaveItemLineRequest {
+  tripId: string
+  storeName: string | null
+  price: number | null
+  // Required to change a locked line.
+  confirmLocked?: boolean
+}
+
+export interface MergeResult {
+  moved: number
+  sourceDeleted: boolean
+}
+
+export interface HouseholdTrip {
+  id: string
+  name: string | null
+  date: string
+  status: TripStatus
+  profileId: string
+  profileName: string
+  stores: string[]
 }
 
 export interface Settings {

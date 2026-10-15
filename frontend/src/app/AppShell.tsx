@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Home', icon: '⌂' },
   { to: '/history', label: 'History', icon: '≡' },
   { to: '/trips', label: 'Trips', icon: '☰' },
+  { to: '/items', label: 'Items', icon: '▦' },
 ]
 
 export function AppShell({

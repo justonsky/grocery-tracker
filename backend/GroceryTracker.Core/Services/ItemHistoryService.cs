@@ -7,70 +7,79 @@ namespace GroceryTracker.Core.Services;
 public class ItemHistoryService(GroceryTrackerDbContext db)
 {
     // Household-wide: every profile's purchases of the item, so the averages here
-    // match the ones the trip editor fills estimates from.
-    public async Task<ItemHistoryDto?> GetAsync(Guid itemId, CancellationToken ct = default)
+    // match the ones the trip editor fills estimates from. from/to (ISO dates,
+    // inclusive) narrow the purchases every statistic is computed over.
+    public async Task<ItemHistoryDto?> GetAsync(Guid itemId, string? from = null, string? to = null, CancellationToken ct = default)
     {
-        var item = await db.Items.FirstOrDefaultAsync(i => i.Id == itemId, ct);
+        var item = await db.Items
+            .Where(i => i.Id == itemId)
+            .Select(i => new { i.Id, i.Name, CategoryName = i.DefaultCategory != null ? i.DefaultCategory.Name : "Other" })
+            .FirstOrDefaultAsync(ct);
         if (item is null) return null;
 
         // Only items that were actually bought have a price and belong in history —
         // a planned item on an upcoming trip is not a data point yet.
-        var purchases = (await db.TripItems
+        var all = (await db.TripItems
                 .Where(ti => ti.ItemId == itemId && ti.PriceCents != null && ti.PriceCents > 0)
                 .Select(ti => new
                 {
+                    ti.Id,
+                    ti.TripId,
                     ti.PriceCents,
                     Date = ti.Trip!.Date,
+                    ti.Trip!.CreatedAt,
+                    ProfileName = ti.Trip!.Profile!.Name,
                     ItemStoreName = ti.Store!.Name,
                     TripStoreName = ti.Trip!.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).FirstOrDefault(),
                     CategoryName = ti.Category!.Name,
                 })
                 .ToListAsync(ct))
-            .Select(x => new
-            {
-                PriceCents = x.PriceCents!.Value,
-                x.Date,
-                StoreName = x.ItemStoreName ?? x.TripStoreName ?? "—",
-                x.CategoryName,
-            })
+            .OrderBy(x => x.Date, StringComparer.Ordinal).ThenBy(x => x.CreatedAt)
             .ToList();
 
-        if (purchases.Count == 0)
+        var points = new List<(PurchasePointDto Point, int Cents, string CategoryName)>(all.Count);
+        for (var i = 0; i < all.Count; i++)
         {
-            return new ItemHistoryDto(item.Id, item.Name, "Other", 0, 0, "", 0, "", 0, 0, 0, []);
+            var p = all[i];
+            decimal? delta = i > 0 ? (p.PriceCents!.Value - all[i - 1].PriceCents!.Value) / 100m : null;
+            var store = p.ItemStoreName ?? p.TripStoreName ?? "—";
+            points.Add((new PurchasePointDto(p.Date, store, p.PriceCents!.Value / 100m, delta, p.Id, p.TripId, p.ProfileName),
+                p.PriceCents!.Value, p.CategoryName));
         }
 
-        var ordered = purchases.OrderBy(p => p.Date, StringComparer.Ordinal).ToList();
+        var firstDate = all.Count > 0 ? all[0].Date : null;
+        var lastDate = all.Count > 0 ? all[^1].Date : null;
+        var inRange = points
+            .Where(p => from is null || string.CompareOrdinal(p.Point.Date, from) >= 0)
+            .Where(p => to is null || string.CompareOrdinal(p.Point.Date, to) <= 0)
+            .ToList();
 
-        var ascendingHistory = new List<PurchasePointDto>(ordered.Count);
-        for (var i = 0; i < ordered.Count; i++)
+        if (inRange.Count == 0)
         {
-            var p = ordered[i];
-            decimal? deltaFromPrevious = i > 0 ? (p.PriceCents - ordered[i - 1].PriceCents) / 100m : null;
-            ascendingHistory.Add(new PurchasePointDto(p.Date, p.StoreName, p.PriceCents / 100m, deltaFromPrevious));
+            return new ItemHistoryDto(item.Id, item.Name, item.CategoryName, 0, 0, "", 0, "", 0, 0, 0, [],
+                0, from, to, firstDate, lastDate);
         }
 
-        var lowest = ordered.MinBy(p => p.PriceCents)!;
-        var highest = ordered.MaxBy(p => p.PriceCents)!;
-        var current = ordered[^1];
-        var average = ordered.Sum(p => p.PriceCents) / 100m / ordered.Count;
+        var lowest = inRange.MinBy(p => p.Cents);
+        var highest = inRange.MaxBy(p => p.Cents);
+        var current = inRange[^1];
+        var avgCents = inRange.Sum(p => p.Cents) / (decimal)inRange.Count;
 
         decimal variance = 0m, variancePct = 0m;
-        if (ordered.Count > 1)
+        if (inRange.Count > 1)
         {
-            var avgCents = ordered.Sum(p => p.PriceCents) / (decimal)ordered.Count;
-            variance = (decimal)Math.Sqrt((double)ordered.Sum(p => decimal.CreateChecked(Math.Pow((double)(p.PriceCents - avgCents), 2))) / ordered.Count);
-            variance /= 100m;
-            if (average > 0m) variancePct = variance / average * 100m;
+            variance = (decimal)Math.Sqrt(inRange.Sum(p => Math.Pow((double)(p.Cents - avgCents), 2)) / inRange.Count) / 100m;
+            if (avgCents > 0m) variancePct = variance / (avgCents / 100m) * 100m;
         }
 
         return new ItemHistoryDto(
             item.Id, item.Name, current.CategoryName,
-            current.PriceCents / 100m,
-            lowest.PriceCents / 100m, $"{lowest.StoreName} · {lowest.Date}",
-            highest.PriceCents / 100m, $"{highest.StoreName} · {highest.Date}",
-            average,
+            current.Cents / 100m,
+            lowest.Cents / 100m, $"{lowest.Point.StoreName} · {lowest.Point.Date}",
+            highest.Cents / 100m, $"{highest.Point.StoreName} · {highest.Point.Date}",
+            avgCents / 100m,
             variance, variancePct,
-            Enumerable.Reverse(ascendingHistory).ToList()); // most recent purchase first
+            Enumerable.Reverse(inRange).Select(p => p.Point).ToList(), // most recent purchase first
+            inRange.Count, from, to, firstDate, lastDate);
     }
 }

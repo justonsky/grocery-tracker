@@ -31,7 +31,7 @@ const SyncContext = createContext<SyncContextValue | null>(null)
 // Reads connectivity from ConnectivityProvider rather than duplicating the
 // reachability probe.
 export function SyncProvider({ children }: { children: ReactNode }) {
-  const { status, checkNow } = useConnectivity()
+  const { status, lastCheckedAt, checkNow } = useConnectivity()
   const queryClient = useQueryClient()
   const toast = useToast()
   const [pendingCount, setPendingCount] = useState(0)
@@ -101,6 +101,15 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       void runDrain()
     }
   }, [status, runDrain])
+
+  // A write can fall back to the outbox while the status stays 'online' (a 5xx,
+  // or a dropped request between probes), and then no status change ever comes
+  // to trigger the drain above. Every successful probe (~30s) retries anything
+  // still waiting; repeated transient failures still end in "needs attention".
+  useEffect(() => {
+    if (status === 'online' && pendingCount > 0) void runDrain()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastCheckedAt])
 
   // A manual tap should always re-check reachability, not just retry the
   // drain — otherwise tapping the pill while offline with an empty outbox

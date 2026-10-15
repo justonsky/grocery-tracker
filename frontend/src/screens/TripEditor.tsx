@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toJpeg, toPng } from 'html-to-image'
@@ -8,12 +8,13 @@ import type { Trip, TripInput, TripItemInput, TripStatus } from '../api/types'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { ShareableListCard } from '../components/ShareableListCard'
+import { Combobox, type ComboOption } from '../components/ui/Combobox'
+import { TripItemList, type DraftItem } from '../components/TripItemList'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { summarize, summarizeByStore } from '../trips/costSummary'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 const money = (n: number) => `$${n.toFixed(2)}`
-const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 const normalize = (name: string) => name.trim().toLowerCase()
 
 // Amounts stay strings while editing so a field can be left blank; blank (or
@@ -29,23 +30,6 @@ const amountText = (n: number | null) => (n != null ? String(n) : '')
 const TITLE: Record<TripStatus, string> = { planned: 'Shopping list', shopping: 'Shopping', done: 'Trip' }
 const SAVED: Record<TripStatus, string> = { planned: 'List saved.', shopping: 'Saved — happy shopping.', done: 'Trip finished.' }
 
-// A row is both a planned item and a bought one: estimate it, tick it off and
-// fill the price as you shop.
-interface DraftItem {
-  key: string
-  // The server line this row was loaded from; null for a row added here. Sent
-  // back on save so the server can tell an edited line from a replaced one.
-  id: string | null
-  itemName: string
-  categoryId: string
-  storeName: string | null
-  checked: boolean
-  estimate: string
-  price: string
-  // Read-only: its price was entered more than 7 days ago (server's verdict at load).
-  locked: boolean
-  priceLocksAt: string | null
-}
 const randomKey = () => Math.random().toString(36).slice(2, 9)
 const newItem = (categoryId: string): DraftItem => ({
   key: randomKey(),
@@ -94,7 +78,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     queryFn: () => api.trips(profileId).get(copyFromId!),
     enabled: Boolean(copyFromId),
   })
-  // Full item/store lists back native <datalist> autocomplete below — small
+  // Full item/store lists back the autocomplete fields below — small
   // enough per profile that fetching once beats debouncing per keystroke.
   // Household-wide, so these (and the averages behind "fill estimates") include
   // what every profile has bought.
@@ -109,14 +93,20 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const [newStoreName, setNewStoreName] = useState('')
   const [items, setItems] = useState<DraftItem[]>([])
 
+  // What the form held right after it last loaded a server copy, to tell
+  // whether anything has been edited since.
+  const loadedSnapshotRef = useRef<string | null>(null)
+  const snapshot = (draft: { name: string; date: string; budget: string; status: TripStatus; stores: string[]; items: DraftItem[] }) =>
+    JSON.stringify({ ...draft, items: draft.items.map(({ key: _key, ...rest }) => rest) })
+
   const hydrate = (trip: Trip) => {
-    setName(trip.name ?? '')
-    setDate(trip.date)
-    setBudget(amountText(trip.budget))
-    setStatus(trip.status)
-    setStores(trip.stores)
-    setItems(
-      trip.items.map((it) => ({
+    const draft = {
+      name: trip.name ?? '',
+      date: trip.date,
+      budget: amountText(trip.budget),
+      status: trip.status,
+      stores: trip.stores,
+      items: trip.items.map((it) => ({
         key: it.id,
         id: it.id,
         itemName: it.itemName,
@@ -128,12 +118,25 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         locked: it.priceLocked,
         priceLocksAt: it.priceLocksAt,
       })),
-    )
+    }
+    setName(draft.name)
+    setDate(draft.date)
+    setBudget(draft.budget)
+    setStatus(draft.status)
+    setStores(draft.stores)
+    setItems(draft.items)
+    loadedSnapshotRef.current = snapshot(draft)
   }
 
   useEffect(() => {
     if (existingTrip) {
-      hydrate(existingTrip)
+      // A refetch (window focus, or the outbox syncing a queued save) must not
+      // wipe edits made since the last load: only take the server's copy while
+      // the form is still exactly what was last loaded.
+      const edited =
+        loadedSnapshotRef.current !== null &&
+        snapshot({ name, date, budget, status, stores, items }) !== loadedSnapshotRef.current
+      if (!edited) hydrate(existingTrip)
     } else if (sourceTrip) {
       // Shopping again from a past trip: same name, stores and items, as a
       // fresh plan — nothing ticked off, priced or estimated yet.
@@ -252,8 +255,8 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     if (ok) del.mutate()
   }
 
-  const addStore = () => {
-    const trimmed = newStoreName.trim()
+  const addStore = (name = newStoreName) => {
+    const trimmed = name.trim()
     if (!trimmed || stores.some((s) => s.toLowerCase() === trimmed.toLowerCase())) return
     setStores((s) => [...s, trimmed])
     setNewStoreName('')
@@ -269,9 +272,9 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     setItems((its) => its.map((it) => (it.key === key ? { ...it, ...patch } : it)))
   }
   const removeItem = (key: string) => setItems((its) => its.filter((it) => it.key !== key))
-  const addItem = () => setItems((its) => [...its, newItem(defaultCategoryId)])
+  const addItem = (storeName: string | null = null) => setItems((its) => [...its, { ...newItem(defaultCategoryId), storeName }])
 
-  // Picking a datalist suggestion carries over the category that item last used.
+  // Picking a known item carries over the category that item last used.
   const setItemName = (key: string, value: string) => {
     const match = itemSuggestions?.find((i) => normalize(i.name) === normalize(value))
     updateItem(key, match?.defaultCategoryId ? { itemName: value, categoryId: match.defaultCategoryId } : { itemName: value })
@@ -279,6 +282,23 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   // Entering what you paid also ticks the item off.
   const setItemPrice = (item: DraftItem, value: string) =>
     updateItem(item.key, value.trim() && !item.checked ? { price: value, checked: true } : { price: value })
+
+  const itemOptions: ComboOption[] = useMemo(
+    () =>
+      (itemSuggestions ?? []).map((i) => ({
+        value: i.name,
+        label: i.name,
+        hint: i.averagePrice != null ? `avg ${money(i.averagePrice)}` : undefined,
+      })),
+    [itemSuggestions],
+  )
+  const storeOptions: ComboOption[] = useMemo(
+    () =>
+      (storeSuggestions ?? [])
+        .filter((s) => !stores.some((added) => normalize(added) === normalize(s.name)))
+        .map((s) => ({ value: s.name, label: s.name })),
+    [storeSuggestions, stores],
+  )
 
   const averageByName = new Map((itemSuggestions ?? []).map((i) => [normalize(i.name), i.averagePrice]))
   const averageFor = (itemName: string) => averageByName.get(normalize(itemName)) ?? null
@@ -424,25 +444,22 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
             ))}
           </div>
           <div className="flex gap-1.5">
-            <input
-              className="input"
-              list="dl-stores"
+            <Combobox
+              wrapperClassName="flex-1"
+              aria-label="Store to add"
               placeholder="e.g. Costco"
               value={newStoreName}
-              onChange={(e) => setNewStoreName(e.target.value)}
+              onChange={setNewStoreName}
+              options={storeOptions}
+              // Picking a suggestion adds it straight away.
+              onSelect={(option) => addStore(option.value)}
               onKeyDown={(e) => e.key === 'Enter' && addStore()}
             />
-            <button type="button" className="btn btn-secondary shrink-0 whitespace-nowrap" onClick={addStore}>
+            <button type="button" className="btn btn-secondary shrink-0 whitespace-nowrap" onClick={() => addStore()}>
               Add store
             </button>
           </div>
         </div>
-        <datalist id="dl-stores">
-          {storeSuggestions?.map((s) => <option key={s.id} value={s.name} />)}
-        </datalist>
-        <datalist id="dl-items">
-          {itemSuggestions?.map((i) => <option key={i.id} value={i.name} />)}
-        </datalist>
 
         <div className="hr" />
 
@@ -486,137 +503,22 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           </button>
         </div>
 
-        <div className="grid gap-2.5">
-          <div className="hidden grid-cols-[auto_1.5fr_1fr_1fr_0.8fr_0.8fr_auto] gap-2 text-[11px] tracking-wide text-text/60 uppercase sm:grid">
-            <span className="w-6" />
-            <span>Item</span>
-            <span>Category</span>
-            <span>Store</span>
-            <span>Estimate</span>
-            <span>Paid</span>
-            <span className="w-9" />
-          </div>
-          {items.map((item) => {
-            const average = averageFor(item.itemName)
-            return (
-              // Mobile: name on its own line, details beneath. sm+: one row.
-              <div
-                key={item.key}
-                className={`grid grid-cols-[auto_1fr_1fr_auto] items-center gap-2 border-b border-divider pb-2.5 sm:grid-cols-[auto_1.5fr_1fr_1fr_0.8fr_0.8fr_auto] sm:border-0 sm:pb-0 ${
-                  item.locked ? 'opacity-75' : ''
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  title="Picked up"
-                  aria-label={`Picked up ${item.itemName || 'item'}`}
-                  checked={item.checked}
-                  disabled={item.locked}
-                  onChange={(e) => updateItem(item.key, { checked: e.target.checked })}
-                  className="h-6 w-6 shrink-0 accent-accent"
-                />
-                <input
-                  className={`input col-span-2 sm:col-span-1 ${item.checked && status !== 'planned' ? 'text-text/60 line-through' : ''}`}
-                  list="dl-items"
-                  placeholder="Item name"
-                  aria-label="Item name"
-                  value={item.itemName}
-                  disabled={item.locked}
-                  onChange={(e) => setItemName(item.key, e.target.value)}
-                />
-                {item.locked ? (
-                  <span
-                    className="flex h-9 w-9 items-center justify-center text-text/60 sm:order-last"
-                    role="img"
-                    aria-label={`Locked — prices become read-only 7 days after they're entered`}
-                    title="Locked — prices become read-only 7 days after they're entered"
-                  >
-                    <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor">
-                      <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z" />
-                    </svg>
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon sm:order-last"
-                    aria-label="Remove item"
-                    onClick={() => removeItem(item.key)}
-                  >
-                    ×
-                  </button>
-                )}
-                <select
-                  className="input col-start-2 sm:col-start-auto"
-                  aria-label="Category"
-                  value={item.categoryId}
-                  disabled={item.locked}
-                  onChange={(e) => updateItem(item.key, { categoryId: e.target.value })}
-                >
-                  {categories?.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="input"
-                  aria-label="Store"
-                  value={item.storeName ?? ''}
-                  disabled={item.locked}
-                  onChange={(e) => updateItem(item.key, { storeName: e.target.value || null })}
-                >
-                  <option value="">Any store</option>
-                  {/* Keep a store that's no longer on the trip selectable for the line that uses it. */}
-                  {[...stores, ...(item.storeName && !stores.includes(item.storeName) ? [item.storeName] : [])].map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  className="input col-start-2 sm:col-start-auto"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  inputMode="decimal"
-                  placeholder={average != null ? `avg ${average.toFixed(2)}` : 'Estimate'}
-                  aria-label="Estimate"
-                  title={average != null ? `Household average: ${money(average)}` : 'No price history for this item yet'}
-                  value={item.estimate}
-                  disabled={item.locked}
-                  onChange={(e) => updateItem(item.key, { estimate: e.target.value })}
-                />
-                <input
-                  className="input"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  inputMode="decimal"
-                  placeholder="Paid"
-                  aria-label="Price paid"
-                  title={
-                    item.locked
-                      ? 'Locked'
-                      : item.priceLocksAt
-                        ? `Editable until ${shortDate(item.priceLocksAt)}`
-                        : 'Becomes read-only 7 days after you enter it'
-                  }
-                  value={item.price}
-                  disabled={item.locked}
-                  onChange={(e) => setItemPrice(item, e.target.value)}
-                />
-              </div>
-            )
-          })}
-          <button type="button" className="btn btn-ghost justify-self-start" onClick={addItem}>
-            + Add item
-          </button>
-          {hasLockedItems && (
-            <p className="m-0 text-xs text-text/60">
-              Items marked with a lock were bought more than 7 days ago and can no longer be changed.
-            </p>
-          )}
-        </div>
+        <TripItemList
+          items={items}
+          stores={stores}
+          status={status}
+          categories={categories}
+          itemOptions={itemOptions}
+          averageFor={averageFor}
+          onUpdate={updateItem}
+          onName={setItemName}
+          onPrice={setItemPrice}
+          onRemove={removeItem}
+          onAdd={addItem}
+        />
+        {hasLockedItems && (
+          <p className="m-0 text-xs text-text/60">Items marked with a lock were bought more than 7 days ago and can no longer be changed.</p>
+        )}
 
         <div className="flex flex-wrap justify-end gap-2">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/trips')}>
@@ -715,13 +617,17 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
               </button>
             </div>
           </div>
-          <ShareableListCard
-            ref={previewRef}
-            name={name || date}
-            date={date}
-            items={previewItems}
-            estimatedCostLabel={estimatedCostLabel}
-          />
+          {/* The card is fixed-width for a consistent image export; on a phone it
+              scrolls inside this box rather than widening the whole page. */}
+          <div className="max-w-full overflow-x-auto pb-1">
+            <ShareableListCard
+              ref={previewRef}
+              name={name || date}
+              date={date}
+              items={previewItems}
+              estimatedCostLabel={estimatedCostLabel}
+            />
+          </div>
         </div>
       )}
     </div>

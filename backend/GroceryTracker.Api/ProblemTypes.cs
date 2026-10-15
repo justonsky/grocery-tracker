@@ -8,6 +8,8 @@ public static class ProblemTypes
     public const string ProfileNotFound = "/errors/profile-not-found";
     public const string TripNotFound = "/errors/trip-not-found";
     public const string ItemNotFound = "/errors/item-not-found";
+    public const string ItemNameConflict = "/errors/item-name-conflict";
+    public const string TripItemNotFound = "/errors/trip-item-not-found";
     public const string CategoryNotFound = "/errors/category-not-found";
     public const string CategoryNameConflict = "/errors/category-name-conflict";
     public const string CategoryBuiltIn = "/errors/category-built-in";

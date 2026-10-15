@@ -219,6 +219,8 @@ async function execute(op: OutboxOp): Promise<void> {
         return api.profiles.delete(op.entityId)
       case 'category':
         return api.categories.delete(op.entityId)
+      case 'tracked-items':
+        return // never queued as a delete — a reset is a put of null
     }
   }
 
@@ -231,6 +233,9 @@ async function execute(op: OutboxOp): Promise<void> {
       return
     case 'category':
       await api.categories.upsert(op.entityId, (op.payload as { name: string }).name)
+      return
+    case 'tracked-items':
+      await api.trackedItems(op.entityId).set((op.payload as { itemIds: string[] | null }).itemIds)
       return
   }
 }

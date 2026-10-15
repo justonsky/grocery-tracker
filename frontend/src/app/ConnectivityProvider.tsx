@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { onlineManager, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
+import { setConnectivityStatus, type ConnectivityStatus } from '../offline/connectivityStatus'
 
-export type ConnectivityStatus = 'checking' | 'online' | 'offline' | 'wrong-server'
+export type { ConnectivityStatus }
 
 interface ConnectivityContextValue {
   status: ConnectivityStatus
@@ -164,6 +165,7 @@ export function ConnectivityProvider({ children }: { children: ReactNode }) {
   // cached data) instead of retrying against a server that isn't there.
   useEffect(() => {
     onlineManager.setOnline(state.status === 'online')
+    setConnectivityStatus(state.status)
   }, [state.status])
 
   const checkNow = useCallback(() => {

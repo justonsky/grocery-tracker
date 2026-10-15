@@ -5,6 +5,8 @@ export const ProblemTypes = {
   ProfileNotFound: '/errors/profile-not-found',
   TripNotFound: '/errors/trip-not-found',
   ItemNotFound: '/errors/item-not-found',
+  ItemNameConflict: '/errors/item-name-conflict',
+  TripItemNotFound: '/errors/trip-item-not-found',
   CategoryNotFound: '/errors/category-not-found',
   CategoryNameConflict: '/errors/category-name-conflict',
   CategoryBuiltIn: '/errors/category-built-in',

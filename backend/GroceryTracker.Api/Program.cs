@@ -29,6 +29,7 @@ builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<TripService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<ItemHistoryService>();
+builder.Services.AddScoped<ItemCatalogService>();
 builder.Services.AddScoped<ExportService>();
 builder.Services.AddScoped<SeedDataService>();
 
@@ -65,6 +66,7 @@ app.MapHealthEndpoints();
 app.MapProfileEndpoints();
 app.MapCategoryEndpoints();
 app.MapLookupEndpoints();
+app.MapItemEndpoints();
 app.MapTripEndpoints();
 app.MapSettingsEndpoints();
 app.MapDashboardEndpoints();

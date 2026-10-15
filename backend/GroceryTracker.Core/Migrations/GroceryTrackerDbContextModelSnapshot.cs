@@ -180,6 +180,9 @@ namespace GroceryTracker.Core.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("nocturne");
 
+                    b.Property<bool>("TrackedItemsCustomized")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.ToTable("Profiles");
@@ -207,6 +210,24 @@ namespace GroceryTracker.Core.Migrations
                         .IsUnique();
 
                     b.ToTable("Stores");
+                });
+
+            modelBuilder.Entity("GroceryTracker.Core.Entities.TrackedItem", b =>
+                {
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ProfileId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("TrackedItems");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Trip", b =>
@@ -322,6 +343,25 @@ namespace GroceryTracker.Core.Migrations
                     b.Navigation("DefaultCategory");
                 });
 
+            modelBuilder.Entity("GroceryTracker.Core.Entities.TrackedItem", b =>
+                {
+                    b.HasOne("GroceryTracker.Core.Entities.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GroceryTracker.Core.Entities.Profile", "Profile")
+                        .WithMany("TrackedItems")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Profile");
+                });
+
             modelBuilder.Entity("GroceryTracker.Core.Entities.Trip", b =>
                 {
                     b.HasOne("GroceryTracker.Core.Entities.Profile", "Profile")
@@ -380,6 +420,8 @@ namespace GroceryTracker.Core.Migrations
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Profile", b =>
                 {
+                    b.Navigation("TrackedItems");
+
                     b.Navigation("Trips");
                 });
 

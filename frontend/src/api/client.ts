@@ -1,6 +1,13 @@
 import type {
+  CatalogItem,
   Category,
   DashboardSummary,
+  HouseholdTrip,
+  ItemLine,
+  MergeResult,
+  SaveItemLineRequest,
+  SaveItemRequest,
+  TrackedItem,
   Health,
   Item,
   ItemHistory,
@@ -95,16 +102,37 @@ export const api = {
 
   items: {
     search: (search?: string) => get<Item[]>(`/items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
-    history: (itemId: string) => get<ItemHistory>(`/items/${itemId}/history`),
+    history: (itemId: string, range?: { from?: string | null; to?: string | null }) => {
+      const params = new URLSearchParams()
+      if (range?.from) params.set('from', range.from)
+      if (range?.to) params.set('to', range.to)
+      const qs = params.toString()
+      return get<ItemHistory>(`/items/${itemId}/history${qs ? `?${qs}` : ''}`)
+    },
+  },
+
+  // Items portal — online-only edits to the household catalogue and its purchase records.
+  catalog: {
+    list: (search?: string) => get<CatalogItem[]>(`/catalog/items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+    create: (body: SaveItemRequest) => post<CatalogItem>('/items', body),
+    update: (itemId: string, body: SaveItemRequest) => put<CatalogItem>(`/items/${itemId}`, body),
+    delete: (itemId: string) => del(`/items/${itemId}`),
+    lines: (itemId: string) => get<ItemLine[]>(`/items/${itemId}/lines`),
+    addLine: (itemId: string, body: SaveItemLineRequest) => post<ItemLine>(`/items/${itemId}/lines`, body),
+    updateLine: (itemId: string, lineId: string, body: SaveItemLineRequest) => put<ItemLine>(`/items/${itemId}/lines/${lineId}`, body),
+    deleteLine: (itemId: string, lineId: string) => del(`/items/${itemId}/lines/${lineId}`),
+    merge: (itemId: string, body: { targetItemId: string; storeName: string | null; deleteSourceIfEmpty?: boolean }) =>
+      post<MergeResult>(`/items/${itemId}/merge`, body),
+    trips: () => get<HouseholdTrip[]>('/trips'),
   },
 
   dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),
 
   trackedItems: (profileId: string) => ({
     search: (search?: string) =>
-      get<import('./types').TrackedItem[]>(
-        `/profiles/${profileId}/dashboard/tracked-items${search ? `?search=${encodeURIComponent(search)}` : ''}`
-      ),
+      get<TrackedItem[]>(`/profiles/${profileId}/dashboard/tracked-items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+    // Replaces the whole grid; null puts it back on automatic (most recent items).
+    set: (itemIds: string[] | null) => put<TrackedItem[]>(`/profiles/${profileId}/dashboard/tracked-items`, { itemIds }),
   }),
 
   trips: (profileId: string) => ({

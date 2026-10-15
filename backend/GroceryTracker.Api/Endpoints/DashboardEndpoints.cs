@@ -1,3 +1,4 @@
+using GroceryTracker.Core.Dtos;
 using GroceryTracker.Core.Services;
 
 namespace GroceryTracker.Api.Endpoints;
@@ -6,12 +7,21 @@ public static class DashboardEndpoints
 {
     public static void MapDashboardEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/v1/profiles/{profileId:guid}/dashboard", async (Guid profileId, DashboardService service, CancellationToken ct) =>
-                Results.Ok(await service.GetSummaryAsync(profileId, ct)))
-            .WithTags("Dashboard");
+        var group = app.MapGroup("/api/v1/profiles/{profileId:guid}/dashboard").WithTags("Dashboard");
 
-        app.MapGet("/api/v1/profiles/{profileId:guid}/dashboard/tracked-items", async (Guid profileId, string? search, DashboardService service, CancellationToken ct) =>
-                Results.Ok(await service.GetTrackedItemsAsync(profileId, search, ct)))
-            .WithTags("Dashboard");
+        group.MapGet("/", async (Guid profileId, DashboardService service, CancellationToken ct) =>
+            Results.Ok(await service.GetSummaryAsync(profileId, ct)));
+
+        group.MapGet("/tracked-items", async (Guid profileId, string? search, DashboardService service, CancellationToken ct) =>
+            Results.Ok(await service.GetTrackedItemsAsync(profileId, search, ct)));
+
+        // Replaces the profile's grid (idempotent — the offline outbox targets it).
+        group.MapPut("/tracked-items", async (Guid profileId, SetTrackedItemsRequest request, DashboardService service, CancellationToken ct) =>
+        {
+            var (found, items) = await service.SetTrackedItemsAsync(profileId, request.ItemIds, ct);
+            return found
+                ? Results.Ok(items)
+                : Results.Problem(type: ProblemTypes.ProfileNotFound, title: "Profile not found.", statusCode: StatusCodes.Status404NotFound);
+        });
     }
 }

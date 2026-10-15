@@ -1,4 +1,5 @@
-export type OutboxEntity = 'trip' | 'profile' | 'category'
+// 'tracked-items' is keyed by profile id: one op holds that profile's whole grid.
+export type OutboxEntity = 'trip' | 'profile' | 'category' | 'tracked-items'
 export type OutboxAction = 'put' | 'delete'
 export type OutboxStatus = 'pending' | 'inflight' | 'failed' | 'blocked' | 'orphaned'
 

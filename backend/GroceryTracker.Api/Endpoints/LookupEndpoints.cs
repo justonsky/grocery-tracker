@@ -15,8 +15,8 @@ public static class LookupEndpoints
         group.MapGet("/items", async (string? search, LookupService service, CancellationToken ct) =>
             Results.Ok(await service.SearchItemsAsync(search, ct)));
 
-        group.MapGet("/items/{itemId:guid}/history", (Guid itemId, ItemHistoryService service, CancellationToken ct) =>
-            GetHistoryAsync(itemId, service, ct));
+        group.MapGet("/items/{itemId:guid}/history", (Guid itemId, string? from, string? to, ItemHistoryService service, CancellationToken ct) =>
+            GetHistoryAsync(itemId, from, to, service, ct));
 
         // The routes these used to live at, before items and stores became
         // household-wide. An installed PWA keeps running its cached build until it
@@ -27,14 +27,22 @@ public static class LookupEndpoints
         legacy.MapGet("/items", async (string? search, LookupService service, CancellationToken ct) =>
             Results.Ok(await service.SearchItemsAsync(search, ct)));
         legacy.MapGet("/items/{itemId:guid}/history", (Guid itemId, ItemHistoryService service, CancellationToken ct) =>
-            GetHistoryAsync(itemId, service, ct));
+            GetHistoryAsync(itemId, null, null, service, ct));
     }
 
-    private static async Task<IResult> GetHistoryAsync(Guid itemId, ItemHistoryService service, CancellationToken ct)
+    private static async Task<IResult> GetHistoryAsync(
+        Guid itemId, string? from, string? to, ItemHistoryService service, CancellationToken ct)
     {
-        var history = await service.GetAsync(itemId, ct);
+        if (!IsIsoDateOrNull(from) || !IsIsoDateOrNull(to))
+        {
+            return Results.Problem(type: ProblemTypes.Validation, title: "from and to must be dates (YYYY-MM-DD).", statusCode: StatusCodes.Status400BadRequest);
+        }
+        var history = await service.GetAsync(itemId, from, to, ct);
         return history is null
             ? Results.Problem(type: ProblemTypes.ItemNotFound, title: "Item not found.", statusCode: StatusCodes.Status404NotFound)
             : Results.Ok(history);
     }
+
+    private static bool IsIsoDateOrNull(string? value) =>
+        value is null || DateOnly.TryParseExact(value, "yyyy-MM-dd", out _);
 }

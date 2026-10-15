@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
@@ -5,6 +6,7 @@ import type { TripSummary } from '../api/types'
 import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 
 const money = (n: number) => `$${n.toFixed(2)}`
+const MONTHS_PER_PAGE = 6
 
 function groupByMonth(trips: TripSummary[]) {
   const groups = new Map<string, TripSummary[]>()
@@ -30,8 +32,10 @@ export function History({ profileId }: { profileId: string }) {
 
   const pendingTripIds = useOutstandingEntityIds('trip')
   const groups = trips ? groupByMonth(trips) : []
+  // Recent months first; older ones load on request instead of one endless page.
+  const [monthsShown, setMonthsShown] = useState(MONTHS_PER_PAGE)
 
-  if (isLoading) {
+  if (isLoading || !trips) {
     return (
       <div className="mx-auto max-w-[900px] px-5 pt-6 pb-15">
         <div className="skel mb-4 h-6 w-24" />
@@ -50,7 +54,7 @@ export function History({ profileId }: { profileId: string }) {
         </p>
       )}
       <div className="grid gap-5.5">
-        {groups.map((group) => (
+        {groups.slice(0, monthsShown).map((group) => (
           <div key={group.label}>
             <div className="mb-2 flex items-baseline justify-between">
               <h4 className="m-0">{group.label}</h4>
@@ -58,7 +62,7 @@ export function History({ profileId }: { profileId: string }) {
                 {group.trips.length} {group.trips.length === 1 ? 'trip' : 'trips'} · {money(group.total)}
               </div>
             </div>
-            <div className="card elev-sm p-0">
+            <div className="card elev-sm overflow-x-auto p-0">
               <table className="table">
                 <thead>
                   <tr>
@@ -94,6 +98,11 @@ export function History({ profileId }: { profileId: string }) {
           </div>
         ))}
       </div>
+      {groups.length > monthsShown && (
+        <button type="button" className="btn btn-secondary btn-block mt-4" onClick={() => setMonthsShown((n) => n + MONTHS_PER_PAGE)}>
+          Show older months ({groups.length - monthsShown} more)
+        </button>
+      )}
     </div>
   )
 }
