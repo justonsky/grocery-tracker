@@ -432,7 +432,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
               onChange={(e) => setNewStoreName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addStore()}
             />
-            <button type="button" className="btn btn-secondary" onClick={addStore}>
+            <button type="button" className="btn btn-secondary shrink-0 whitespace-nowrap" onClick={addStore}>
               Add store
             </button>
           </div>
