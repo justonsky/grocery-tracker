@@ -65,4 +65,29 @@ public class SharedCatalogTests : IDisposable
         var items = await (await _client.GetAsync("/api/v1/items")).ReadAsAsync<List<ItemDto>>();
         items.Should().ContainSingle(i => i.Name == "Whole Milk").Which.AveragePrice.Should().BeNull();
     }
+
+    [Fact]
+    public async Task LegacyProfileScopedRoutes_StillServeTheHouseholdCatalogue()
+    {
+        // What a PWA still running its pre-update build calls.
+        var alex = await CreateProfileAsync("Alex");
+        var sam = await CreateProfileAsync("Sam");
+        var dairyId = await DairyIdAsync();
+        await _client.PostJsonAsync($"/api/v1/profiles/{alex}/trips",
+            TestTrips.At("2026-07-01", "Costco", TestTrips.Bought("Whole Milk", dairyId, 3.00m)));
+
+        var items = await (await _client.GetAsync($"/api/v1/profiles/{sam}/items")).ReadAsAsync<List<ItemDto>>();
+        items.Should().ContainSingle(i => i.Name == "Whole Milk");
+        var stores = await (await _client.GetAsync($"/api/v1/profiles/{sam}/stores")).ReadAsAsync<List<StoreDto>>();
+        stores.Should().ContainSingle(s => s.Name == "Costco");
+    }
+
+    [Fact]
+    public async Task UnknownApiRoute_Is404ProblemDetails_NotTheAppShell()
+    {
+        var response = await _client.GetAsync("/api/v1/no-such-thing");
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/problem+json");
+    }
 }

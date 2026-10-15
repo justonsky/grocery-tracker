@@ -75,6 +75,11 @@ app.MapExportEndpoints();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+// An unknown /api route is a 404, never the SPA shell: answering a stale or
+// mistyped API call with index.html (200, text/html) makes the client fail to
+// parse it and silently show nothing. More specific than the SPA fallback, so it wins.
+app.MapFallback("/api/{**path}", () => Results.Problem(
+    type: ProblemTypes.RouteNotFound, title: "No such API endpoint.", statusCode: StatusCodes.Status404NotFound));
 app.MapFallbackToFile("index.html");
 
 app.Run();

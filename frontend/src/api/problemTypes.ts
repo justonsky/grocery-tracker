@@ -11,6 +11,7 @@ export const ProblemTypes = {
   CrossProfile: '/errors/cross-profile',
   PriceLocked: '/errors/price-locked',
   Validation: '/errors/validation',
+  RouteNotFound: '/errors/route-not-found',
   DbUpdate: '/errors/db-update',
   Unexpected: '/errors/unexpected',
 } as const

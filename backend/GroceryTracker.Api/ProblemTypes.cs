@@ -14,6 +14,7 @@ public static class ProblemTypes
     public const string CrossProfile = "/errors/cross-profile";
     public const string PriceLocked = "/errors/price-locked";
     public const string Validation = "/errors/validation";
+    public const string RouteNotFound = "/errors/route-not-found";
     public const string DbUpdate = "/errors/db-update";
     public const string Unexpected = "/errors/unexpected";
 }
