@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../api/client'
 import { ConfirmProvider } from '../components/ui/ConfirmProvider'
@@ -14,8 +14,10 @@ import { AppShell } from './AppShell'
 import { WrongServerBanner } from './WrongServerBanner'
 import { useCurrentProfileId } from './useCurrentProfileId'
 import { useConnectivity } from './ConnectivityProvider'
+import type { SettingsState } from './settingsLink'
 
 function AppContent() {
+  const location = useLocation()
   const [currentProfileId, setCurrentProfileId] = useCurrentProfileId()
   const { status } = useConnectivity()
   const { data: profiles } = useQuery({
@@ -57,9 +59,15 @@ function AppContent() {
 
   const profileId = currentProfile.id
 
+  // Settings is a dialog over whatever page opened it, not a page of its own: that
+  // page stays mounted underneath, so a half-filled trip or item form isn't lost.
+  // (A settings URL with no page behind it falls back to the dashboard.)
+  const settingsOpen = location.pathname === '/settings'
+  const background = settingsOpen ? ((location.state as SettingsState | null)?.background ?? { ...location, pathname: '/' }) : location
+
   return (
     <AppShell profileId={profileId} onSwitchProfile={() => setCurrentProfileId(null)}>
-      <Routes>
+      <Routes location={background}>
         <Route path="/" element={<Dashboard profileId={profileId} />} />
         <Route path="/history" element={<History profileId={profileId} />} />
         <Route path="/trips" element={<TripsIndex profileId={profileId} />} />
@@ -67,8 +75,8 @@ function AppContent() {
         <Route path="/trips/:tripId" element={<TripEditor profileId={profileId} />} />
         <Route path="/items" element={<ItemsPortal />} />
         <Route path="/items/:itemId" element={<ItemDetail />} />
-        <Route path="/settings" element={<SettingsDialog profileId={profileId} />} />
       </Routes>
+      {settingsOpen && <SettingsDialog profileId={profileId} />}
     </AppShell>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
+import { settingsLinkState } from './settingsLink'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 import { useTheme } from './useTheme'
@@ -67,6 +68,7 @@ export function AppShell({
   children: ReactNode
 }) {
   const { themeMode } = useTheme()
+  const settingsState = settingsLinkState(useLocation())
   const toast = useToast()
   const queryClient = useQueryClient()
   const { data: profiles } = useQuery({ queryKey: ['profiles'], queryFn: api.profiles.list })
@@ -120,6 +122,7 @@ export function AppShell({
           </button>
           <NavLink
             to="/settings"
+            state={settingsState}
             className={({ isActive }) => `btn btn-ghost btn-icon ${isActive ? 'bg-accent-800 text-accent-200' : 'text-text/70 hover:text-text'}`}
             aria-label="Settings"
           >
@@ -158,7 +161,7 @@ export function AppShell({
               <span className="tab-label">{item.label}</span>
             </NavLink>
           ))}
-          <NavLink to="/settings" className={tabClass}>
+          <NavLink to="/settings" state={settingsState} className={tabClass}>
             <span className="tab-icon">
               <Icon>{GEAR_ICON}</Icon>
             </span>

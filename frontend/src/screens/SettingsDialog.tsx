@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 import type { Category, ChartScheme, Profile } from '../api/types'
@@ -9,10 +9,12 @@ import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { timeAgo } from '../offline/timeAgo'
 import { useConnectivity } from '../app/ConnectivityProvider'
 import { useSync } from '../app/SyncProvider'
+import type { SettingsState } from '../app/settingsLink'
 import { CHART_SCHEMES, THEMES, themeOf } from '../app/themes'
 
 export function SettingsDialog({ profileId }: { profileId: string }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const toast = useToast()
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -27,7 +29,8 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
   const { lastSyncAt, pendingCount } = useSync()
   const canExport = status === 'online'
 
-  const close = () => navigate(-1)
+  // Back to the page underneath; if settings was opened with nothing behind it, to the dashboard.
+  const close = () => ((location.state as SettingsState | null)?.background ? navigate(-1) : navigate('/', { replace: true }))
 
   // Theme is deliberately NOT routed through the offline outbox — it's a
   // household-global setting (AppSettings.ThemeMode), and queuing an offline
