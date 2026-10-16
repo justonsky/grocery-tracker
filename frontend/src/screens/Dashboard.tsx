@@ -190,9 +190,14 @@ export function Dashboard({ profileId }: { profileId: string }) {
 
       {hasSpendHistory && (
         <section aria-labelledby="monthly-spend" className="card elev-sm gap-3 p-5 sm:p-6">
-          <h2 id="monthly-spend" className="m-0 text-[22px]">
-            Spending by month
-          </h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 id="monthly-spend" className="m-0 text-[22px]">
+              Spending by month
+            </h2>
+            <Link to="/trends" className="text-sm font-semibold">
+              See shopping trends →
+            </Link>
+          </div>
           <MonthlySpendChart months={data.monthlySpend} />
         </section>
       )}

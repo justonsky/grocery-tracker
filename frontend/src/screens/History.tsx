@@ -46,7 +46,14 @@ export function History({ profileId }: { profileId: string }) {
 
   return (
     <div className="mx-auto max-w-[900px] px-4 pt-5 pb-15 sm:px-5 sm:pt-6">
-      <h3 className="mb-5">All trips</h3>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h3 className="m-0">All trips</h3>
+        {(trips?.length ?? 0) > 0 && (
+          <Link to="/trends" className="btn btn-secondary btn-sm max-sm:min-h-11">
+            Shopping trends
+          </Link>
+        )}
+      </div>
       {trips?.length === 0 && (
         <p className="text-text/70">
           No trips yet.{' '}

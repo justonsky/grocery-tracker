@@ -28,6 +28,7 @@ builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<TripService>();
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<TrendsService>();
 builder.Services.AddScoped<ItemHistoryService>();
 builder.Services.AddScoped<ItemCatalogService>();
 builder.Services.AddScoped<ExportService>();
@@ -70,6 +71,7 @@ app.MapItemEndpoints();
 app.MapTripEndpoints();
 app.MapSettingsEndpoints();
 app.MapDashboardEndpoints();
+app.MapTrendsEndpoints();
 app.MapExportEndpoints();
 
 // Same-origin: Kestrel serves the built React app's static files plus the

@@ -2,6 +2,8 @@ import type {
   CatalogItem,
   Category,
   DashboardSummary,
+  Trends,
+  TrendsRange,
   HouseholdTrip,
   ItemLine,
   MergeResult,
@@ -127,6 +129,8 @@ export const api = {
   },
 
   dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),
+
+  trends: (profileId: string, range: TrendsRange) => get<Trends>(`/profiles/${profileId}/trends?range=${range}`),
 
   trackedItems: (profileId: string) => ({
     search: (search?: string) =>

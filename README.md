@@ -84,9 +84,21 @@ themes are listed in Settings and recolor the whole app, charts included.
 The dashboard shows today / this month / this year, a **Budget left** card
 (this month's trip budgets minus what those trips cost; it turns red as **Over
 budget**, and only appears when a trip this month has a budget) and a **Spending
-by month** chart of the last 12 months. In Settings, **Chart colors** switches the
+by month** chart of the last 12 months, with a link to **Shopping trends**. In Settings, **Chart colors** switches the
 price charts and the monthly chart between Fresh, Citrus (blue-led) and Berry
 (violet-led) for the whole household.
+
+## Shopping trends
+
+`/trends` (linked from the dashboard and History) analyses one profile's bought
+items over 30 days, 3 or 6 months, a year or all time: **most bought** (trips an
+item was on), **biggest spend**, **buying more lately** (last third of the period
+vs the earlier part: at least 2 recent purchases and 1.5× the earlier rate, or new),
+**gone quiet** (3+ purchases earlier, none lately — a guess from absence, so any
+row can be hidden on this device) and spend by category. *Export image* saves it
+as a PNG. Tax, tips and "Unlisted purchases" count toward spend but aren't ranked
+as items. It is computed when you open the page, from one indexed read — about
+15 ms for a quarter and 100 ms for ten years of weekly shopping.
 
 ## Project layout
 

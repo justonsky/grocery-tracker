@@ -272,3 +272,59 @@ export interface Health {
   serverTime: string
   status: string
 }
+
+export type TrendsRange = '30d' | '90d' | '180d' | '365d' | 'all'
+
+export interface TrendItem {
+  itemId: string
+  name: string
+  category: string
+  timesBought: number
+  spent: number
+  averagePrice: number
+  lastBought: string
+}
+
+export interface RisingItem {
+  itemId: string
+  name: string
+  category: string
+  recentCount: number
+  earlierCount: number
+  // How many times as often as earlier in the period; null = wasn't bought earlier at all.
+  factor: number | null
+}
+
+export interface FadingItem {
+  itemId: string
+  name: string
+  category: string
+  earlierCount: number
+  lastBought: string
+  weeksSince: number
+}
+
+export interface CategorySpend {
+  category: string
+  spent: number
+  lines: number
+}
+
+// from/to are inclusive dates; recentFrom..to is the "lately" window, the rest of the period "earlier".
+export interface Trends {
+  range: TrendsRange
+  from: string
+  to: string
+  recentFrom: string
+  tripCount: number
+  itemCount: number
+  spent: number
+  previousTripCount: number | null
+  previousSpent: number | null
+  enoughData: boolean
+  mostBought: TrendItem[]
+  biggestSpend: TrendItem[]
+  rising: RisingItem[]
+  fading: FadingItem[]
+  categories: CategorySpend[]
+}

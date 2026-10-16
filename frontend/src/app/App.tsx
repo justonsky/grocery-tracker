@@ -5,6 +5,7 @@ import { ConfirmProvider } from '../components/ui/ConfirmProvider'
 import { ProfilePicker } from '../screens/ProfilePicker'
 import { Dashboard } from '../screens/Dashboard'
 import { History } from '../screens/History'
+import { Trends } from '../screens/Trends'
 import { TripsIndex } from '../screens/TripsIndex'
 import { TripEditor } from '../screens/TripEditor'
 import { ItemDetail } from '../screens/ItemDetail'
@@ -70,6 +71,7 @@ function AppContent() {
       <Routes location={background}>
         <Route path="/" element={<Dashboard profileId={profileId} />} />
         <Route path="/history" element={<History profileId={profileId} />} />
+        <Route path="/trends" element={<Trends profileId={profileId} />} />
         <Route path="/trips" element={<TripsIndex profileId={profileId} />} />
         <Route path="/trips/new" element={<TripEditor profileId={profileId} />} />
         <Route path="/trips/:tripId" element={<TripEditor profileId={profileId} />} />
