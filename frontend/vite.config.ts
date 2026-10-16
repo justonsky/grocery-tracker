@@ -31,6 +31,10 @@ export default defineConfig({
         // Precache the app shell only — API responses are handled by TanStack
         // Query's own persisted cache, not the service worker.
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        // The shell answers every *navigation* with index.html. A plain navigation to an API URL
+        // (a download link in Safari or Firefox, a link opened in a new tab) must reach the server,
+        // or the "spreadsheet" you save is the app's HTML page.
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

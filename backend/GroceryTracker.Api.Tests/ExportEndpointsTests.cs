@@ -18,6 +18,7 @@ public class ExportEndpointsTests : IDisposable
     {
         var response = await _client.GetAsync($"/api/v1/export/data.xlsx{query}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.CacheControl!.NoStore.Should().BeTrue();
         response.Content.Headers.ContentType!.MediaType.Should()
             .Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         return new XLWorkbook(new MemoryStream(await response.Content.ReadAsByteArrayAsync()));

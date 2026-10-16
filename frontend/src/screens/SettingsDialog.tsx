@@ -19,7 +19,7 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
   const toast = useToast()
   const [newCategoryName, setNewCategoryName] = useState('')
   const [includeItems, setIncludeItems] = useState(false)
-  const exportHref = `/api/v1/export/data.xlsx${includeItems ? '?includeItems=true' : ''}`
+  const [exporting, setExporting] = useState(false)
 
   const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: api.settings.get })
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
@@ -28,6 +28,33 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
   const { status } = useConnectivity()
   const { lastSyncAt, pendingCount } = useSync()
   const canExport = status === 'online'
+
+  // Fetched, then saved from memory, rather than a plain download link: a link is a page navigation in
+  // some browsers (Safari, installed home-screen apps), and the service worker answers navigations with
+  // the app shell — so the "spreadsheet" came out as the app's HTML page. This also checks that what
+  // came back really is a spreadsheet before offering it.
+  const downloadBackup = async () => {
+    setExporting(true)
+    try {
+      const response = await fetch(`/api/v1/export/data.xlsx${includeItems ? '?includeItems=true' : ''}`, { cache: 'no-store' })
+      const type = response.headers.get('content-type') ?? ''
+      if (!response.ok || !type.includes('spreadsheetml')) throw new Error(`unexpected response ${response.status} ${type}`)
+      const blob = await response.blob()
+      if (blob.size === 0) throw new Error('empty file')
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'grocery-tracker-backup.xlsx'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 10_000)
+    } catch {
+      toast('error', "Couldn't download the backup. Check you're connected to your home server and try again.")
+    } finally {
+      setExporting(false)
+    }
+  }
 
   // Back to the page underneath; if settings was opened with nothing behind it, to the dashboard.
   const close = () => ((location.state as SettingsState | null)?.background ? navigate(-1) : navigate('/', { replace: true }))
@@ -245,9 +272,9 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
       <section className="field rounded-[14px] border border-divider bg-bg p-3.5">
         <label>Backup</label>
         {canExport ? (
-          <a href={exportHref} download className="btn btn-primary btn-block mt-0">
-            Download my data (.xlsx)
-          </a>
+          <button type="button" className="btn btn-primary btn-block mt-0" disabled={exporting} onClick={downloadBackup}>
+            {exporting ? 'Preparing…' : 'Download my data (.xlsx)'}
+          </button>
         ) : (
           <button type="button" className="btn btn-primary btn-block mt-0" disabled title="Reconnect to your home server to export.">
             Download my data (.xlsx)
