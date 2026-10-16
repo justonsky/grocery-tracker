@@ -22,6 +22,7 @@ public class Trip
     public Profile? Profile { get; set; }
     public List<TripStore> Stores { get; set; } = [];
     public List<TripItem> Items { get; set; } = [];
+    public List<TripRecipe> Recipes { get; set; } = [];
 }
 
 // Planned: a shopping list, nothing bought yet. Shopping: in the store, ticking

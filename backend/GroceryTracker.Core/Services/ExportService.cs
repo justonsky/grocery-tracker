@@ -130,6 +130,25 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
         }
         FormatMoney(itemsSheet, row, 5, 11, 12);
 
+        var recipes = await db.Recipes
+            .Select(r => new { r.Name, r.Description, r.PhotoVersion, Items = r.Items.OrderBy(i => i.SortOrder).Select(i => i.Item!.Name + (i.Amount != null ? " (" + i.Amount + ")" : "")).ToList() })
+            .ToListAsync(ct);
+        if (recipes.Count > 0)
+        {
+            var recipesSheet = workbook.Worksheets.Add("Recipes");
+            WriteHeader(recipesSheet, "Recipe", "Description", "Items", "Item List", "Has Photo");
+            row = 2;
+            foreach (var r in recipes.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                recipesSheet.Cell(row, 1).Value = r.Name;
+                recipesSheet.Cell(row, 2).Value = r.Description ?? "";
+                recipesSheet.Cell(row, 3).Value = r.Items.Count;
+                recipesSheet.Cell(row, 4).Value = string.Join(", ", r.Items);
+                recipesSheet.Cell(row, 5).Value = r.PhotoVersion > 0;
+                row++;
+            }
+        }
+
         if (includeItems)
         {
             await WriteCatalogueAsync(workbook, lines.Select(l => (l.ItemId, l.PriceCents, tripById[l.TripId].Date)).ToList(), ct);

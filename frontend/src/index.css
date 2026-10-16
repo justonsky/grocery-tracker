@@ -599,6 +599,12 @@ h1, h2, h3, h4, h5, h6 {
     @apply flex max-h-[calc(100dvh-2rem)] w-full max-w-[440px] flex-col gap-3 overflow-y-auto rounded-lg bg-surface p-5;
     box-shadow: var(--shadow-lg);
   }
+  .dialog-wide {
+    @apply max-w-[680px];
+  }
+  .dialog-flush {
+    @apply gap-0 p-0;
+  }
   .dialog-title {
     @apply font-heading text-xl font-bold tracking-tight;
   }

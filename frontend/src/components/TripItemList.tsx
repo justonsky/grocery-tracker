@@ -42,6 +42,7 @@ interface ListProps {
   onPrice: (item: DraftItem, text: string) => void
   onRemove: (key: string) => void
   onAdd: (storeName: string | null) => void
+  onAddRecipe: (storeName: string | null) => void
 }
 
 function useIsWide() {
@@ -229,9 +230,14 @@ export function TripItemList(props: ListProps) {
                   </>
                 )}
                 <div className={`px-2 py-1 sm:px-2.5 ${showHeaders || sectionItems.length > 0 ? 'border-t border-divider' : ''}`}>
-                  <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAdd(storeName)}>
-                    + Add item{storeName ? ` at ${storeName}` : ''}
-                  </button>
+                  <div className="flex flex-wrap gap-1">
+                    <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAdd(storeName)}>
+                      + Add item{storeName ? ` at ${storeName}` : ''}
+                    </button>
+                    <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAddRecipe(storeName)}>
+                      + Add recipe
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

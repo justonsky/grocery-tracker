@@ -14,6 +14,8 @@ import type {
   Item,
   ItemHistory,
   Profile,
+  Recipe,
+  RecipeInput,
   Settings,
   Store,
   Trip,
@@ -126,6 +128,17 @@ export const api = {
     merge: (itemId: string, body: { targetItemId: string; storeName: string | null; deleteSourceIfEmpty?: boolean }) =>
       post<MergeResult>(`/items/${itemId}/merge`, body),
     trips: () => get<HouseholdTrip[]>('/trips'),
+  },
+
+  // Household recipes. Reads are cached for offline use; edits and photos need the server.
+  recipes: {
+    list: () => get<Recipe[]>('/recipes'),
+    upsert: (id: string, body: RecipeInput) => put<Recipe>(`/recipes/${id}`, body),
+    delete: (id: string) => del(`/recipes/${id}`),
+    // The body is the image itself (a JPEG/PNG/WebP within the limits in recipePhoto.ts).
+    setPhoto: (id: string, image: Blob) =>
+      request<Recipe>(`/recipes/${id}/photo`, { method: 'PUT', body: image, headers: { 'Content-Type': image.type || 'image/jpeg' } }),
+    removePhoto: (id: string) => request<Recipe>(`/recipes/${id}/photo`, { method: 'DELETE' }),
   },
 
   dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),

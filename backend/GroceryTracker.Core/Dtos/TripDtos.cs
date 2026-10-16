@@ -23,12 +23,15 @@ public record TripItemInput(
 public record TripDto(
     Guid Id, string? Name, string Date, decimal? Budget,
     List<string> Stores, List<TripItemDto> Items, decimal Total,
-    string Status, DateTimeOffset? CompletedAt, decimal EstimatedTotal, decimal? Savings);
+    string Status, DateTimeOffset? CompletedAt, decimal EstimatedTotal, decimal? Savings,
+    List<TripRecipeDto>? Recipes = null);
 
 // A null Status keeps the trip's current status (or "planned" for a new trip).
+// RecipeIds are the trip's planned meals, in order; null leaves them as they are (older queued saves).
 public record TripInput(
     string? Name, string Date, decimal? Budget,
-    List<string> Stores, List<TripItemInput> Items, string? Status = null);
+    List<string> Stores, List<TripItemInput> Items, string? Status = null,
+    List<Guid>? RecipeIds = null);
 
 // Total counts only items that have a price — a trip still being planned reads as $0.00.
 public record TripSummaryDto(

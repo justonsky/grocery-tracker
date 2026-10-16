@@ -10,6 +10,10 @@ import { Combobox, type ComboOption } from '../components/ui/Combobox'
 import { TripItemList, type DraftItem } from '../components/TripItemList'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
+import { PlannedMeals } from '../components/recipes/PlannedMeals'
+import { RecipePicker } from '../components/recipes/RecipePicker'
+import { itemsToAdd, lineKeysToDrop, useRecipes } from '../recipes'
+import type { Recipe } from '../api/types'
 import { summarize, summarizeByStore } from '../trips/costSummary'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
@@ -43,18 +47,28 @@ const newItem = (categoryId: string): DraftItem => ({
   priceLocksAt: null,
 })
 
+// A recipe's item as a trip line: estimated at its household average when there is one.
+const recipeLine = (item: Recipe['items'][number], fallbackCategoryId: string, storeName: string | null): DraftItem => ({
+  ...newItem(item.categoryId ?? fallbackCategoryId),
+  itemName: item.itemName,
+  storeName,
+  estimate: item.averagePrice != null ? item.averagePrice.toFixed(2) : '',
+})
+
 // Keyed so that moving between trips — or from a trip to "shop again" from it —
 // always starts a fresh editor instead of carrying one trip's id into another.
 export function TripEditor({ profileId }: { profileId: string }) {
   const { tripId } = useParams()
   const [searchParams] = useSearchParams()
-  return <TripEditorScreen key={tripId ?? `new:${searchParams.get('from') ?? ''}`} profileId={profileId} />
+  return <TripEditorScreen key={tripId ?? `new:${searchParams.get('from') ?? ''}:${searchParams.get('recipe') ?? ''}`} profileId={profileId} />
 }
 
 function TripEditorScreen({ profileId }: { profileId: string }) {
   const { tripId } = useParams()
   const [searchParams] = useSearchParams()
   const copyFromId = tripId ? null : searchParams.get('from')
+  // "Create shopping list" on a recipe arrives here: a new list with that meal planned.
+  const recipeParam = tripId ? null : searchParams.get('recipe')
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -91,19 +105,24 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const [stores, setStores] = useState<string[]>([])
   const [newStoreName, setNewStoreName] = useState('')
   const [items, setItems] = useState<DraftItem[]>([])
+  // The trip's planned meals (recipe ids), in order.
+  const [recipeIds, setRecipeIds] = useState<string[]>([])
+  const [pickerFor, setPickerFor] = useState<{ storeName: string | null } | null>(null)
+  const { data: recipes } = useRecipes()
 
   // What the form held right after it last loaded a server copy, to tell
   // whether anything has been edited since.
   const loadedSnapshotRef = useRef<string | null>(null)
   const copiedRef = useRef(false)
+  const recipeAppliedRef = useRef(false)
   // The form's content (see `edits` below) as last loaded or saved: leaving with anything
   // different asks first. Null until the form has settled (a new list's first blank row).
   const baselineRef = useRef<string | null>(null)
-  const snapshot = (draft: { name: string; date: string; budget: string; status: TripStatus; stores: string[]; items: DraftItem[] }) =>
+  const snapshot = (draft: { name: string; date: string; budget: string; status: TripStatus; stores: string[]; items: DraftItem[]; recipeIds: string[] }) =>
     JSON.stringify({ ...draft, items: draft.items.map(({ key: _key, ...rest }) => rest) })
 
-  const editsOf = (d: { name: string; date: string; budget: string; stores: string[]; items: DraftItem[] }) =>
-    JSON.stringify({ name: d.name, date: d.date, budget: d.budget, stores: d.stores, items: d.items.map(({ key: _key, ...rest }) => rest) })
+  const editsOf = (d: { name: string; date: string; budget: string; stores: string[]; items: DraftItem[]; recipeIds: string[] }) =>
+    JSON.stringify({ name: d.name, date: d.date, budget: d.budget, stores: d.stores, recipeIds: d.recipeIds, items: d.items.map(({ key: _key, ...rest }) => rest) })
 
   const hydrate = (trip: Trip) => {
     const draft = {
@@ -112,6 +131,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       budget: amountText(trip.budget),
       status: trip.status,
       stores: trip.stores,
+      recipeIds: trip.recipes?.map((r) => r.id) ?? [],
       items: trip.items.map((it) => ({
         key: it.id,
         id: it.id,
@@ -130,6 +150,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     setBudget(draft.budget)
     setStatus(draft.status)
     setStores(draft.stores)
+    setRecipeIds(draft.recipeIds)
     setItems(draft.items)
     loadedSnapshotRef.current = snapshot(draft)
     baselineRef.current = editsOf(draft)
@@ -142,7 +163,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       // the form is still exactly what was last loaded.
       const edited =
         loadedSnapshotRef.current !== null &&
-        snapshot({ name, date, budget, status, stores, items }) !== loadedSnapshotRef.current
+        snapshot({ name, date, budget, status, stores, items, recipeIds }) !== loadedSnapshotRef.current
       if (!edited) hydrate(existingTrip)
     } else if (sourceTrip && !copiedRef.current) {
       // Shopping again from a past trip: same name, stores and items, as a
@@ -151,6 +172,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       copiedRef.current = true
       setName(sourceTrip.name ?? '')
       setStores(sourceTrip.stores)
+      setRecipeIds(sourceTrip.recipes?.map((r) => r.id) ?? [])
       setItems(
         sourceTrip.items.map((it) => ({
           ...newItem(it.categoryId),
@@ -158,10 +180,21 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           storeName: it.storeName,
         })),
       )
-    } else if (categories && items.length === 0 && !isEditing && (!copyFromId || sourceFailed)) {
+    } else if (recipeParam && !recipeAppliedRef.current && recipes && categories) {
+      // Once: the recipe's items (at their household average price) and the meal itself.
+      recipeAppliedRef.current = true
+      const recipe = recipes.find((r) => r.id === recipeParam)
+      if (recipe) {
+        setName(recipe.name)
+        setRecipeIds([recipe.id])
+        setItems(recipe.items.map((i) => recipeLine(i, categories[0]?.id ?? '', null)))
+      } else {
+        setItems([newItem(categories[0]?.id ?? '')])
+      }
+    } else if (categories && items.length === 0 && !isEditing && (!copyFromId || sourceFailed) && !recipeParam) {
       setItems([newItem(categories[0]?.id ?? '')])
     }
-  }, [existingTrip, sourceTrip, sourceFailed, categories, isEditing, copyFromId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [existingTrip, sourceTrip, sourceFailed, categories, isEditing, copyFromId, recipes, recipeParam]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const defaultCategoryId = categories?.[0]?.id ?? ''
 
@@ -188,6 +221,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         stores,
         items: cleanItems,
         status: nextStatus,
+        recipeIds,
       }
 
       return performOrQueue(() => api.trips(profileId).upsert(id, input), {
@@ -283,6 +317,29 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     if ((patch.checked || patch.price) && status === 'planned') setStatus('shopping')
     setItems((its) => its.map((it) => (it.key === key ? { ...it, ...patch } : it)))
   }
+  const planRecipe = (recipe: Recipe, storeName: string | null) => {
+    const added = itemsToAdd(recipe, items.filter((it) => it.itemName.trim()))
+    setItems((its) => {
+      // The blank starter row makes way for the first real items.
+      const kept = its.filter((it) => it.itemName.trim() || it.price || it.checked)
+      return [...kept, ...added.map((i) => recipeLine(i, defaultCategoryId, storeName))]
+    })
+    setRecipeIds((ids) => (ids.includes(recipe.id) ? ids : [...ids, recipe.id]))
+    toast('success', added.length === 0 ? `${recipe.name}: everything was already on the list.` : `Added ${added.length} ${added.length === 1 ? 'item' : 'items'} for ${recipe.name}.`)
+  }
+  // Taking a meal off the plan also takes its unbought items — except any another planned
+  // meal still needs. Ticked or priced lines are kept: they've been bought.
+  const unplanRecipe = (recipeId: string) => {
+    const removed = recipes?.find((r) => r.id === recipeId)
+    const remaining = recipeIds.filter((id) => id !== recipeId).map((id) => recipes?.find((r) => r.id === id)).filter((r): r is Recipe => !!r)
+    const dropped = lineKeysToDrop(removed, remaining, items)
+    setItems((its) => {
+      const left = its.filter((it) => !dropped.has(it))
+      return left.length > 0 || !defaultCategoryId ? left : [newItem(defaultCategoryId)]
+    })
+    setRecipeIds((ids) => ids.filter((id) => id !== recipeId))
+    toast('success', `Removed ${removed?.name ?? 'the meal'}${dropped.size > 0 ? ` and ${dropped.size} unbought ${dropped.size === 1 ? 'item' : 'items'}` : ''}.`)
+  }
   const removeItem = (key: string) => setItems((its) => its.filter((it) => it.key !== key))
   const addItem = (storeName: string | null = null) => setItems((its) => [...its, { ...newItem(defaultCategoryId), storeName }])
 
@@ -342,6 +399,15 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     )
   }
 
+  // Planned meals as shown: the recipe's own data when it's loaded, else what the trip remembered.
+  const plannedMeals = recipeIds.map((id) => {
+    const recipe = recipes?.find((r) => r.id === id)
+    const remembered = (existingTrip?.recipes ?? sourceTrip?.recipes)?.find((r) => r.id === id)
+    return recipe
+      ? { id, name: recipe.name, photoVersion: recipe.photoVersion, itemCount: recipe.items.length }
+      : { id, name: remembered?.name ?? 'Recipe', photoVersion: remembered?.photoVersion ?? 0, itemCount: remembered?.itemCount ?? 0 }
+  })
+
   const categoryName = (categoryId: string) => categories?.find((c) => c.id === categoryId)?.name ?? 'Other'
   const namedItems = items.filter((it) => it.itemName.trim())
   const previewItems = namedItems.map((it) => ({
@@ -376,7 +442,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const pickedCount = totals.lineCount > 0 ? namedItems.filter((it) => it.checked).length : null
 
   // The form's content minus status, to tell whether it changed during a save.
-  const edits = editsOf({ name, date, budget, stores, items })
+  const edits = editsOf({ name, date, budget, stores, items, recipeIds })
   const editsRef = useRef(edits)
   editsRef.current = edits
   // A new list has no server copy to hydrate from: its baseline is the blank (or copied) form once it appears.
@@ -556,6 +622,8 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           </div>
         </div>
 
+        <PlannedMeals meals={plannedMeals} onRemove={unplanRecipe} />
+
         <TripItemList
           items={items}
           stores={stores}
@@ -568,7 +636,17 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           onPrice={setItemPrice}
           onRemove={removeItem}
           onAdd={addItem}
+          onAddRecipe={(storeName) => setPickerFor({ storeName })}
         />
+        {pickerFor && (
+          <RecipePicker
+            recipes={recipes}
+            planned={new Set(recipeIds)}
+            storeName={pickerFor.storeName}
+            onPick={(recipe) => planRecipe(recipe, pickerFor.storeName)}
+            onClose={() => setPickerFor(null)}
+          />
+        )}
         {hasLockedItems && (
           <p className="m-0 flex items-center gap-1.5 text-xs text-text/70">Items marked with a lock were bought more than 7 days ago and can no longer be changed.</p>
         )}

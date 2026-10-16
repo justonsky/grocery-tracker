@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { settingsLinkState } from './settingsLink'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
@@ -49,14 +49,91 @@ const SUN_ICON = (
 )
 const MOON_ICON = <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
 
+const BOWL_ICON = (
+  <>
+    <path d="M4 11h16a8 8 0 0 1-16 0z" />
+    <path d="M8 7c0-1 1-1.5 1-2.5M12 7c0-1 1-1.5 1-2.5M16 7c0-1 1-1.5 1-2.5" />
+  </>
+)
+
+// `short` is the label on the phone's bottom tab bar, where five tabs share a 390px row.
 const NAV_ITEMS = [
-  { to: '/', label: 'Home', icon: HOME_ICON },
-  { to: '/history', label: 'History', icon: HISTORY_ICON },
-  { to: '/trips', label: 'Grocery Trips', icon: BAG_ICON },
-  { to: '/items', label: 'Items', icon: GRID_ICON },
+  { to: '/', label: 'Home', short: 'Home', icon: HOME_ICON },
+  { to: '/history', label: 'History', short: 'History', icon: HISTORY_ICON },
+  { to: '/trips', label: 'Grocery Trips', short: 'Trips', icon: BAG_ICON },
+  { to: '/items', label: 'Items', short: 'Items', icon: GRID_ICON },
+  { to: '/recipes', label: 'Recipes', short: 'Recipes', icon: BOWL_ICON },
 ]
 
 const tabClass = ({ isActive }: { isActive: boolean }) => `tab-link min-h-11 ${isActive ? 'tab-link-active' : ''}`
+
+// The phone's profile menu: settings, light/dark and switching profile live here, so the
+// bottom bar is left to the five pages.
+function ProfileMenu({
+  name,
+  settingsState,
+  dark,
+  onToggleTheme,
+  onSwitchProfile,
+}: {
+  name: string
+  settingsState: ReturnType<typeof settingsLinkState>
+  dark: boolean
+  onToggleTheme: () => void
+  onSwitchProfile: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  useEffect(() => setOpen(false), [location.pathname])
+  useEffect(() => {
+    if (!open) return
+    const away = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false)
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('pointerdown', away)
+    document.addEventListener('keydown', esc)
+    return () => {
+      document.removeEventListener('pointerdown', away)
+      document.removeEventListener('keydown', esc)
+    }
+  }, [open])
+  const item = 'btn btn-ghost min-h-12 w-full justify-start gap-3 px-3 text-[15px] text-text no-underline'
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-label={`${name}: profile menu`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-divider bg-surface py-0 pr-3 pl-1.5 font-body text-sm font-semibold text-text"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Avatar name={name} size={30} />
+        <span className="max-w-24 truncate">{name}</span>
+        <Icon size={16}>
+          <path d="M6 9l6 6 6-6" />
+        </Icon>
+      </button>
+      {open && (
+        <div role="menu" aria-label="Profile menu" className="absolute top-12 right-0 z-50 w-60 rounded-[14px] border border-divider bg-surface p-1.5 shadow-lg">
+          <Link to="/settings" state={settingsState} role="menuitem" className={item}>
+            <Icon>{GEAR_ICON}</Icon>Settings
+          </Link>
+          <button type="button" role="menuitem" className={item} onClick={onToggleTheme}>
+            <Icon>{dark ? SUN_ICON : MOON_ICON}</Icon>
+            {dark ? 'Light mode' : 'Dark mode'}
+          </button>
+          <button type="button" role="menuitem" className={item} onClick={onSwitchProfile}>
+            <Icon>
+              <path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0" />
+            </Icon>
+            Switch profile
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function AppShell({
   profileId,
@@ -143,6 +220,23 @@ export function AppShell({
         </div>
       </nav>
 
+      {/* Phone header: the brand, and the profile menu (settings, theme, switch profile). */}
+      <header className="flex items-center justify-between gap-3 border-b border-divider bg-surface px-4 py-2 lg:hidden">
+        <span className="nav-brand !gap-2 text-[17px]">
+          <img src="/favicon.svg" alt="" className="h-8 w-8 rounded-[9px]" />
+          Grocery Tracker
+        </span>
+        {currentProfile && (
+          <ProfileMenu
+            name={currentProfile.name}
+            settingsState={settingsState}
+            dark={themeMode === 'dark'}
+            onToggleTheme={toggleTheme}
+            onSwitchProfile={onSwitchProfile}
+          />
+        )}
+      </header>
+
       <main className="max-lg:pb-[calc(6rem+env(safe-area-inset-bottom))] max-lg:group-has-[[data-sync-strip]]:pb-[calc(10rem+env(safe-area-inset-bottom))]">
         {children}
       </main>
@@ -158,15 +252,9 @@ export function AppShell({
               <span className="tab-icon">
                 <Icon>{item.icon}</Icon>
               </span>
-              <span className="tab-label">{item.label}</span>
+              <span className="tab-label">{item.short}</span>
             </NavLink>
           ))}
-          <NavLink to="/settings" state={settingsState} className={tabClass}>
-            <span className="tab-icon">
-              <Icon>{GEAR_ICON}</Icon>
-            </span>
-            <span className="tab-label">Settings</span>
-          </NavLink>
         </nav>
       </div>
 

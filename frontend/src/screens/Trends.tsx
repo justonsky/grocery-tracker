@@ -107,7 +107,7 @@ export function Trends({ profileId }: { profileId: string }) {
     }
   }, [exporting]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const hiddenHere = trends ? [...trends.rising, ...trends.fading].filter((i) => hidden.has(i.itemId)).length : 0
+  const hiddenHere = trends ? [...trends.rising.map((i) => i.itemId), ...trends.fading.map((i) => i.itemId), ...(trends.quietRecipes ?? []).map((m) => m.recipeId)].filter((id) => hidden.has(id)).length : 0
 
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1fr)] gap-5 px-4 py-6 pb-15 sm:px-6">

@@ -1,5 +1,7 @@
 import { forwardRef } from 'react'
-import type { CategorySpend, FadingItem, RisingItem, TrendItem, Trends } from '../api/types'
+import { Link } from 'react-router-dom'
+import type { CategorySpend, FadingItem, QuietRecipe, RisingItem, TrendItem, TrendRecipe, Trends } from '../api/types'
+import { recipePhotoUrl } from '../recipes'
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const money0 = (n: number) => `$${Math.round(n).toLocaleString()}`
@@ -114,6 +116,69 @@ function Fading({ item, onHide }: { item: FadingItem; onHide?: () => void }) {
   )
 }
 
+function Thumb({ id, version }: { id: string; version: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="h-9 w-9 shrink-0 rounded-[9px] bg-accent-800 bg-cover bg-center"
+      style={version > 0 ? { backgroundImage: `url(${recipePhotoUrl(id, version)})` } : undefined}
+    />
+  )
+}
+
+// Link to the recipe on screen; plain text in the exported picture.
+function RecipeName({ id, name, link }: { id: string; name: string; link: boolean }) {
+  return link ? (
+    <Link to={`/recipes?open=${id}`} className="font-semibold text-text no-underline hover:underline">
+      {name}
+    </Link>
+  ) : (
+    <span className="font-semibold">{name}</span>
+  )
+}
+
+function PopularMeals({ meals, link }: { meals: TrendRecipe[]; link: boolean }) {
+  const max = Math.max(...meals.map((m) => m.timesPlanned), 1)
+  return (
+    <ol className="m-0 grid list-none gap-2.5 p-0">
+      {meals.map((meal) => (
+        <li key={meal.recipeId} className="flex items-center gap-2.5">
+          <Thumb id={meal.recipeId} version={meal.photoVersion} />
+          <div className="grid min-w-0 flex-1 gap-1">
+            <div className="flex items-baseline gap-2 text-sm">
+              <span className="min-w-0 flex-1 truncate">
+                <RecipeName id={meal.recipeId} name={meal.name} link={link} />
+              </span>
+              <span className="shrink-0 text-[13px] text-text/70 tabular-nums">{meal.timesPlanned}×</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-chip" aria-hidden="true">
+              <div className="h-full rounded-full" style={{ width: `${Math.max((meal.timesPlanned / max) * 100, 3)}%`, background: 'var(--chart-1)' }} />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+function QuietMeal({ meal, link, onHide }: { meal: QuietRecipe; link: boolean; onHide?: () => void }) {
+  return (
+    <li className="flex items-center gap-2.5 text-sm">
+      <Thumb id={meal.recipeId} version={meal.photoVersion} />
+      <div className="min-w-0 flex-1">
+        <div className="truncate">
+          <RecipeName id={meal.recipeId} name={meal.name} link={link} />
+        </div>
+        <div className="text-xs text-text/60">
+          Planned {meal.earlierCount}×, last on {day(meal.lastPlanned)}
+        </div>
+      </div>
+      <span className="tag tag-neutral shrink-0 tabular-nums">{meal.weeksSince < 1 ? 'this week' : `${meal.weeksSince} wk ago`}</span>
+      <HideButton name={meal.name} onHide={onHide} />
+    </li>
+  )
+}
+
 function Categories({ categories }: { categories: CategorySpend[] }) {
   const total = categories.reduce((sum, c) => sum + c.spent, 0)
   const top = categories.slice(0, 4)
@@ -160,6 +225,7 @@ export const TrendsInfographic = forwardRef<HTMLDivElement, Props>(function Tren
 ) {
   const rising = trends.rising.filter((r) => !hidden.has(r.itemId))
   const fading = trends.fading.filter((f) => !hidden.has(f.itemId))
+  const quietMeals = (trends.quietRecipes ?? []).filter((m) => !hidden.has(m.recipeId))
   const days = daysBetween(trends.from, trends.to)
   const recentDays = daysBetween(trends.recentFrom, trends.to)
   const perTrip = trends.tripCount > 0 ? trends.spent / trends.tripCount : 0
@@ -244,6 +310,29 @@ export const TrendsInfographic = forwardRef<HTMLDivElement, Props>(function Tren
           )}
         </Section>
       </div>
+
+      {trends.popularRecipes && trends.quietRecipes && (
+        <div className={`grid gap-4 ${cols}`}>
+          <Section title="Popular meals" hint="Trips each recipe was planned on">
+            {trends.popularRecipes.length ? (
+              <PopularMeals meals={trends.popularRecipes} link={!wide} />
+            ) : (
+              <Empty>No meals planned in this period — add a recipe to a trip.</Empty>
+            )}
+          </Section>
+          <Section title="Meals gone quiet" hint={`Planned 2+ times earlier, not once in the last ${recentDays} days`}>
+            {quietMeals.length ? (
+              <ul className="m-0 grid list-none gap-3 p-0">
+                {quietMeals.map((m) => (
+                  <QuietMeal key={m.recipeId} meal={m} link={!wide} onHide={onHide && !wide ? () => onHide(m.recipeId) : undefined} />
+                ))}
+              </ul>
+            ) : (
+              <Empty>{trends.enoughData ? 'Every meal you plan is still in rotation.' : 'Needs a few more trips to tell.'}</Empty>
+            )}
+          </Section>
+        </div>
+      )}
 
       <Section title="Where the money goes" hint="Spend by category">
         <Categories categories={trends.categories} />

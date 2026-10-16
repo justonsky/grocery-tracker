@@ -84,6 +84,15 @@ export interface Trip {
   // Estimate minus price over lines that have both; positive = under estimate.
   // null when no line has both.
   savings: number | null
+  // Meals planned on the trip, in order. Absent on trips from servers that predate recipes.
+  recipes?: TripRecipe[]
+}
+
+export interface TripRecipe {
+  id: string
+  name: string
+  photoVersion: number
+  itemCount: number
 }
 
 export interface TripInput {
@@ -94,6 +103,8 @@ export interface TripInput {
   items: TripItemInput[]
   // Omitted keeps the trip's current status.
   status?: TripStatus
+  // The planned meals' recipe ids; omitted leaves them as they are.
+  recipeIds?: string[]
 }
 
 export interface TripSummary {
@@ -327,4 +338,58 @@ export interface Trends {
   rising: RisingItem[]
   fading: FadingItem[]
   categories: CategorySpend[]
+  // Absent on servers that predate recipes.
+  popularRecipes?: TrendRecipe[]
+  quietRecipes?: QuietRecipe[]
+}
+
+export interface RecipeItem {
+  itemId: string
+  itemName: string
+  categoryId: string | null
+  categoryName: string
+  // Free text for the cook ("2 cups"); trips don't use it.
+  amount: string | null
+  averagePrice: number | null
+}
+
+export interface Recipe {
+  id: string
+  name: string
+  description: string | null
+  // 0 = no photo; otherwise it is at recipePhotoUrl(id, photoVersion).
+  photoVersion: number
+  items: RecipeItem[]
+  estimatedCost: number | null
+  tripCount: number
+  lastPlanned: string | null
+}
+
+export interface RecipeItemInput {
+  itemName: string
+  categoryId?: string | null
+  amount?: string | null
+}
+
+export interface RecipeInput {
+  name: string
+  description: string | null
+  items: RecipeItemInput[]
+}
+
+export interface TrendRecipe {
+  recipeId: string
+  name: string
+  photoVersion: number
+  timesPlanned: number
+  lastPlanned: string
+}
+
+export interface QuietRecipe {
+  recipeId: string
+  name: string
+  photoVersion: number
+  earlierCount: number
+  lastPlanned: string
+  weeksSince: number
 }

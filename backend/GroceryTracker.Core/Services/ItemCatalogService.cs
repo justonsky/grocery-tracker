@@ -192,6 +192,14 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
                 db.TrackedItems.Add(new TrackedItem { ProfileId = pin.ProfileId, ItemId = target.Id, SortOrder = pin.SortOrder });
             }
             db.TrackedItems.RemoveRange(pins);
+            // Recipes that used the source use the target instead (once, if they already had it).
+            var recipeItems = await db.RecipeItems.Where(r => r.ItemId == sourceId).ToListAsync(ct);
+            var recipesWithTarget = (await db.RecipeItems.Where(r => r.ItemId == target.Id).Select(r => r.RecipeId).ToListAsync(ct)).ToHashSet();
+            foreach (var recipeItem in recipeItems)
+            {
+                if (recipesWithTarget.Contains(recipeItem.RecipeId)) db.RecipeItems.Remove(recipeItem);
+                else recipeItem.ItemId = target.Id;
+            }
             db.Items.Remove(source);
             sourceDeleted = true;
         }

@@ -13,6 +13,8 @@ public static class ProblemTypes
     public const string CategoryNotFound = "/errors/category-not-found";
     public const string CategoryNameConflict = "/errors/category-name-conflict";
     public const string CategoryBuiltIn = "/errors/category-built-in";
+    public const string RecipeNotFound = "/errors/recipe-not-found";
+    public const string PhotoTooLarge = "/errors/photo-too-large";
     public const string CrossProfile = "/errors/cross-profile";
     public const string PriceLocked = "/errors/price-locked";
     public const string Validation = "/errors/validation";

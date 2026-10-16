@@ -14,6 +14,9 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
     public DbSet<TripStore> TripStores => Set<TripStore>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
     public DbSet<TrackedItem> TrackedItems => Set<TrackedItem>();
+    public DbSet<Recipe> Recipes => Set<Recipe>();
+    public DbSet<RecipeItem> RecipeItems => Set<RecipeItem>();
+    public DbSet<TripRecipe> TripRecipes => Set<TripRecipe>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,6 +98,39 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             // Deleting an item (Items portal) or merging it away unpins it everywhere.
             e.HasOne(ti => ti.Item).WithMany()
                 .HasForeignKey(ti => ti.ItemId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Recipe>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.Id).ValueGeneratedNever();
+            e.Property(r => r.Name).HasMaxLength(RecipeLimits.NameLength);
+            e.Property(r => r.Description).HasMaxLength(RecipeLimits.DescriptionLength);
+            e.Property(r => r.PhotoContentType).HasMaxLength(32);
+        });
+
+        modelBuilder.Entity<RecipeItem>(e =>
+        {
+            e.HasKey(ri => ri.Id);
+            e.Property(ri => ri.Id).ValueGeneratedNever();
+            e.Property(ri => ri.Amount).HasMaxLength(RecipeLimits.AmountLength);
+            e.HasIndex(ri => ri.RecipeId);
+            e.HasOne(ri => ri.Recipe).WithMany(r => r.Items)
+                .HasForeignKey(ri => ri.RecipeId).OnDelete(DeleteBehavior.Cascade);
+            // Deleting an item (Items portal) drops it from recipes, as it does from trips.
+            e.HasOne(ri => ri.Item).WithMany()
+                .HasForeignKey(ri => ri.ItemId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TripRecipe>(e =>
+        {
+            e.HasKey(tr => new { tr.TripId, tr.RecipeId });
+            e.HasIndex(tr => tr.RecipeId);
+            e.HasOne(tr => tr.Trip).WithMany(t => t.Recipes)
+                .HasForeignKey(tr => tr.TripId).OnDelete(DeleteBehavior.Cascade);
+            // Deleting a recipe takes it off trips' planned meals; their item lines stay.
+            e.HasOne(tr => tr.Recipe).WithMany()
+                .HasForeignKey(tr => tr.RecipeId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<AppSetting>(e =>

@@ -74,6 +74,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         };
         ApplyStatus(trip, ParseStatus(input.Status) ?? TripStatus.Planned, now);
         await ApplyStoresAndItemsAsync(profileId, trip, input, new TripItem?[input.Items.Count], now, ct);
+        await ApplyRecipesAsync(trip, input, ct);
 
         db.Trips.Add(trip);
         await db.SaveChangesAsync(ct);
@@ -93,6 +94,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
 
         var trip = await db.Trips
             .Include(t => t.Stores)
+            .Include(t => t.Recipes)
             .Include(t => t.Items).ThenInclude(i => i.Item)
             .Include(t => t.Items).ThenInclude(i => i.Store)
             .FirstOrDefaultAsync(t => t.Id == tripId, ct);
@@ -141,6 +143,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         }
 
         await ApplyStoresAndItemsAsync(profileId, trip, input, matches, now, ct);
+        await ApplyRecipesAsync(trip, input, ct);
         // Locked lines the save left out keep their place after everything it sent.
         var order = input.Items.Count;
         foreach (var kept in trip.Items.Where(i => IsLocked(i, now) && Array.IndexOf(matches, i) < 0).OrderBy(i => i.SortOrder))
@@ -217,6 +220,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
     private IQueryable<Trip> LoadQuery(Guid profileId) => db.Trips
         .Where(t => t.ProfileId == profileId)
         .Include(t => t.Stores)
+        .Include(t => t.Recipes).ThenInclude(r => r.Recipe).ThenInclude(r => r!.Items)
         .Include(t => t.Items).ThenInclude(i => i.Item)
         .Include(t => t.Items).ThenInclude(i => i.Category)
         .Include(t => t.Items).ThenInclude(i => i.Store);
@@ -280,6 +284,23 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         }
     }
 
+    // The planned meals. Null RecipeIds (an older queued save) leaves them alone; ids of recipes
+    // that no longer exist are dropped rather than failing the save. Which of a meal's items
+    // are on the list is the trip's own lines — this only records the meals.
+    private async Task ApplyRecipesAsync(Trip trip, TripInput input, CancellationToken ct)
+    {
+        if (input.RecipeIds is null) return;
+        var wanted = input.RecipeIds.Distinct().ToList();
+        var existing = (await db.Recipes.Where(r => wanted.Contains(r.Id)).Select(r => r.Id).ToListAsync(ct)).ToHashSet();
+        db.TripRecipes.RemoveRange(trip.Recipes);
+        trip.Recipes.Clear();
+        var order = 0;
+        foreach (var id in wanted.Where(existing.Contains))
+        {
+            trip.Recipes.Add(new TripRecipe { TripId = trip.Id, RecipeId = id, SortOrder = order++ });
+        }
+    }
+
     private static string? Normalize(string? name) =>
         string.IsNullOrWhiteSpace(name) ? null : name.Trim();
 
@@ -309,7 +330,9 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
             (trip.Items.Sum(i => i.PriceCents) ?? 0) / 100m,
             FormatStatus(trip.Status), trip.CompletedAt,
             (trip.Items.Sum(i => i.EstimateCents) ?? 0) / 100m,
-            compared.Count == 0 ? null : compared.Sum(i => i.EstimateCents!.Value - i.PriceCents!.Value) / 100m);
+            compared.Count == 0 ? null : compared.Sum(i => i.EstimateCents!.Value - i.PriceCents!.Value) / 100m,
+            trip.Recipes.OrderBy(r => r.SortOrder)
+                .Select(r => new TripRecipeDto(r.RecipeId, r.Recipe!.Name, r.Recipe.PhotoVersion, r.Recipe.Items.Count)).ToList());
     }
 }
 

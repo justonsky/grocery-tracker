@@ -10,6 +10,7 @@ import { TripsIndex } from '../screens/TripsIndex'
 import { TripEditor } from '../screens/TripEditor'
 import { ItemDetail } from '../screens/ItemDetail'
 import { ItemsPortal } from '../screens/ItemsPortal'
+import { Recipes } from '../screens/Recipes'
 import { SettingsDialog } from '../screens/SettingsDialog'
 import { AppShell } from './AppShell'
 import { WrongServerBanner } from './WrongServerBanner'
@@ -76,6 +77,7 @@ function AppContent() {
         <Route path="/trips/new" element={<TripEditor profileId={profileId} />} />
         <Route path="/trips/:tripId" element={<TripEditor profileId={profileId} />} />
         <Route path="/items" element={<ItemsPortal />} />
+        <Route path="/recipes" element={<Recipes />} />
         <Route path="/items/:itemId" element={<ItemDetail />} />
       </Routes>
       {settingsOpen && <SettingsDialog profileId={profileId} />}

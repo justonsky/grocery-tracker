@@ -20,6 +20,7 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
     private const int MinEarlierPurchasesToFade = 3;
     private const int MinRecentPurchasesToRise = 2;
     private const double RisingFactor = 1.5;
+    private const int MinEarlierPlansToFade = 2;
 
     // Money that isn't a grocery: the seed data keeps tax, tips and unlisted purchases as items so a
     // week's spend adds up. They count toward spend and categories, but not the item rankings.
@@ -129,6 +130,25 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
             .OrderByDescending(c => c.Spent).ThenBy(c => c.Category, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
+        // Planned meals: how many of the period's trips each recipe was on, split like the items.
+        var plans = await db.TripRecipes
+            .Where(tr => tr.Trip!.ProfileId == profileId
+                && string.Compare(tr.Trip.Date, fromIso) >= 0 && string.Compare(tr.Trip.Date, Iso(to)) <= 0)
+            .Select(tr => new { tr.RecipeId, tr.Trip!.Date, tr.Recipe!.Name, tr.Recipe.PhotoVersion })
+            .ToListAsync(ct);
+        var byRecipe = plans.GroupBy(p => p.RecipeId).Select(g =>
+        {
+            var recent = g.Count(p => string.CompareOrdinal(p.Date, recentIso) >= 0);
+            return new { g.Key, g.First().Name, g.First().PhotoVersion, All = g.Count(), Recent = recent, Earlier = g.Count() - recent, Last = g.Max(p => p.Date)! };
+        }).ToList();
+        var popularRecipes = byRecipe.OrderByDescending(r => r.All).ThenByDescending(r => r.Last, StringComparer.Ordinal)
+            .ThenBy(r => r.Name, StringComparer.OrdinalIgnoreCase).Take(ListSize)
+            .Select(r => new TrendRecipeDto(r.Key, r.Name, r.PhotoVersion, r.All, r.Last)).ToList();
+        var quietRecipes = earlierDays <= 0 ? [] : byRecipe.Where(r => r.Recent == 0 && r.Earlier >= MinEarlierPlansToFade)
+            .OrderByDescending(r => r.Earlier).ThenBy(r => r.Name, StringComparer.OrdinalIgnoreCase).Take(ListSize)
+            .Select(r => new QuietRecipeDto(r.Key, r.Name, r.PhotoVersion, r.Earlier, r.Last,
+                (to.DayNumber - DateOnly.ParseExact(r.Last, "yyyy-MM-dd", CultureInfo.InvariantCulture).DayNumber) / 7)).ToList();
+
         var tripCount = current.Select(l => l.TripId).Distinct().Count();
         return new TrendsDto(
             range, fromIso, Iso(to), recentIso,
@@ -136,7 +156,7 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
             previousFrom is null ? null : previous.Select(l => l.TripId).Distinct().Count(),
             previousFrom is null ? null : previous.Sum(l => l.Cents) / 100m,
             tripCount >= MinTripsForTrends,
-            mostBought, biggestSpend, rising, fading, categories);
+            mostBought, biggestSpend, rising, fading, categories, popularRecipes, quietRecipes);
     }
 
     private static string Iso(DateOnly d) => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);

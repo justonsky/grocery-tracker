@@ -23,4 +23,5 @@ public record TrendsDto(
     bool EnoughData,
     List<TrendItemDto> MostBought, List<TrendItemDto> BiggestSpend,
     List<RisingItemDto> Rising, List<FadingItemDto> Fading,
-    List<CategorySpendDto> Categories);
+    List<CategorySpendDto> Categories,
+    List<TrendRecipeDto>? PopularRecipes = null, List<QuietRecipeDto>? QuietRecipes = null);

@@ -100,6 +100,27 @@ as a PNG. Tax, tips and "Unlisted purchases" count toward spend but aren't ranke
 as items. It is computed when you open the page, from one indexed read — about
 15 ms for a quarter and 100 ms for ten years of weekly shopping.
 
+## Recipes
+
+The **Recipes** tab (after Items) is a gallery of the household's recipes, shared by
+every profile. A recipe is a name, an optional description and photo, and one or
+more items from the shared catalogue (with an optional amount like "2 cups").
+A photo card shows the picture with a thin name bar that grows on hover to show the
+first 100 characters of the description; a card without one shows the title and, on
+hover, the description. Opening a card shows the items with their household average
+prices and an estimated cost, and offers edit, change photo, share (export a PNG or
+copy the text), delete and **Create shopping list**.
+
+On a trip, **+ Add recipe** (next to **+ Add item**) adds a recipe's items (never
+twice) and lists the meal under **Planned meals**, its photo behind it. Taking a meal
+off removes its unbought items, except ones another planned meal still needs. Trends
+shows **Popular meals** and **Meals gone quiet**.
+
+Photos are stored as files in the data folder (`recipe-photos/`), up to 1600×1600px
+and 5 MB. A larger photo opens the in-app crop editor first (move, zoom, 4:3 / square /
+16:9) and only the cropped result is uploaded. On phones, Settings, light/dark and
+Switch profile are in the profile menu at the top right.
+
 ## Project layout
 
 ```
