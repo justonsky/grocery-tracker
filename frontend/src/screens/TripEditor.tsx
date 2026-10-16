@@ -280,9 +280,10 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     const match = itemSuggestions?.find((i) => normalize(i.name) === normalize(value))
     updateItem(key, match?.defaultCategoryId ? { itemName: value, categoryId: match.defaultCategoryId } : { itemName: value })
   }
-  // Entering what you paid also ticks the item off.
-  const setItemPrice = (item: DraftItem, value: string) =>
-    updateItem(item.key, value.trim() && !item.checked ? { price: value, checked: true } : { price: value })
+  // Entering what you paid never ticks the item: picking it up is the checkbox's
+  // job, and ticking it here would also whisk the line out of the "to find" list
+  // while its price is still being typed.
+  const setItemPrice = (item: DraftItem, value: string) => updateItem(item.key, { price: value })
 
   const itemOptions: ComboOption[] = useMemo(
     () =>
