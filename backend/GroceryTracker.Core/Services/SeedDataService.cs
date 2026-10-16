@@ -149,6 +149,9 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
                         PriceCents = priceCents,
                         EstimateCents = ToCents(line.Estimate),
                         PricedAt = priceCents is null ? null : shoppedAt,
+                        // Absent in older seed files: one of each.
+                        QuantityMilli = line.Quantity is > 0 and <= Quantities.MaxQuantity ? Quantities.ToMilli(line.Quantity.Value) : Quantities.OneMilli,
+                        Unit = line.Unit is { } unit && Quantities.IsValidUnit(unit) ? unit : Quantities.Each,
                         SortOrder = order++,
                     });
                     lines++;
@@ -196,7 +199,7 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
     }
 
     private sealed record SeedTripItem(string Name, string? Category, string? Store, bool Checked, decimal? Price,
-        decimal? Estimate = null);
+        decimal? Estimate = null, decimal? Quantity = null, string? Unit = null);
 }
 
 public enum SeedOutcome { Seeded, SkippedNotEmpty, SkippedNoFile }

@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { api } from '../api/client'
 import { PriceChart } from '../components/PriceChart'
+import type { PriceUnit } from '../api/types'
+import { perUnit, quantityLabel } from '../trips/quantity'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 // "+$0.89" / "-$0.89" (not "$-0.89").
@@ -57,6 +59,10 @@ export function ItemDetail() {
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
   const [rowsShown, setRowsShown] = useState(ROWS_PER_PAGE)
+  // Per pound or per item, for an item bought both ways; null = however most of it was bought.
+  // Remembered per item, so opening another item starts on its own default.
+  const [unitPick, setUnitPick] = useState<{ itemId: string | undefined; unit: PriceUnit } | null>(null)
+  const unitChoice = unitPick && unitPick.itemId === itemId ? unitPick.unit : null
 
   const days = PRESETS.find((p) => p.id === preset)?.days
   const range =
@@ -65,8 +71,8 @@ export function ItemDetail() {
       : { from: days ? isoDaysAgo(days) : null, to: null }
 
   const { data: history, isLoading, isFetching, isError } = useQuery({
-    queryKey: ['item-history', itemId, range.from, range.to],
-    queryFn: () => api.items.history(itemId!, range),
+    queryKey: ['item-history', itemId, range.from, range.to, unitChoice],
+    queryFn: () => api.items.history(itemId!, range, unitChoice),
     // Changing the range keeps the previous render (dimmed) instead of flashing a skeleton.
     placeholderData: keepPreviousData,
   })
@@ -93,7 +99,36 @@ export function ItemDetail() {
   }
 
   const chartPoints = [...history.history].reverse()
+  // Prices are per pound for things bought by weight.
+  const unit = perUnit(history.priceUnit)
   const empty = history.purchaseCount === 0
+  // Bought both by weight and by the item: the two can't share a chart, so offer one at a time.
+  const units = history.availableUnits ?? []
+  const bothWays = units.length > 1
+  const unitSwitch = (
+    <div className="mb-3 grid gap-2">
+      <div className="seg max-w-full flex-wrap self-start" role="radiogroup" aria-label="Show prices">
+        {units.map((u) => (
+          <label key={u.priceUnit} className="seg-opt min-h-11 sm:min-h-10">
+            <input
+              type="radio"
+              name="price-unit"
+              checked={history.priceUnit === u.priceUnit}
+              onChange={() => {
+                setUnitPick({ itemId, unit: u.priceUnit })
+                setRowsShown(ROWS_PER_PAGE)
+              }}
+            />
+            {u.priceUnit === 'lb' ? 'Per lb' : 'Per item'} <span className="font-normal text-text/60">({u.count})</span>
+          </label>
+        ))}
+      </div>
+      <p className="m-0 text-xs text-text/70">
+        Bought both by weight and by the item, so each is shown on its own. A pack of a known weight can be recorded as that weight
+        (e.g. 0.5 lb) on the Items page to join the per-pound history.
+      </p>
+    </div>
+  )
 
   return (
     <div className="mx-auto max-w-[1000px] px-4 pt-6 pb-15 sm:px-6">
@@ -157,21 +192,22 @@ export function ItemDetail() {
 
       <div className={`transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
         <div className="card elev-sm gap-0 p-4 pb-3 sm:p-5 sm:pb-3">
-          <PriceChart points={chartPoints} />
+          {bothWays && unitSwitch}
+          <PriceChart points={chartPoints} priceUnit={history.priceUnit} />
         </div>
 
         {!empty && (
           <div className="my-4 grid grid-cols-2 gap-3 sm:my-5 sm:gap-3.5 lg:grid-cols-5">
             <Stat
               label="Latest"
-              value={money(history.current)}
+              value={`${money(history.current)}${unit}`}
               note={[history.history[0]?.date, history.history[0]?.storeName].filter(Boolean).join(' · ')}
             />
-            <Stat label="Lowest" value={money(history.lowest)} note={history.lowestMeta} highlight />
-            <Stat label="Highest" value={money(history.highest)} note={history.highestMeta} />
+            <Stat label="Lowest" value={`${money(history.lowest)}${unit}`} note={history.lowestMeta} highlight />
+            <Stat label="Highest" value={`${money(history.highest)}${unit}`} note={history.highestMeta} />
             <Stat
               label="Average"
-              value={money(history.average)}
+              value={`${money(history.average)}${unit}`}
               note={`${history.purchaseCount} ${history.purchaseCount === 1 ? 'purchase' : 'purchases'}`}
             />
             <Stat
@@ -184,6 +220,7 @@ export function ItemDetail() {
         )}
 
         <h2 className={`mb-3 text-xl ${empty ? 'mt-5' : ''}`}>Purchase history</h2>
+
         {empty ? (
           <p className="text-sm text-text/70">
             No purchases in this range
@@ -197,7 +234,8 @@ export function ItemDetail() {
                   <th>Date</th>
                   <th>Store</th>
                   <th>Who</th>
-                  <th className="text-right">Price</th>
+                  <th className="text-right">Bought</th>
+                  <th className="text-right">Price{unit}</th>
                   <th className="text-right">Change</th>
                 </tr>
               </thead>
@@ -207,6 +245,9 @@ export function ItemDetail() {
                     <td className="whitespace-nowrap">{h.date}</td>
                     <td>{h.storeName}</td>
                     <td>{h.profileName}</td>
+                    <td className="text-right whitespace-nowrap text-text/70">
+                      {quantityLabel(h.quantity, h.unit) ? `${quantityLabel(h.quantity, h.unit)} · ${money(h.lineTotal ?? h.price)}` : '—'}
+                    </td>
                     <td className="text-right font-semibold">{money(h.price)}</td>
                     <td
                       className={`text-right whitespace-nowrap ${

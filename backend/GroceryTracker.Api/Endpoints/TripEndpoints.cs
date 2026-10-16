@@ -21,6 +21,7 @@ public static class TripEndpoints
         group.MapPost("/", async (Guid profileId, TripInput input, TripService service, CancellationToken ct) =>
         {
             if (!TripService.IsValidStatus(input.Status)) return InvalidStatus();
+            if (!TripService.IsValidItems(input)) return InvalidQuantity();
             var trip = await service.CreateAsync(profileId, input, ct);
             return Results.Created($"/api/v1/profiles/{profileId}/trips/{trip.Id}", trip);
         });
@@ -35,6 +36,7 @@ public static class TripEndpoints
                 return Results.Problem(type: ProblemTypes.Validation, title: "Id must not be empty.", statusCode: StatusCodes.Status400BadRequest);
             }
             if (!TripService.IsValidStatus(input.Status)) return InvalidStatus();
+            if (!TripService.IsValidItems(input)) return InvalidQuantity();
 
             var (result, trip) = await service.UpsertAsync(profileId, tripId, input, ct);
             return result switch
@@ -54,6 +56,11 @@ public static class TripEndpoints
 
     private static IResult InvalidStatus() =>
         Results.Problem(type: ProblemTypes.Validation, title: "Status must be planned, shopping or done.", statusCode: StatusCodes.Status400BadRequest);
+
+    private static IResult InvalidQuantity() =>
+        Results.Problem(type: ProblemTypes.Validation,
+            title: $"Quantities must be more than 0 and at most {Quantities.MaxQuantity}, in {string.Join(", ", Quantities.Units)}.",
+            statusCode: StatusCodes.Status400BadRequest);
 
     private static IResult TripNotFound() =>
         Results.Problem(type: ProblemTypes.TripNotFound, title: "Trip not found.", statusCode: StatusCodes.Status404NotFound);

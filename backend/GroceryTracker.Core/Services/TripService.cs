@@ -165,6 +165,9 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         return true;
     }
 
+    public static bool IsValidItems(TripInput input) =>
+        input.Items.All(i => Quantities.IsValidQuantity(i.Quantity) && Quantities.IsValidUnit(i.Unit));
+
     public static bool IsValidStatus(string? status) => status is null || ParseStatus(status) is not null;
 
     private static TripStatus? ParseStatus(string? status) => status?.Trim().ToLowerInvariant() switch
@@ -280,6 +283,9 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
             line.Checked = itemInput.Checked;
             line.EstimateCents = ToCents(itemInput.Estimate);
             line.PriceCents = priceCents;
+            // Omitted (an older client or queued save) keeps what the line had; a new line is 1 each.
+            if (itemInput.Quantity is { } quantity) line.QuantityMilli = Quantities.ToMilli(quantity);
+            if (itemInput.Unit is { } unit) line.Unit = unit;
             line.SortOrder = i;
         }
     }
@@ -326,7 +332,8 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
             trip.Items.OrderBy(i => i.SortOrder).Select(i => new TripItemDto(
                 i.Id, i.ItemId, i.Item!.Name, i.CategoryId, i.Category!.Name,
                 StoreName(i), i.Checked, i.PriceCents / 100m,
-                i.EstimateCents / 100m, i.PricedAt + PriceEditWindow, IsLocked(i, now))).ToList(),
+                i.EstimateCents / 100m, i.PricedAt + PriceEditWindow, IsLocked(i, now),
+                Quantities.FromMilli(i.QuantityMilli), i.Unit)).ToList(),
             (trip.Items.Sum(i => i.PriceCents) ?? 0) / 100m,
             FormatStatus(trip.Status), trip.CompletedAt,
             (trip.Items.Sum(i => i.EstimateCents) ?? 0) / 100m,

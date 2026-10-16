@@ -20,6 +20,10 @@ public class TripItem
     // once TripService.PriceEditWindow has passed since then, so price history
     // (and every average built from it) stops shifting under the user.
     public DateTimeOffset? PricedAt { get; set; }
+    // How much was bought, in thousandths (750 = 0.75), and its unit: "each" or a weight
+    // (lb, oz, kg, g). PriceCents stays what the whole line cost. See Services/Quantities.
+    public int QuantityMilli { get; set; } = 1000;
+    public string Unit { get; set; } = "each";
     public int SortOrder { get; set; }
 
     public Trip? Trip { get; set; }

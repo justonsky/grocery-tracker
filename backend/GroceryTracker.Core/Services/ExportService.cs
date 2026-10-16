@@ -52,6 +52,8 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
                 ti.EstimateCents,
                 ti.PriceCents,
                 ti.PricedAt,
+                ti.QuantityMilli,
+                ti.Unit,
             })
             .ToListAsync(ct);
         var linesByTrip = lines.GroupBy(l => l.TripId).ToDictionary(g => g.Key, g => g.OrderBy(l => l.SortOrder).ToList());
@@ -104,7 +106,7 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
         var tripById = trips.ToDictionary(t => t.Id);
         var itemsSheet = workbook.Worksheets.Add("Trip Items");
         WriteHeader(itemsSheet, "Profile", "Date", "Trip", "Trip Stores", "Budget",
-            "Status", "Item", "Category", "Store", "Picked Up", "Estimate", "Price", "Priced", "Price Locked");
+            "Status", "Item", "Category", "Store", "Picked Up", "Quantity", "Unit", "Estimate", "Price", "Unit Price", "Priced", "Price Locked");
         row = 2;
         foreach (var t in trips)
         {
@@ -120,15 +122,22 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
                 itemsSheet.Cell(row, 8).Value = l.Category;
                 itemsSheet.Cell(row, 9).Value = l.Store ?? "";
                 itemsSheet.Cell(row, 10).Value = l.Checked;
-                if (l.EstimateCents is { } estimate) itemsSheet.Cell(row, 11).Value = estimate / 100m;
+                itemsSheet.Cell(row, 11).Value = Quantities.FromMilli(l.QuantityMilli);
+                itemsSheet.Cell(row, 12).Value = l.Unit;
+                if (l.EstimateCents is { } estimate) itemsSheet.Cell(row, 13).Value = estimate / 100m;
                 // Left blank rather than 0.00 for an item that has not been bought yet.
-                if (l.PriceCents is { } price) itemsSheet.Cell(row, 12).Value = price / 100m;
-                if (l.PricedAt is { } pricedAt) itemsSheet.Cell(row, 13).Value = pricedAt.ToString("yyyy-MM-dd");
-                itemsSheet.Cell(row, 14).Value = l.PricedAt is { } at && now - at > TripService.PriceEditWindow;
+                if (l.PriceCents is { } price)
+                {
+                    itemsSheet.Cell(row, 14).Value = price / 100m;
+                    // Per item, or per pound for weights.
+                    itemsSheet.Cell(row, 15).Value = Quantities.Dollars(Quantities.UnitPriceCents(price, l.QuantityMilli, l.Unit));
+                }
+                if (l.PricedAt is { } pricedAt) itemsSheet.Cell(row, 16).Value = pricedAt.ToString("yyyy-MM-dd");
+                itemsSheet.Cell(row, 17).Value = l.PricedAt is { } at && now - at > TripService.PriceEditWindow;
                 row++;
             }
         }
-        FormatMoney(itemsSheet, row, 5, 11, 12);
+        FormatMoney(itemsSheet, row, 5, 13, 14, 15);
 
         var recipes = await db.Recipes
             .Select(r => new { r.Name, r.Description, r.PhotoVersion, Items = r.Items.OrderBy(i => i.SortOrder).Select(i => i.Item!.Name + (i.Amount != null ? " (" + i.Amount + ")" : "")).ToList() })
@@ -151,7 +160,7 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
 
         if (includeItems)
         {
-            await WriteCatalogueAsync(workbook, lines.Select(l => (l.ItemId, l.PriceCents, tripById[l.TripId].Date)).ToList(), ct);
+            await WriteCatalogueAsync(workbook, lines.Select(l => (l.ItemId, l.PriceCents, l.QuantityMilli, l.Unit, tripById[l.TripId].Date, tripById[l.TripId].CreatedAt)).ToList(), ct);
         }
 
         foreach (var sheet in workbook.Worksheets)
@@ -168,7 +177,7 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
 
     // The household item catalogue, one row per item, with the price statistics
     // the app shows (household-wide, every profile's purchases).
-    private async Task WriteCatalogueAsync(XLWorkbook workbook, List<(Guid ItemId, int? PriceCents, string Date)> lines, CancellationToken ct)
+    private async Task WriteCatalogueAsync(XLWorkbook workbook, List<(Guid ItemId, int? PriceCents, int QuantityMilli, string Unit, string Date, DateTimeOffset CreatedAt)> lines, CancellationToken ct)
     {
         var items = await db.Items
             .Select(i => new { i.Id, i.Name, Category = i.DefaultCategory != null ? i.DefaultCategory.Name : "Other", i.CreatedAt })
@@ -177,7 +186,7 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
 
         var sheet = workbook.Worksheets.Add("Items");
         WriteHeader(sheet, "Item", "Default Category", "Times Listed", "Purchases",
-            "Average Price", "Last Price", "Lowest", "Highest", "First Bought", "Last Bought", "Added");
+            "Price Per", "Average Price", "Last Price", "Lowest", "Highest", "First Bought", "Last Bought", "Added");
         var row = 2;
         foreach (var item in items.OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase))
         {
@@ -191,17 +200,20 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
             sheet.Cell(row, 4).Value = bought.Count;
             if (bought.Count > 0)
             {
-                sheet.Cell(row, 5).Value = Math.Round(bought.Average(l => (decimal)l.PriceCents!.Value) / 100m, 2, MidpointRounding.AwayFromZero);
-                sheet.Cell(row, 6).Value = bought[^1].PriceCents!.Value / 100m;
-                sheet.Cell(row, 7).Value = bought.Min(l => l.PriceCents!.Value) / 100m;
-                sheet.Cell(row, 8).Value = bought.Max(l => l.PriceCents!.Value) / 100m;
-                sheet.Cell(row, 9).Value = bought[0].Date;
-                sheet.Cell(row, 10).Value = bought[^1].Date;
+                // Prices per item, or per pound for things bought by weight (the same numbers the app shows).
+                var (priceUnit, points, _) = Quantities.Summarize(bought.Select(l => new Quantities.Purchase(l.PriceCents!.Value, l.QuantityMilli, l.Unit, l.Date, l.CreatedAt)));
+                sheet.Cell(row, 5).Value = priceUnit;
+                sheet.Cell(row, 6).Value = Quantities.Dollars(points.Average(p => p.UnitCents));
+                sheet.Cell(row, 7).Value = Quantities.Dollars(points[^1].UnitCents);
+                sheet.Cell(row, 8).Value = Quantities.Dollars(points.Min(p => p.UnitCents));
+                sheet.Cell(row, 9).Value = Quantities.Dollars(points.Max(p => p.UnitCents));
+                sheet.Cell(row, 10).Value = bought[0].Date;
+                sheet.Cell(row, 11).Value = bought[^1].Date;
             }
-            sheet.Cell(row, 11).Value = item.CreatedAt.ToString("yyyy-MM-dd");
+            sheet.Cell(row, 12).Value = item.CreatedAt.ToString("yyyy-MM-dd");
             row++;
         }
-        FormatMoney(sheet, row, 5, 6, 7, 8);
+        FormatMoney(sheet, row, 6, 7, 8, 9);
     }
 
     private static void FormatMoney(IXLWorksheet sheet, int endRow, params int[] columns)

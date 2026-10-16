@@ -4,7 +4,7 @@ namespace GroceryTracker.Core.Dtos;
 // line using the item (planned ones too); PurchaseCount only the priced ones.
 public record CatalogItemDto(
     Guid Id, string Name, Guid? DefaultCategoryId, string CategoryName,
-    int LineCount, int PurchaseCount, string? LastPurchased, decimal? AveragePrice);
+    int LineCount, int PurchaseCount, string? LastPurchased, decimal? AveragePrice, string PriceUnit = "each");
 
 public record SaveItemRequest(string Name, Guid? DefaultCategoryId);
 
@@ -16,12 +16,14 @@ public record ItemLineDto(
     Guid ProfileId, string ProfileName,
     string? StoreName, string? EffectiveStoreName,
     bool Checked, decimal? Price, decimal? Estimate,
-    bool PriceLocked, DateTimeOffset? PriceLocksAt);
+    bool PriceLocked, DateTimeOffset? PriceLocksAt,
+    decimal Quantity = 1, string Unit = "each");
 
 // Adds or edits a purchase record. A blank price leaves the line planned.
 // ConfirmLocked must be true to change a line whose price is locked — the trip
 // editor can't, this is the deliberate correction path.
-public record SaveItemLineRequest(Guid TripId, string? StoreName, decimal? Price, bool ConfirmLocked = false);
+public record SaveItemLineRequest(Guid TripId, string? StoreName, decimal? Price, bool ConfirmLocked = false,
+    decimal? Quantity = null, string? Unit = null);
 
 // Moves the source item's lines onto the target item. StoreName limits it to lines
 // bought at that store (by EffectiveStoreName); null moves them all. The source is

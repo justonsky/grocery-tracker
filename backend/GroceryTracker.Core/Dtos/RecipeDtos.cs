@@ -1,7 +1,7 @@
 namespace GroceryTracker.Core.Dtos;
 
 // AveragePrice is the household average paid for the item (null if never bought).
-public record RecipeItemDto(Guid ItemId, string ItemName, Guid? CategoryId, string CategoryName, string? Amount, decimal? AveragePrice);
+public record RecipeItemDto(Guid ItemId, string ItemName, Guid? CategoryId, string CategoryName, string? Amount, decimal? AveragePrice, string PriceUnit = "each");
 
 // PhotoVersion 0 = no photo; otherwise the photo is at /api/v1/recipes/{id}/photo?v={PhotoVersion}.
 // TripCount / LastPlanned: on how many trips the recipe was planned, and the latest such date.

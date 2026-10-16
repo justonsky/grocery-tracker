@@ -1,3 +1,4 @@
+import { perUnit } from '../trips/quantity'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -123,7 +124,7 @@ export function ItemsPortal() {
                     {item.lastPurchased && ` · last ${item.lastPurchased}`}
                   </span>
                 </span>
-                {item.averagePrice != null && <span className="tag tag-neutral shrink-0 px-2.5 py-0.5 tabular-nums">avg {money(item.averagePrice)}</span>}
+                {item.averagePrice != null && <span className="tag tag-neutral shrink-0 px-2.5 py-0.5 tabular-nums">avg {money(item.averagePrice)}{perUnit(item.priceUnit)}</span>}
               </button>
             ))}
             {items && items.length > itemsShown && (

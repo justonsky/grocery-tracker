@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { toPng } from 'html-to-image'
+import { perUnit } from '../../trips/quantity'
 import { api } from '../../api/client'
 import type { Recipe } from '../../api/types'
 import { useConnectivity } from '../../app/ConnectivityProvider'
@@ -216,7 +217,7 @@ export function RecipeDialog({ recipe, onClose, onEdit }: { recipe: Recipe; onCl
                 {item.amount && <span className="text-text/60"> · {item.amount}</span>}
               </span>
               <span className="tag tag-neutral hidden sm:inline-flex">{item.categoryName}</span>
-              <span className="w-16 text-right font-bold tabular-nums">{item.averagePrice != null ? money(item.averagePrice) : <span className="font-normal text-text/40">—</span>}</span>
+              <span className="w-16 text-right font-bold tabular-nums">{item.averagePrice != null ? `${money(item.averagePrice)}${perUnit(item.priceUnit)}` : <span className="font-normal text-text/40">—</span>}</span>
             </div>
           ))}
         </div>
@@ -234,6 +235,7 @@ export function RecipeDialog({ recipe, onClose, onEdit }: { recipe: Recipe; onCl
             {recipe.estimatedCost != null ? (
               <>
                 Estimated <strong className="font-heading text-lg text-text">{money(recipe.estimatedCost)}</strong> from household averages
+                {recipe.items.some((i) => i.priceUnit === 'lb' && i.averagePrice != null) && ', counting 1 lb of anything sold by weight'}
               </>
             ) : (
               'No prices yet — items get them once they are bought.'

@@ -70,7 +70,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.89,
-       "estimate": 3.95
+       "estimate": 3.95,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Gruyere Cheese Block",
@@ -118,7 +120,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.42,
-       "estimate": 10.6
+       "estimate": 10.6,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Yuchoy Leaves",
@@ -126,7 +130,9 @@
        "store": "HMart",
        "checked": true,
        "price": 4.44,
-       "estimate": 4.51
+       "estimate": 4.51,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -142,7 +148,9 @@
        "store": null,
        "checked": true,
        "price": 4.9,
-       "estimate": 4.98
+       "estimate": 4.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sugar Bee Apples",
@@ -166,7 +174,9 @@
        "store": null,
        "checked": true,
        "price": 15.72,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Salmon Furikake",
@@ -182,7 +192,9 @@
        "store": null,
        "checked": true,
        "price": 5.09,
-       "estimate": 5.18
+       "estimate": 5.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "SPAM Hot & Spicy",
@@ -190,7 +202,9 @@
        "store": null,
        "checked": true,
        "price": 9.82,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "SPAM Lite",
@@ -285,7 +299,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pineapple",
@@ -340,7 +356,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.57
+       "estimate": 3.57,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Pasture Raised Eggs",
@@ -364,7 +382,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 19.98
+       "estimate": 19.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -380,7 +400,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 20.97
+       "estimate": 20.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Spicy Pork Dumpings",
@@ -388,7 +410,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 29.97
+       "estimate": 29.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Pork & Shrimp Dumplings",
@@ -396,7 +420,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 29.97
+       "estimate": 29.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Ace Cracker Basque Cheesecake",
@@ -404,7 +430,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Udon Noodles",
@@ -420,7 +448,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Castella Rolls",
@@ -428,7 +458,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Turtle Chips Choco Churos",
@@ -436,7 +468,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Onions",
@@ -444,7 +478,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 3.44
+       "estimate": 3.44,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Chinese Broccoli",
@@ -533,7 +569,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.85
+       "estimate": 1.85,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Baby Spinach",
@@ -565,7 +603,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.14,
-       "estimate": 7.14
+       "estimate": 7.14,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Cottage Cheese",
@@ -581,7 +621,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.23,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fish Sausage",
@@ -589,7 +631,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.38,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fish Sausage - Shrimp",
@@ -597,7 +641,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.23,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yakisoba noodles",
@@ -605,7 +651,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.23,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Choco Pie Black Sugar Milk Tea",
@@ -653,7 +701,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.68,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pocky Chocolate Banana 2.47",
@@ -692,7 +742,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.52,
-       "estimate": 9.52
+       "estimate": 9.52,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Large Eggs Cage Free",
@@ -700,7 +752,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.16,
-       "estimate": 5.16
+       "estimate": 5.16,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -716,7 +770,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.98,
-       "estimate": 6.98
+       "estimate": 6.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Frozen Sweet Peas",
@@ -740,7 +796,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.97,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Marinated Chicken Thighs",
@@ -748,7 +806,9 @@
        "store": "HMart",
        "checked": true,
        "price": 19.99,
-       "estimate": 19.98
+       "estimate": 19.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgogi",
@@ -764,7 +824,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.99,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yakisoba Noodles - Original",
@@ -772,7 +834,9 @@
        "store": "HMart",
        "checked": true,
        "price": 20.98,
-       "estimate": 20.97
+       "estimate": 20.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shipping",
@@ -821,7 +885,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.34
+       "estimate": 3.34,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Small Cucumbers",
@@ -861,7 +927,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 6.98
+       "estimate": 6.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bacon",
@@ -877,7 +945,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 7.14
+       "estimate": 7.14,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Shredded Mild Cheddar Cheese",
@@ -901,7 +971,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ihawan Chicken Steam Buns",
@@ -917,7 +989,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ihawan Hot Longanisa",
@@ -925,7 +999,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Marinated Chicken Boneless Thighs",
@@ -933,7 +1009,9 @@
        "store": "HMart",
        "checked": true,
        "price": 29.98,
-       "estimate": 29.98
+       "estimate": 29.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Walnut Ricke Cake",
@@ -941,7 +1019,9 @@
        "store": "HMart",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pancake Mix",
@@ -957,7 +1037,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.47,
-       "estimate": 10.47
+       "estimate": 10.47,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Banana Choco Pie",
@@ -989,7 +1071,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tuna with Kimchi Sauce - 4pk",
@@ -1013,7 +1097,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.96,
-       "estimate": 15.96
+       "estimate": 15.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Sliced Cabbage Kimchi",
@@ -1021,7 +1107,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -1148,7 +1236,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.16,
-       "estimate": 5.16
+       "estimate": 5.16,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whipped Cream cheese",
@@ -1252,7 +1342,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.34,
-       "estimate": 3.34
+       "estimate": 3.34,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Red/Yellow Green Peppers (1 each)",
@@ -1268,7 +1360,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.8,
-       "estimate": 1.8
+       "estimate": 1.8,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Carrot",
@@ -1276,7 +1370,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.86,
-       "estimate": 0.86
+       "estimate": 0.86,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jalapeno Peppers",
@@ -1284,7 +1380,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.2,
-       "estimate": 0.2
+       "estimate": 0.2,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -1292,7 +1390,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.0,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "English Muffins",
@@ -1308,7 +1408,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.13,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Garlic & Herbs Butter",
@@ -1356,7 +1458,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.96,
-       "estimate": 3.87
+       "estimate": 3.87,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Pesto Sauce jar",
@@ -1372,7 +1476,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 12.25,
-       "estimate": 11.96
+       "estimate": 11.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Easter Chocolate Bunnies",
@@ -1380,7 +1486,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 12.25,
-       "estimate": 11.96
+       "estimate": 11.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Aldi Grocery Bag",
@@ -1548,7 +1656,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.49,
-       "estimate": 3.49
+       "estimate": 3.49,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Fresh Ginger",
@@ -1604,7 +1714,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Large Eggs - Pasture Raised",
@@ -1652,7 +1764,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.18,
-       "estimate": 6.18
+       "estimate": 6.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Canned Garbanzo Beans",
@@ -1660,7 +1774,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.62,
-       "estimate": 1.62
+       "estimate": 1.62,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -1683,7 +1799,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.35,
-       "estimate": 5.38
+       "estimate": 5.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pork & Beans",
@@ -1691,7 +1809,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.6,
-       "estimate": 2.61
+       "estimate": 2.61,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Baked Beans",
@@ -1707,7 +1827,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.22,
-       "estimate": 1.23
+       "estimate": 1.23,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -1755,7 +1877,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.47,
-       "estimate": 9.52
+       "estimate": 9.52,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -1763,7 +1887,9 @@
        "store": "HMart",
        "checked": true,
        "price": 44.09,
-       "estimate": 43.98
+       "estimate": 43.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ihawan Longaniza",
@@ -1771,7 +1897,9 @@
        "store": "HMart",
        "checked": true,
        "price": 30.03,
-       "estimate": 29.95
+       "estimate": 29.95,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Banana Chocopie",
@@ -1779,7 +1907,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.01,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Orion Peanut & Squid Ball Box",
@@ -1795,7 +1925,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.96
+       "estimate": 5.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Jongga Original Kimchi",
@@ -1811,7 +1943,9 @@
        "store": "HMart",
        "checked": true,
        "price": 20.03,
-       "estimate": 19.98
+       "estimate": 19.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mini Yak-Gwa cookies",
@@ -1819,7 +1953,9 @@
        "store": "HMart",
        "checked": true,
        "price": 2.99,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Walnut Cookies",
@@ -1835,7 +1971,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.99,
-       "estimate": 11.96
+       "estimate": 11.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Yak-Gwa Cookies",
@@ -1843,7 +1981,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.0,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -1865,7 +2005,9 @@
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 2.99
+       "estimate": 2.99,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Mini Cucumbers",
@@ -1873,7 +2015,9 @@
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -1881,7 +2025,9 @@
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bananas",
@@ -1908,12 +2054,14 @@
        "estimate": 2.49
       },
       {
-       "name": "Large Eggs (2) - Pasture Raised",
+       "name": "Large Eggs - Pasture Raised",
        "category": "Dairy",
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 10.38
+       "estimate": 10.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Amer Cheese Deli Slices",
@@ -1921,7 +2069,9 @@
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 6.0
+       "estimate": 6.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -1929,7 +2079,9 @@
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 7.74
+       "estimate": 7.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -1953,7 +2105,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.98,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Oriental Raisin Tea",
@@ -1961,7 +2115,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sweet Rice Pear",
@@ -1969,7 +2125,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.98,
-       "estimate": 6.98
+       "estimate": 6.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Corn Silk Tea 50 oz",
@@ -1977,7 +2135,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Korean Luncheon Meat",
@@ -1985,7 +2145,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.97,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Lite Spam",
@@ -1993,7 +2155,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Dumplings",
@@ -2001,7 +2165,9 @@
        "store": "HMart",
        "checked": true,
        "price": 29.97,
-       "estimate": 29.97
+       "estimate": 29.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Tong Tong Sausages",
@@ -2009,7 +2175,9 @@
        "store": "HMart",
        "checked": true,
        "price": 20.97,
-       "estimate": 20.97
+       "estimate": 20.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shin Ramen Black",
@@ -2025,7 +2193,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.98,
-       "estimate": 8.98
+       "estimate": 8.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tax",
@@ -2097,7 +2267,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.14
+       "estimate": 1.14,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Red Pepper",
@@ -2113,7 +2285,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.82
+       "estimate": 1.82,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Eggplants",
@@ -2121,7 +2295,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.06
+       "estimate": 3.06,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Mini cucumbers",
@@ -2129,7 +2305,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.33
+       "estimate": 1.33,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Bananas",
@@ -2177,7 +2355,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 4.94
+       "estimate": 4.94,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Amer Cheese Slices",
@@ -2185,7 +2365,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 1.95
+       "estimate": 1.95,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sharp Shredded Cheese",
@@ -2201,7 +2383,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 10.32
+       "estimate": 10.32,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Wheat Crackers",
@@ -2272,7 +2456,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.25,
-       "estimate": 5.25
+       "estimate": 5.25,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Bananas",
@@ -2296,7 +2482,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk 1/2 gallon",
@@ -2336,7 +2524,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.62,
-       "estimate": 1.62
+       "estimate": 1.62,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Tenderloin",
@@ -2368,7 +2558,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.32,
-       "estimate": 10.32
+       "estimate": 10.32,
+       "quantity": 8,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -2416,7 +2608,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.38,
-       "estimate": 6.38
+       "estimate": 6.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mixed Peppers",
@@ -2424,7 +2618,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.98,
-       "estimate": 4.98
+       "estimate": 4.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -2432,7 +2628,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Large Eggs",
@@ -2440,7 +2638,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -2448,7 +2648,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.57,
-       "estimate": 3.57
+       "estimate": 3.57,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Pesto Sauce",
@@ -2464,7 +2666,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 0.6,
-       "estimate": 0.6
+       "estimate": 0.6,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Amer Cheese Slices",
@@ -2480,7 +2684,9 @@
        "store": "HMart",
        "checked": true,
        "price": 37.56,
-       "estimate": 37.38
+       "estimate": 37.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "BBQ Marinated Chicken Thighs",
@@ -2488,7 +2694,9 @@
        "store": "HMart",
        "checked": true,
        "price": 18.77,
-       "estimate": 18.68
+       "estimate": 18.68,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Rice & Pear Drink",
@@ -2496,7 +2704,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.94,
-       "estimate": 11.88
+       "estimate": 11.88,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Barley Drink",
@@ -2504,7 +2714,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.21,
-       "estimate": 10.16
+       "estimate": 10.16,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Oriental Raisin Tea",
@@ -2512,7 +2724,9 @@
        "store": "HMart",
        "checked": true,
        "price": 17.04,
-       "estimate": 16.96
+       "estimate": 16.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Canned Yellow Peaches",
@@ -2520,7 +2734,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.65,
-       "estimate": 7.62
+       "estimate": 7.62,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Sliced Kimchi",
@@ -2528,7 +2744,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.52,
-       "estimate": 8.48
+       "estimate": 8.48,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Kadoya Sesame Oil",
@@ -2536,7 +2754,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.68,
-       "estimate": 7.64
+       "estimate": 7.64,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Carbo Hot Ramen Noodles",
@@ -2544,7 +2764,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.35,
-       "estimate": 15.28
+       "estimate": 15.28,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cheese Hot Ramend Noodles",
@@ -2607,7 +2829,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Romaine Hearts",
@@ -2631,7 +2855,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.33,
-       "estimate": 2.33
+       "estimate": 2.33,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Large Eggs",
@@ -2679,7 +2905,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 22.31,
-       "estimate": 22.31
+       "estimate": 22.31,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Breasts",
@@ -2726,7 +2954,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 17.98,
-       "estimate": 17.98
+       "estimate": 17.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Swiffer Duster",
@@ -2766,7 +2996,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Multi Peppers Pak",
@@ -2821,7 +3053,9 @@
        "store": "HMart",
        "checked": true,
        "price": 25.98,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "BBQ Marinated Chicken Thighs",
@@ -2837,7 +3071,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Corn Silk Tea",
@@ -2845,7 +3081,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.96,
-       "estimate": 15.96
+       "estimate": 15.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Buldak Carbo Chicken Ramen",
@@ -2853,7 +3091,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Oriental Raisin Tea",
@@ -2861,7 +3101,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.94,
-       "estimate": 11.94
+       "estimate": 11.94,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Bibigo Vegan Kimchi",
@@ -2877,7 +3119,9 @@
        "store": "HMart",
        "checked": true,
        "price": 13.98,
-       "estimate": 13.98
+       "estimate": 13.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shipping Fee",
@@ -2893,7 +3137,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 4.98
+       "estimate": 4.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Norwegian Salmon Steak",
@@ -2901,7 +3147,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 21.98
+       "estimate": 21.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -2973,7 +3221,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.19,
-       "estimate": 5.19
+       "estimate": 5.19,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Eggplants",
@@ -2981,7 +3231,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.71,
-       "estimate": 2.71
+       "estimate": 2.71,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -3037,7 +3289,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.89,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mushrooms",
@@ -3045,7 +3299,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.36,
-       "estimate": 2.38
+       "estimate": 2.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Large Eggs",
@@ -3053,7 +3309,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.92,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Breasts",
@@ -3085,7 +3343,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.47,
-       "estimate": 3.49
+       "estimate": 3.49,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -3109,7 +3369,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.04,
-       "estimate": 3.04
+       "estimate": 3.04,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Garbanzo Beans",
@@ -3117,7 +3379,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 8.98,
-       "estimate": 8.98
+       "estimate": 8.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Red Pepper",
@@ -3133,7 +3397,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Red Cherries",
@@ -3149,7 +3415,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Plum Tomatoes",
@@ -3157,7 +3425,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.76,
-       "estimate": 0.76
+       "estimate": 0.76,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -3165,7 +3435,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.91,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bananas",
@@ -3197,7 +3469,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.81,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Aldi Eco Bags",
@@ -3205,7 +3479,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.39,
-       "estimate": 1.38
+       "estimate": 1.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Costco Green Tea",
@@ -3264,12 +3540,14 @@
        "estimate": 3.99
       },
       {
-       "name": "Deli Ham 1/2 Lb",
+       "name": "Deli Ham",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 2.97,
-       "estimate": 2.94
+       "estimate": 2.94,
+       "quantity": 0.5,
+       "unit": "lb"
       },
       {
        "name": "Crystal Geyser Water",
@@ -3285,7 +3563,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.61,
-       "estimate": 3.61
+       "estimate": 3.61,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -3293,7 +3573,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.3,
-       "estimate": 2.3
+       "estimate": 2.3,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Chinese Eggplants",
@@ -3301,7 +3583,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.3,
-       "estimate": 2.3
+       "estimate": 2.3,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Red Pepper",
@@ -3309,7 +3593,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.06,
-       "estimate": 1.06
+       "estimate": 1.06,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bowtie Pasta",
@@ -3325,7 +3611,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.63,
-       "estimate": 0.63
+       "estimate": 0.63,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -3341,7 +3629,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.99,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -3349,7 +3639,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Large Eggs",
@@ -3389,7 +3681,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.39,
-       "estimate": 2.38
+       "estimate": 2.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Prebiotic Soda",
@@ -3470,7 +3764,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.5
+       "estimate": 3.5,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Multi Peppers Pak",
@@ -3478,7 +3774,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 4.98
+       "estimate": 4.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "White Mushroom",
@@ -3502,7 +3800,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 10.32
+       "estimate": 10.32,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Marinated Pork Bulgoki",
@@ -3510,7 +3810,9 @@
        "store": "HMart",
        "checked": true,
        "price": 25.98,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bibigo Vegan Kimchi",
@@ -3526,7 +3828,9 @@
        "store": "HMart",
        "checked": true,
        "price": 19.98,
-       "estimate": 19.98
+       "estimate": 19.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Pork Dumpling",
@@ -3534,7 +3838,9 @@
        "store": "HMart",
        "checked": true,
        "price": 19.98,
-       "estimate": 19.98
+       "estimate": 19.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Vegetable Dumpling",
@@ -3558,7 +3864,9 @@
        "store": "HMart",
        "checked": true,
        "price": 53.98,
-       "estimate": 53.98
+       "estimate": 53.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yakisoba Noodle",
@@ -3566,7 +3874,9 @@
        "store": "HMart",
        "checked": true,
        "price": 14.97,
-       "estimate": 14.97
+       "estimate": 14.97,
+       "quantity": 3,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -3654,7 +3964,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Lemons",
@@ -3689,12 +4001,14 @@
        "estimate": 9.12
       },
       {
-       "name": "Salmon Fillet (2) 50% discount",
+       "name": "Salmon Fillet 50% discount",
        "category": "Meat & Seafood",
        "store": "Aldi",
        "checked": true,
        "price": 9.26,
-       "estimate": 9.38
+       "estimate": 9.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -3702,7 +4016,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.1,
-       "estimate": 5.16
+       "estimate": 5.16,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -3733,7 +4049,9 @@
        "store": "BJ's",
        "checked": false,
        "price": null,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "BJs Disinfectant wipes",
@@ -3773,7 +4091,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Multi-Pack Pepper",
@@ -3781,7 +4101,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 4.98
+       "estimate": 4.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Tenderloin",
@@ -3821,7 +4143,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 9.52
+       "estimate": 9.52,
+       "quantity": 8,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -3881,12 +4205,14 @@
        "estimate": 7.49
       },
       {
-       "name": "1/2 LB Deli Ham Slices",
+       "name": "Deli Ham Slices",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 1.49,
-       "estimate": 1.45
+       "estimate": 1.45,
+       "quantity": 0.5,
+       "unit": "lb"
       },
       {
        "name": "Crest Toothpaste",
@@ -3918,7 +4244,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.37,
-       "estimate": 3.61
+       "estimate": 3.61,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Carrot",
@@ -3974,7 +4302,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.11,
-       "estimate": 5.18
+       "estimate": 5.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Amer Deli Cheese Slices",
@@ -4030,7 +4360,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.39,
-       "estimate": 9.52
+       "estimate": 9.52,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Marinated Pork Spicy CT Butt Bulgogi",
@@ -4038,7 +4370,9 @@
        "store": "HMart",
        "checked": true,
        "price": 25.98,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Choripdong Tongtong Sausage",
@@ -4046,7 +4380,9 @@
        "store": "HMart",
        "checked": true,
        "price": 20.97,
-       "estimate": 20.97
+       "estimate": 20.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Bibigo Vegan Kimchi 17.6oz",
@@ -4054,7 +4390,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pancake Mix",
@@ -4113,12 +4451,14 @@
        "estimate": 19.99
       },
       {
-       "name": "Deli Ham Slices - 1/2 lb",
+       "name": "Deli Ham Slices",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 2.72,
-       "estimate": 2.72
+       "estimate": 2.72,
+       "quantity": 0.5,
+       "unit": "lb"
       },
       {
        "name": "Ciabatta Rolls",
@@ -4126,7 +4466,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.78,
-       "estimate": 4.78
+       "estimate": 4.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Brioche Rolls",
@@ -4158,7 +4500,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.98,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -4166,7 +4510,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.52,
-       "estimate": 9.52
+       "estimate": 9.52,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Marinated Pork Bulgoki",
@@ -4174,7 +4520,9 @@
        "store": "HMart",
        "checked": true,
        "price": 33.06,
-       "estimate": 33.12
+       "estimate": 33.12,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Choripdong Tongtong Sausage",
@@ -4182,7 +4530,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.86,
-       "estimate": 11.88
+       "estimate": 11.88,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "J Basket Pork Mini Sausage",
@@ -4190,7 +4540,9 @@
        "store": "HMart",
        "checked": true,
        "price": 13.55,
-       "estimate": 13.58
+       "estimate": 13.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tapioca Starch",
@@ -4198,7 +4550,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.37,
-       "estimate": 3.38
+       "estimate": 3.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -4206,7 +4560,9 @@
        "store": "HMart",
        "checked": true,
        "price": 45.79,
-       "estimate": 45.88
+       "estimate": 45.88,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Marinated Chicken Thighs",
@@ -4222,7 +4578,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.77,
-       "estimate": 6.78
+       "estimate": 6.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Walnut Cookie",
@@ -4238,7 +4596,9 @@
        "store": "HMart",
        "checked": true,
        "price": 21.46,
-       "estimate": 21.5
+       "estimate": 21.5,
+       "quantity": 5,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -4257,12 +4617,14 @@
      ],
      "items": [
       {
-       "name": "1/2 Lb Roasted Turkey Slices",
+       "name": "Roasted Turkey Slices",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 4.55,
-       "estimate": 4.67
+       "estimate": 4.67,
+       "quantity": 0.5,
+       "unit": "lb"
       },
       {
        "name": "Scott's TP",
@@ -4310,7 +4672,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.46,
-       "estimate": 2.46
+       "estimate": 2.46,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Vidalia Onions",
@@ -4318,7 +4682,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.54,
-       "estimate": 3.54
+       "estimate": 3.54,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Plum Tomatoes",
@@ -4326,7 +4692,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.88,
-       "estimate": 1.88
+       "estimate": 1.88,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Limes",
@@ -4342,7 +4710,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.55,
-       "estimate": 1.55
+       "estimate": 1.55,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -4374,7 +4744,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.27,
-       "estimate": 7.27
+       "estimate": 7.27,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -4390,7 +4762,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.64,
-       "estimate": 1.64
+       "estimate": 1.64,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Burman's Ketchup",
@@ -4406,7 +4780,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.9,
-       "estimate": 3.9
+       "estimate": 3.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Havarti Cheese Slices",
@@ -4414,7 +4790,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.58,
-       "estimate": 2.58
+       "estimate": 2.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -4422,7 +4800,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.4,
-       "estimate": 5.4
+       "estimate": 5.4,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Limoncello Cheesecakes",
@@ -4430,7 +4810,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.16,
-       "estimate": 5.16
+       "estimate": 5.16,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Dijon Mustard",
@@ -4470,7 +4852,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.82,
-       "estimate": 2.82
+       "estimate": 2.82,
+       "quantity": 6,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -4497,12 +4881,14 @@
        "estimate": 10.99
       },
       {
-       "name": "1/2 lb Roasted Turkey Slices",
+       "name": "Roasted Turkey Slices",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 4.46,
-       "estimate": 4.47
+       "estimate": 4.47,
+       "quantity": 0.5,
+       "unit": "lb"
       },
       {
        "name": "BJs Crispy Chicken Patties",
@@ -4518,7 +4904,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.32,
-       "estimate": 2.32
+       "estimate": 2.32,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Plum Tomatoes",
@@ -4526,7 +4914,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.88,
-       "estimate": 0.88
+       "estimate": 0.88,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -4534,7 +4924,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.17,
-       "estimate": 1.17
+       "estimate": 1.17,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -4542,7 +4934,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.32,
-       "estimate": 1.32
+       "estimate": 1.32,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Carrots",
@@ -4558,7 +4952,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.3,
-       "estimate": 2.3
+       "estimate": 2.3,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Green Bell Pepper",
@@ -4598,7 +4994,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.7,
-       "estimate": 5.7
+       "estimate": 5.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tomato Sauce",
@@ -4606,7 +5004,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 0.94,
-       "estimate": 0.94
+       "estimate": 0.94,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Thighs",
@@ -4630,7 +5030,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.8,
-       "estimate": 10.8
+       "estimate": 10.8,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Chicken Bone Broth",
@@ -4638,7 +5040,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.18,
-       "estimate": 6.18
+       "estimate": 6.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Dijon Mustard",
@@ -4749,7 +5153,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.37,
-       "estimate": 5.4
+       "estimate": 5.4,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Marinara Sauce",
@@ -4792,20 +5198,24 @@
        "estimate": 5.99
       },
       {
-       "name": "1/2 lb Maple Honey Turkey (Dietz & Watson)",
+       "name": "Maple Honey Turkey (Dietz & Watson)",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": false,
        "price": null,
-       "estimate": 6.0
+       "estimate": 6.0,
+       "quantity": 0.5,
+       "unit": "lb"
       },
       {
-       "name": "1 lb Roast Beef (Dietz & Watson)",
+       "name": "Roast Beef (Dietz & Watson)",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": false,
        "price": null,
-       "estimate": 8.0
+       "estimate": 8.0,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Vidalia Onions",
@@ -4813,7 +5223,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Limes",
@@ -4829,7 +5241,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Oat Milk",
@@ -4861,7 +5275,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 10.32
+       "estimate": 10.32,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Costco Green Tea",
@@ -4928,12 +5344,14 @@
        "estimate": 4.99
       },
       {
-       "name": "1 lb Dietz & Watson Roast Beef",
+       "name": "Dietz & Watson Roast Beef",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 9.08,
-       "estimate": 9.04
+       "estimate": 9.04,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Tzatziki Sauce",
@@ -4973,7 +5391,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.13,
-       "estimate": 2.13
+       "estimate": 2.13,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Red Onion",
@@ -5061,7 +5481,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.96,
-       "estimate": 2.85
+       "estimate": 2.85,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Multi-Pepper Pack",
@@ -5077,7 +5499,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 20.1,
-       "estimate": 19.34
+       "estimate": 19.34,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sirloin Tip Steak",
@@ -5101,7 +5525,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.51,
-       "estimate": 3.38
+       "estimate": 3.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Smoked Cheddar Slices",
@@ -5125,7 +5551,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.42,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Marinara Sauce - Organic Simple Nature",
@@ -5208,12 +5636,14 @@
        "estimate": 18.99
       },
       {
-       "name": "1 lb Roasted turkey Slices - Dietz & Watson",
+       "name": "Roasted turkey Slices - Dietz & Watson",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 8.44,
-       "estimate": 8.44
+       "estimate": 8.44,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Coleslaw",
@@ -5261,7 +5691,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.96,
-       "estimate": 2.96
+       "estimate": 2.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Mini Cucumbers",
@@ -5269,7 +5701,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.74,
-       "estimate": 2.74
+       "estimate": 2.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Cherry Tomatoes",
@@ -5293,7 +5727,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.34,
-       "estimate": 2.34
+       "estimate": 2.34,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chinese Eggplants",
@@ -5301,7 +5737,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.33,
-       "estimate": 2.33
+       "estimate": 2.33,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Zucchinis",
@@ -5333,7 +5771,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cream Cheese",
@@ -5357,7 +5797,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 15.79,
-       "estimate": 15.79
+       "estimate": 15.79,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Havarti Cheese Slices",
@@ -5397,7 +5839,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.1,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Frozen Green Peas",
@@ -5493,7 +5937,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.58,
-       "estimate": 2.58
+       "estimate": 2.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -5509,7 +5955,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.65,
-       "estimate": 1.65
+       "estimate": 1.65,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Squash",
@@ -5517,7 +5965,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.48,
-       "estimate": 1.48
+       "estimate": 1.48,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sweet Potato",
@@ -5525,7 +5975,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.15,
-       "estimate": 1.15
+       "estimate": 1.15,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Eggplants",
@@ -5581,7 +6033,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 14.49,
-       "estimate": 14.49
+       "estimate": 14.49,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whipped Cream Cheese",
@@ -5597,7 +6051,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 20.22,
-       "estimate": 20.22
+       "estimate": 20.22,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Inglehoffer Honey Mustard",
@@ -5677,7 +6133,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.79,
-       "estimate": 2.79
+       "estimate": 2.79,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -5693,7 +6151,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.47,
-       "estimate": 1.47
+       "estimate": 1.47,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chinese Eggplants",
@@ -5709,7 +6169,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.69,
-       "estimate": 1.69
+       "estimate": 1.69,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -5765,7 +6227,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.48,
-       "estimate": 5.4
+       "estimate": 5.4,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Organic Chicken Bone Broth",
@@ -5773,7 +6237,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.59,
-       "estimate": 7.47
+       "estimate": 7.47,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Aldi Shopping Bags",
@@ -5781,7 +6247,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.1,
-       "estimate": 2.07
+       "estimate": 2.07,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "GF Dog Treats",
@@ -5797,7 +6265,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.71,
-       "estimate": 2.67
+       "estimate": 2.67,
+       "quantity": 3,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -5909,7 +6379,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 25.44,
-       "estimate": 23.46
+       "estimate": 23.46,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Havarti Cheese Slices",
@@ -5965,7 +6437,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.24,
-       "estimate": 2.24
+       "estimate": 2.24,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Carrot",
@@ -5981,7 +6455,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.34,
-       "estimate": 1.34
+       "estimate": 1.34,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Baby Spinach",
@@ -6053,7 +6529,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -6061,7 +6539,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.1,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Vegan Kimchi",
@@ -6069,7 +6549,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.18,
-       "estimate": 10.18
+       "estimate": 10.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -6085,7 +6567,9 @@
        "store": "HMart",
        "checked": true,
        "price": 22.08,
-       "estimate": 22.08
+       "estimate": 22.08,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Marinated Chicken Thighs",
@@ -6101,7 +6585,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.94,
-       "estimate": 5.94
+       "estimate": 5.94,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Peanut & Squid Ball",
@@ -6109,7 +6595,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.44,
-       "estimate": 6.44
+       "estimate": 6.44,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Baked Squid Snack",
@@ -6117,7 +6605,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.38,
-       "estimate": 3.38
+       "estimate": 3.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hot Shrimp Crackers",
@@ -6125,7 +6615,9 @@
        "store": "HMart",
        "checked": true,
        "price": 17.82,
-       "estimate": 17.82
+       "estimate": 17.82,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shipping",
@@ -6205,7 +6697,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.06,
-       "estimate": 1.06
+       "estimate": 1.06,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Walnuts",
@@ -6237,7 +6731,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.58,
-       "estimate": 2.58
+       "estimate": 2.58,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -6245,7 +6741,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.39,
-       "estimate": 1.39
+       "estimate": 1.39,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -6301,7 +6799,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.05,
-       "estimate": 4.05
+       "estimate": 4.05,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Sundried Tomatoes in Jar",
@@ -6485,7 +6985,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.09,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Pesto Sauce",
@@ -6519,12 +7021,14 @@
        "estimate": 37.47
       },
       {
-       "name": "1 LB Roast Beef - Dietz & Watson",
+       "name": "Roast Beef - Dietz & Watson",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 8.92,
-       "estimate": 8.87
+       "estimate": 8.87,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Palmetto Cheese Spread",
@@ -6588,7 +7092,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.37,
-       "estimate": 9.3
+       "estimate": 9.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ciabatta Rolls",
@@ -6620,7 +7126,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.44,
-       "estimate": 5.4
+       "estimate": 5.4,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Specialty Select Marinara Sauce",
@@ -6628,7 +7136,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.64,
-       "estimate": 7.58
+       "estimate": 7.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Specialty Select Brioche Stuffing",
@@ -6636,7 +7146,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.51,
-       "estimate": 7.45
+       "estimate": 7.45,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Hawaiian Stuffing",
@@ -6644,7 +7156,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.2,
-       "estimate": 4.17
+       "estimate": 4.17,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Entertainment Crackers",
@@ -6660,7 +7174,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.04,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Crème Brulee Cups",
@@ -6668,7 +7184,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.02,
-       "estimate": 7.96
+       "estimate": 7.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Caramelized Onion Chutney",
@@ -6756,7 +7274,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.53,
-       "estimate": 1.53
+       "estimate": 1.53,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "1/2 Butternut Squash",
@@ -6772,7 +7292,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.14,
-       "estimate": 1.14
+       "estimate": 1.14,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Stringbeans",
@@ -6836,7 +7358,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.18,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Salted Caramel Truffles",
@@ -6844,7 +7368,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.04,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Choceur Pralines",
@@ -6916,7 +7442,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Naval Oranges",
@@ -6924,7 +7452,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.0,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mini Cucumbers",
@@ -6932,7 +7462,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.9,
-       "estimate": 3.9
+       "estimate": 3.9,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -6948,7 +7480,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.13,
-       "estimate": 1.13
+       "estimate": 1.13,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Eggplants",
@@ -6956,7 +7490,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.04,
-       "estimate": 2.04
+       "estimate": 2.04,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Green Beans",
@@ -6980,7 +7516,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.7,
-       "estimate": 8.7
+       "estimate": 8.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -7028,7 +7566,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.78,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -7036,7 +7576,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.4,
-       "estimate": 5.4
+       "estimate": 5.4,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Zllionaire Cheesecake",
@@ -7052,7 +7594,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.96,
-       "estimate": 7.96
+       "estimate": 7.96,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -7116,7 +7660,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Costco Salad",
@@ -7154,7 +7700,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.18,
-       "estimate": 5.18
+       "estimate": 5.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "1/2 Gallon Milk",
@@ -7170,7 +7718,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.58,
-       "estimate": 11.58
+       "estimate": 11.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cottage Cheese",
@@ -7186,7 +7736,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 17.7,
-       "estimate": 17.7
+       "estimate": 17.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Havarti Cheese Slices",
@@ -7213,12 +7765,14 @@
        "estimate": 3.19
       },
       {
-       "name": "Chicken Bone Broth (Organic, 3)",
+       "name": "Chicken Bone Broth (Organic)",
        "category": "Pantry",
        "store": "Aldi",
        "checked": true,
        "price": 9.27,
-       "estimate": 9.27
+       "estimate": 9.27,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -7226,7 +7780,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.1,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Stroopwafels",
@@ -7242,7 +7798,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.98,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -7275,7 +7833,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 22.04,
-       "estimate": 21.98
+       "estimate": 21.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Turkey Tenderloins",
@@ -7286,20 +7846,24 @@
        "estimate": 14.99
       },
       {
-       "name": "Dietz & Watson Roast Beef (1 Lb)",
+       "name": "Dietz & Watson Roast Beef",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 9.07,
-       "estimate": 9.04
+       "estimate": 9.04,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
-       "name": "Diets & Watson Liverwurst (1/4 lb)",
+       "name": "Diets & Watson Liverwurst",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 1.78,
-       "estimate": 1.77
+       "estimate": 1.77,
+       "quantity": 0.25,
+       "unit": "lb"
       },
       {
        "name": "Purell 8 oz",
@@ -7331,7 +7895,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.6,
-       "estimate": 1.58
+       "estimate": 1.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Red Onion",
@@ -7387,7 +7953,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.05,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -7395,7 +7963,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.1,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Chicken Bone Broth",
@@ -7499,7 +8069,9 @@
        "store": "BJ's",
        "checked": false,
        "price": null,
-       "estimate": 21.98
+       "estimate": 21.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Smoked Salmon",
@@ -7571,7 +8143,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Carrot",
@@ -7595,7 +8169,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 8.1
+       "estimate": 8.1,
+       "quantity": 6,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -7618,7 +8194,9 @@
        "store": "BJ's",
        "checked": false,
        "price": null,
-       "estimate": 20.0
+       "estimate": 20.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -7626,7 +8204,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 10.8
+       "estimate": 10.8,
+       "quantity": 8,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -7657,7 +8237,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -7665,7 +8247,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.66,
-       "estimate": 2.66
+       "estimate": 2.66,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Chinese Eggplants",
@@ -7673,7 +8257,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.88,
-       "estimate": 3.88
+       "estimate": 3.88,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -7697,7 +8283,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Iceberg Lettuce Salad Pak",
@@ -7705,7 +8293,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.78,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Vidalia Onions Pak",
@@ -7729,7 +8319,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.98,
-       "estimate": 10.98
+       "estimate": 10.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Greek Vinegrette Dressing",
@@ -7745,7 +8337,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -7783,7 +8377,9 @@
        "store": "HMart",
        "checked": true,
        "price": 31.2,
-       "estimate": 31.16
+       "estimate": 31.16,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Thighs Bulgoki",
@@ -7791,7 +8387,9 @@
        "store": "HMart",
        "checked": true,
        "price": 17.52,
-       "estimate": 17.5
+       "estimate": 17.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shanghai Bok Choy",
@@ -7807,7 +8405,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.99,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Soup Stock Anchovy",
@@ -7823,7 +8423,9 @@
        "store": "HMart",
        "checked": true,
        "price": 16.0,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Japanese Seaweed Salad",
@@ -7839,7 +8441,9 @@
        "store": "HMart",
        "checked": true,
        "price": 14.0,
-       "estimate": 13.98
+       "estimate": 13.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Seasoned Pickled Cucumbers",
@@ -7871,7 +8475,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.0,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hot Pepper Tuna",
@@ -8112,7 +8718,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Lotus Root",
@@ -8120,7 +8728,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -8148,12 +8758,14 @@
        "estimate": 18.99
       },
       {
-       "name": "1 LB Roast Beef",
+       "name": "Roast Beef",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 7.71,
-       "estimate": 7.71
+       "estimate": 7.71,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Multi-Grain Bread Pack",
@@ -8201,7 +8813,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.01,
-       "estimate": 2.01
+       "estimate": 2.01,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Arugula pack",
@@ -8217,7 +8831,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.58,
-       "estimate": 1.58
+       "estimate": 1.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -8249,7 +8865,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.69,
-       "estimate": 3.78
+       "estimate": 3.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Thighs FP",
@@ -8377,7 +8995,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.5,
-       "estimate": 5.5
+       "estimate": 5.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -8385,7 +9005,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.78,
-       "estimate": 1.78
+       "estimate": 1.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mediterranean Vinegrette",
@@ -8401,7 +9023,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.58,
-       "estimate": 3.58
+       "estimate": 3.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Green Grapes",
@@ -8417,7 +9041,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.78,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Bone Broth",
@@ -8425,7 +9051,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.97,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Brie Cheese",
@@ -8433,7 +9061,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.5,
-       "estimate": 6.5
+       "estimate": 6.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "12 Grain Bread",
@@ -8449,7 +9079,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.47,
-       "estimate": 10.47
+       "estimate": 10.47,
+       "quantity": 3,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -8471,7 +9103,9 @@
        "store": "HMart",
        "checked": true,
        "price": 38.97,
-       "estimate": 38.97
+       "estimate": 38.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shijang Fish Cake",
@@ -8487,7 +9121,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Rice Syrup",
@@ -8503,7 +9139,9 @@
        "store": "HMart",
        "checked": true,
        "price": 21.98,
-       "estimate": 21.98
+       "estimate": 21.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Pork Bulgoki Dumplings",
@@ -8511,7 +9149,9 @@
        "store": "HMart",
        "checked": true,
        "price": 19.98,
-       "estimate": 19.98
+       "estimate": 19.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shin Ramen Black Pack",
@@ -8519,7 +9159,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Carbo Hot Chicken Ramen Big Bowl",
@@ -8527,7 +9169,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.16,
-       "estimate": 11.16
+       "estimate": 11.16,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Panda Oyster Sauce",
@@ -8543,7 +9187,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -8695,7 +9341,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.37,
-       "estimate": 2.37
+       "estimate": 2.37,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Vidalia Onions",
@@ -8703,7 +9351,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.73,
-       "estimate": 1.73
+       "estimate": 1.73,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -8711,7 +9361,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.57,
-       "estimate": 1.57
+       "estimate": 1.57,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Jalapeno Peppers",
@@ -8719,7 +9371,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.18,
-       "estimate": 0.18
+       "estimate": 0.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Blueberries Pack",
@@ -8775,7 +9429,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.98,
-       "estimate": 10.98
+       "estimate": 10.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cream Cheese",
@@ -8783,7 +9439,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.78,
-       "estimate": 3.78
+       "estimate": 3.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Brie & Camembert Cheese",
@@ -8791,7 +9449,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.5,
-       "estimate": 6.5
+       "estimate": 6.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Thighs FP",
@@ -8823,7 +9483,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -8847,7 +9509,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Starbucks French Roast K-Cups",
@@ -8874,12 +9538,14 @@
        "estimate": 9.49
       },
       {
-       "name": "1 Lb Roast Beef (Dietz & Watson)",
+       "name": "Roast Beef (Dietz & Watson)",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 8.15,
-       "estimate": 8.15
+       "estimate": 8.15,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Mini Croissants",
@@ -8983,7 +9649,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.67,
-       "estimate": 2.67
+       "estimate": 2.67,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Italian Vinegrette",
@@ -9015,7 +9683,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.98,
-       "estimate": 10.98
+       "estimate": 10.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Prosciutto",
@@ -9023,7 +9693,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -9050,12 +9722,14 @@
        "estimate": 4.99
       },
       {
-       "name": "Honey Maple Turkey 1 LB",
+       "name": "Honey Maple Turkey",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 8.44,
-       "estimate": 8.44
+       "estimate": 8.44,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Ken's Honey Mustard Sauce",
@@ -9159,7 +9833,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honeydew",
@@ -9207,7 +9883,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Havarti Cheese Slices",
@@ -9215,7 +9893,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.78,
-       "estimate": 3.78
+       "estimate": 3.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sour cream",
@@ -9231,7 +9911,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.58,
-       "estimate": 10.58
+       "estimate": 10.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Dried Mango",
@@ -9247,7 +9929,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -9335,7 +10019,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.58,
-       "estimate": 2.58
+       "estimate": 2.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Red/Green Grapes Pair",
@@ -9582,7 +10268,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.0,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Reusable Bags",
@@ -9590,7 +10278,9 @@
        "store": "HMart",
        "checked": true,
        "price": 2.99,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -9662,7 +10352,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.4,
-       "estimate": 2.4
+       "estimate": 2.4,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Carrot",
@@ -9670,7 +10362,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.73,
-       "estimate": 0.73
+       "estimate": 0.73,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jalapeno Peppers",
@@ -9678,7 +10372,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.36,
-       "estimate": 0.36
+       "estimate": 0.36,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -9686,7 +10382,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.96,
-       "estimate": 1.96
+       "estimate": 1.96,
+       "quantity": 10,
+       "unit": "each"
       },
       {
        "name": "Firm Tofu",
@@ -9694,7 +10392,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Soybean Sprouts",
@@ -9702,7 +10402,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.98,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Broccoli Crown",
@@ -9710,7 +10412,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.75,
-       "estimate": 1.75
+       "estimate": 1.75,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shanghai Bokchoy",
@@ -9726,7 +10430,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.38,
-       "estimate": 7.38
+       "estimate": 7.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -9734,7 +10440,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ground Beef 80/20",
@@ -9750,7 +10458,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Burmann's Ketchup",
@@ -9847,7 +10557,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.91,
-       "estimate": 0.91
+       "estimate": 0.91,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jalapeno Peppers",
@@ -9855,7 +10567,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.8,
-       "estimate": 0.8
+       "estimate": 0.8,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "12-grain Bread",
@@ -9871,7 +10585,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.92,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Borgonzola",
@@ -9903,7 +10619,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.61,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Frozen Greenpeas & Corn",
@@ -9927,7 +10645,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.03,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Dipping Sauce (Chik-Fil-A)",
@@ -9951,7 +10671,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Corn Soup Powders",
@@ -9959,7 +10681,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.97,
-       "estimate": 11.97
+       "estimate": 11.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Green Grapes",
@@ -9975,7 +10699,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.55,
-       "estimate": 5.55
+       "estimate": 5.55,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Rice Cake dessert",
@@ -10050,12 +10776,14 @@
        "estimate": 2.99
       },
       {
-       "name": "Strawberries (2 pks)",
+       "name": "Strawberries",
        "category": "Produce",
        "store": "BJ's",
        "checked": true,
        "price": 4.78,
-       "estimate": 4.78
+       "estimate": 4.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Penne Rigate",
@@ -10087,7 +10815,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.99,
-       "estimate": 0.99
+       "estimate": 0.99,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honeydew Melon",
@@ -10103,7 +10833,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.99,
-       "estimate": 0.99
+       "estimate": 0.99,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -10119,7 +10851,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honeybomb Cherry Tomatoes",
@@ -10127,7 +10861,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.98,
-       "estimate": 6.98
+       "estimate": 6.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cranberry White Cheddar",
@@ -10231,7 +10967,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Cantaloupe",
@@ -10239,7 +10977,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.99
+       "estimate": 2.99,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honeydew Melon",
@@ -10263,7 +11003,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 2.58
+       "estimate": 2.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -10271,7 +11013,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.34
+       "estimate": 5.34,
+       "quantity": 6,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -10294,7 +11038,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 10.12,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "BJs Paper Towels",
@@ -10366,7 +11112,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 8.09,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honeybomb Snacking Tomatoes",
@@ -10374,7 +11122,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.78,
-       "estimate": 3.78
+       "estimate": 3.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shaved Beef Steak",
@@ -10382,7 +11132,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.7,
-       "estimate": 11.7
+       "estimate": 11.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Thighs",
@@ -10398,7 +11150,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.38,
-       "estimate": 7.38
+       "estimate": 7.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -10406,7 +11160,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Chick Fil-A Sauce",
@@ -10438,7 +11194,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Skinless Salmon",
@@ -10465,12 +11223,14 @@
        "estimate": 6.49
       },
       {
-       "name": "Roasted Turkey 1LB Dietz & Watson",
+       "name": "Roasted Turkey Dietz & Watson",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 10.04,
-       "estimate": 10.04
+       "estimate": 10.04,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Reeses Banana Ice cream",
@@ -10494,7 +11254,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cucumbers",
@@ -10502,7 +11264,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.18,
-       "estimate": 1.18
+       "estimate": 1.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -10518,7 +11282,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.7,
-       "estimate": 1.7
+       "estimate": 1.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Broccoli Crown",
@@ -10566,7 +11332,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.7,
-       "estimate": 3.7
+       "estimate": 3.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honey Roasted Nut Blend",
@@ -10574,7 +11342,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 9.58,
-       "estimate": 9.58
+       "estimate": 9.58,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -10670,7 +11440,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.07,
-       "estimate": 2.07
+       "estimate": 2.07,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -10710,7 +11482,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.98,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ground Pork",
@@ -10742,7 +11516,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.78,
-       "estimate": 7.78
+       "estimate": 7.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -10750,7 +11526,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -10789,7 +11567,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 21.98,
-       "estimate": 21.98
+       "estimate": 21.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "BJ Nasal Spray (4 pk)",
@@ -10958,7 +11738,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.67,
-       "estimate": 1.67
+       "estimate": 1.67,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -10998,7 +11780,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.82,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -11006,7 +11790,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.41,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Artisan Crisps bread",
@@ -11038,7 +11824,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.63,
-       "estimate": 3.78
+       "estimate": 3.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cream of Mushroom Soup",
@@ -11054,7 +11842,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 49.98
+       "estimate": 49.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Gochujang Chicken Patty",
@@ -11062,7 +11852,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shrimp Shumai Dumplings",
@@ -11070,7 +11862,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 13.98
+       "estimate": 13.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tong Tong Sausages",
@@ -11078,7 +11872,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 13.98
+       "estimate": 13.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Vegan Kimchi",
@@ -11094,7 +11890,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Pork Bulgoki",
@@ -11102,7 +11900,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bulgoki Rice balls",
@@ -11118,7 +11918,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -11206,7 +12008,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.38,
-       "estimate": 2.38
+       "estimate": 2.38,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Chinese Eggplants",
@@ -11214,7 +12018,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.15,
-       "estimate": 2.15
+       "estimate": 2.15,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Vidalia Onion",
@@ -11222,7 +12028,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.6,
-       "estimate": 1.6
+       "estimate": 1.6,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -11262,7 +12070,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "12-grain bread",
@@ -11294,7 +12104,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.64,
-       "estimate": 1.64
+       "estimate": 1.64,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -11302,7 +12114,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Organic Brown sugar",
@@ -11334,7 +12148,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.7,
-       "estimate": 4.7
+       "estimate": 4.7,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -11478,7 +12294,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.52,
-       "estimate": 0.52
+       "estimate": 0.52,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -11494,7 +12312,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.0,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cottage Cheese",
@@ -11574,7 +12394,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Extra Jumbo Raw Shrimp",
@@ -11585,12 +12407,14 @@
        "estimate": 11.99
       },
       {
-       "name": "Oven Roasted Turkey 1 Lb Dietz & Watson",
+       "name": "Oven Roasted Turkey Dietz & Watson",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 9.64,
-       "estimate": 9.64
+       "estimate": 9.64,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Smoked Salmon",
@@ -11710,7 +12534,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hazelnut Biscuits",
@@ -11718,7 +12544,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.72,
-       "estimate": 4.7
+       "estimate": 4.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -11766,7 +12594,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.58,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Chik Fil-A Dipping Sauce",
@@ -11782,7 +12612,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.39,
-       "estimate": 1.38
+       "estimate": 1.38,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -11821,7 +12653,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 11.98,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -11829,7 +12663,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.78,
-       "estimate": 2.78
+       "estimate": 2.78,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "White Mushrooms",
@@ -11837,7 +12673,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.57,
-       "estimate": 1.57
+       "estimate": 1.57,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Chinese Eggplants",
@@ -11845,7 +12683,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.92,
-       "estimate": 2.92
+       "estimate": 2.92,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -11877,7 +12717,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.45,
-       "estimate": 0.45
+       "estimate": 0.45,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sesame Oil",
@@ -11893,7 +12735,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.99,
-       "estimate": 0.99
+       "estimate": 0.99,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -11901,7 +12745,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "French Stringbeans",
@@ -11925,7 +12771,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.6,
-       "estimate": 10.6
+       "estimate": 10.6,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Smoked Knackwurst",
@@ -11933,7 +12781,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.78,
-       "estimate": 6.78
+       "estimate": 6.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -11941,7 +12791,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Italian Vinegrette",
@@ -12013,7 +12865,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.98,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -12029,7 +12883,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.76,
-       "estimate": 1.76
+       "estimate": 1.76,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Jumbo Eggs - Cage Free",
@@ -12101,7 +12957,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.65,
-       "estimate": 1.64
+       "estimate": 1.64,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pineapple Spears in Coconut Water",
@@ -12125,7 +12983,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.38,
-       "estimate": 5.34
+       "estimate": 5.34,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Sweet Maui Onion chips",
@@ -12229,7 +13089,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 11.98,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cucumber",
@@ -12253,7 +13115,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.37,
-       "estimate": 2.37
+       "estimate": 2.37,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Indian Mango",
@@ -12277,7 +13141,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.52,
-       "estimate": 1.52
+       "estimate": 1.52,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Sugar Snap Peas",
@@ -12293,7 +13159,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.91,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Peaches",
@@ -12301,7 +13169,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.48,
-       "estimate": 2.47
+       "estimate": 2.47,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Kombucha Aide",
@@ -12325,7 +13195,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 13.25,
-       "estimate": 13.18
+       "estimate": 13.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mochi Cookies and Cream Ice Cream",
@@ -12333,7 +13205,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.82,
-       "estimate": 6.78
+       "estimate": 6.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sweet Maui Onion Chips",
@@ -12456,12 +13330,14 @@
        "estimate": 2.99
       },
       {
-       "name": "Rainier Cherries (2 bags)",
+       "name": "Rainier Cherries",
        "category": "Produce",
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.2,
-       "estimate": 3.2
+       "estimate": 3.2,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hass Avocado",
@@ -12469,7 +13345,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cucumber (large)",
@@ -12509,7 +13387,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.92,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "1/2 Gallon Milk",
@@ -12541,7 +13421,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.39,
-       "estimate": 5.34
+       "estimate": 5.34,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Frozen Mix Fruit bag",
@@ -12549,7 +13431,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.4,
-       "estimate": 11.3
+       "estimate": 11.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Seaside Frozen Fruits",
@@ -12565,7 +13449,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.26,
-       "estimate": 10.17
+       "estimate": 10.17,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "SPAM Korean BBQ",
@@ -12581,7 +13467,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.63,
-       "estimate": 5.58
+       "estimate": 5.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Kombucha Spritzer",
@@ -12589,7 +13477,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.01,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -12629,7 +13519,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 5.94,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Babybel Cheese",
@@ -12741,7 +13633,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.38,
-       "estimate": 3.38
+       "estimate": 3.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Orange Pepper",
@@ -12765,7 +13659,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.33,
-       "estimate": 7.3
+       "estimate": 7.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -12773,7 +13669,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.91,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Perfect Pairing Grapes",
@@ -12917,7 +13815,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.23,
-       "estimate": 2.23
+       "estimate": 2.23,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -12925,7 +13825,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.03,
-       "estimate": 2.03
+       "estimate": 2.03,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Broccoli Head",
@@ -12957,7 +13859,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.66,
-       "estimate": 0.66
+       "estimate": 0.66,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cherry Tomatoes",
@@ -12965,7 +13869,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.0,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -12981,7 +13887,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.7,
-       "estimate": 4.7
+       "estimate": 4.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honey Ham",
@@ -12997,7 +13905,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Mochi Ice creams",
@@ -13005,7 +13915,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 20.34,
-       "estimate": 20.34
+       "estimate": 20.34,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Organic Marinara Sacue",
@@ -13051,7 +13963,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Sweet Potato Chips",
@@ -13131,15 +14045,19 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 10.98,
-       "estimate": 10.98
+       "estimate": 10.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
-       "name": "Vidalia Onions (Medium 3)",
+       "name": "Vidalia Onions (Medium)",
        "category": "Produce",
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.28,
-       "estimate": 2.28
+       "estimate": 2.28,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Yellow/Orange Bell Pepper",
@@ -13203,7 +14121,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.51,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Kamboucha",
@@ -13227,7 +14147,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.59,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Frozen Fruit Bag",
@@ -13235,7 +14157,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.4,
-       "estimate": 11.3
+       "estimate": 11.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hot Honey Kettle Chips",
@@ -13331,7 +14255,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.98,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Broccoli Crown (Large)",
@@ -13355,7 +14281,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.31,
-       "estimate": 2.31
+       "estimate": 2.31,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Cage Free Jumbo Eggs",
@@ -13363,7 +14291,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 10.98,
-       "estimate": 10.98
+       "estimate": 10.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Green Bell Pepper",
@@ -13395,7 +14325,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.78,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chicken Leg Quarters",
@@ -13419,7 +14351,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -13467,7 +14401,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -13499,7 +14435,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 13.58,
-       "estimate": 13.58
+       "estimate": 13.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -13507,7 +14445,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Frozen Fruit Packs",
@@ -13515,7 +14455,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.3,
-       "estimate": 11.3
+       "estimate": 11.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Brazzi Bites",
@@ -13523,7 +14465,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 32.94,
-       "estimate": 32.94
+       "estimate": 32.94,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Soft Tofu",
@@ -13534,12 +14478,14 @@
        "estimate": 1.99
       },
       {
-       "name": "Scallions (5 bunches)",
+       "name": "Scallions",
        "category": "Produce",
        "store": "HMart",
        "checked": true,
        "price": 1.99,
-       "estimate": 1.99
+       "estimate": 1.99,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Braised Lotus Roots",
@@ -13587,7 +14533,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Assorted Frozen Fish balls",
@@ -13603,7 +14551,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.98,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chinese Sausage",
@@ -13627,7 +14577,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Xiao Xhing Wine",
@@ -13643,7 +14595,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.98,
-       "estimate": 12.98
+       "estimate": 12.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Vegan Kimchi",
@@ -13651,7 +14605,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.98,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Green Seedless Grapes",
@@ -13689,7 +14645,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tong Tong Sausage",
@@ -13697,7 +14655,9 @@
        "store": "HMart",
        "checked": true,
        "price": 14.38,
-       "estimate": 14.38
+       "estimate": 14.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Furikake",
@@ -13713,15 +14673,19 @@
        "store": "HMart",
        "checked": true,
        "price": 3.18,
-       "estimate": 3.18
+       "estimate": 3.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
-       "name": "Single Sliced Pork Belly - 2 Pounds",
+       "name": "Single Sliced Pork Belly",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 13.33,
-       "estimate": 13.33
+       "estimate": 13.33,
+       "quantity": 2,
+       "unit": "lb"
       },
       {
        "name": "Bulgogi Rice Balls",
@@ -13753,7 +14717,9 @@
        "store": "HMart",
        "checked": true,
        "price": 4.54,
-       "estimate": 4.54
+       "estimate": 4.54,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Buldak Carbonara Sauce Sticks",
@@ -13780,12 +14746,14 @@
        "estimate": 11.99
       },
       {
-       "name": "Coffee Candies (3 bags)",
+       "name": "Coffee Candies",
        "category": "Pantry",
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Orange Body Massager Stick",
@@ -13793,7 +14761,9 @@
        "store": null,
        "checked": false,
        "price": null,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -13841,7 +14811,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.25,
-       "estimate": 2.24
+       "estimate": 2.24,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Sugar Snap peas",
@@ -13865,7 +14837,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.23,
-       "estimate": 1.22
+       "estimate": 1.22,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jumbo Eggs - Organic Cage Free",
@@ -13881,7 +14855,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.91,
-       "estimate": 4.9
+       "estimate": 4.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Seafood bites",
@@ -13889,7 +14865,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.01,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Broccoli Crown",
@@ -13937,7 +14915,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.57,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -13967,7 +14947,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.63,
-       "estimate": 7.6
+       "estimate": 7.6,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pork Belly Steak (soup)",
@@ -13983,7 +14965,9 @@
        "store": "HMart",
        "checked": true,
        "price": 4.0,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Anchovy Banchan",
@@ -14071,7 +15055,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.69,
-       "estimate": 3.68
+       "estimate": 3.68,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bibigo Bulgogi Rice Balls",
@@ -14079,15 +15065,19 @@
        "store": "HMart",
        "checked": true,
        "price": 32.49,
-       "estimate": 32.37
+       "estimate": 32.37,
+       "quantity": 3,
+       "unit": "each"
       },
       {
-       "name": "Sliced Rib Eye Bulgogi - 3 Lbs",
+       "name": "Sliced Rib Eye Bulgogi",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 24.38,
-       "estimate": 24.29
+       "estimate": 24.29,
+       "quantity": 3,
+       "unit": "lb"
       },
       {
        "name": "Top Fruit Jelly - Mixed",
@@ -14095,7 +15085,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.4,
-       "estimate": 5.38
+       "estimate": 5.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Top Fruit Jelly - Mango",
@@ -14103,7 +15095,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.4,
-       "estimate": 5.38
+       "estimate": 5.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "SPAM Low Sodium",
@@ -14111,7 +15105,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.81,
-       "estimate": 10.77
+       "estimate": 10.77,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Sales Tax",
@@ -14158,7 +15154,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.28,
-       "estimate": 3.28
+       "estimate": 3.28,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Chocolate Mini Waffle Cones",
@@ -14166,7 +15164,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.5,
-       "estimate": 5.5
+       "estimate": 5.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Organic Brown Sugar",
@@ -14182,7 +15182,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -14214,7 +15216,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.52,
-       "estimate": 2.52
+       "estimate": 2.52,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Green Bell Pepper",
@@ -14238,7 +15242,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.8,
-       "estimate": 1.8
+       "estimate": 1.8,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Haas Avocado",
@@ -14246,15 +15252,19 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.58,
-       "estimate": 1.58
+       "estimate": 1.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
-       "name": "Scallions (2 bunches)",
+       "name": "Scallions",
        "category": "Produce",
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.0,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -14262,7 +15272,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.29,
-       "estimate": 1.29
+       "estimate": 1.29,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bananas",
@@ -14286,7 +15298,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.78,
-       "estimate": 4.78
+       "estimate": 4.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Assorted Dried Dates",
@@ -14310,7 +15324,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 18.02,
-       "estimate": 18.02
+       "estimate": 18.02,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -14318,7 +15334,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Grated Parmessa Cheese Bottle",
@@ -14350,7 +15368,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 12.14,
-       "estimate": 12.14
+       "estimate": 12.14,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Pork Bulgoki",
@@ -14358,7 +15378,9 @@
        "store": "HMart",
        "checked": true,
        "price": 26.12,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sliced Rice Cakes",
@@ -14374,7 +15396,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.02,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mixed Jelly Candies",
@@ -14382,7 +15406,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.02,
-       "estimate": 8.97
+       "estimate": 8.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Buldak Seaweed Chips",
@@ -14390,7 +15416,9 @@
        "store": "HMart",
        "checked": true,
        "price": 18.07,
-       "estimate": 17.97
+       "estimate": 17.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Squid Peanut Ball Snack",
@@ -14398,7 +15426,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.01,
-       "estimate": 9.96
+       "estimate": 9.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Bibigo Vegan Kimchi",
@@ -14406,7 +15436,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.04,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Organic Soft Tofu",
@@ -14414,7 +15446,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.0,
-       "estimate": 5.97
+       "estimate": 5.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Oriental Raisin Tea Drink",
@@ -14422,7 +15456,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.03,
-       "estimate": 11.97
+       "estimate": 11.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Pumpkin Redbean Tea Drink",
@@ -14430,7 +15466,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.0,
-       "estimate": 7.96
+       "estimate": 7.96,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -14454,7 +15492,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.45,
-       "estimate": 2.45
+       "estimate": 2.45,
+       "quantity": 8,
+       "unit": "each"
       },
       {
        "name": "Cut Green beans",
@@ -14470,7 +15510,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.49,
-       "estimate": 4.49
+       "estimate": 4.49,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sweet Heat Mustards",
@@ -14478,7 +15520,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.98,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chick Fil-A Dipping sauce",
@@ -14505,20 +15549,24 @@
        "estimate": 5.99
       },
       {
-       "name": "Pork Belly - 2 lbs",
+       "name": "Pork Belly",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 10.66,
-       "estimate": 10.66
+       "estimate": 10.66,
+       "quantity": 2,
+       "unit": "lb"
       },
       {
-       "name": "Beef Ribeye Sliced thin - 2 lbs",
+       "name": "Beef Ribeye Sliced thin",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "lb"
       },
       {
        "name": "Bibigo Vegan Kimchi",
@@ -14526,7 +15574,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.58,
-       "estimate": 9.58
+       "estimate": 9.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Organic Soon tofu",
@@ -14534,7 +15584,9 @@
        "store": "HMart",
        "checked": true,
        "price": 4.77,
-       "estimate": 4.77
+       "estimate": 4.77,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Tong Tong Sausage",
@@ -14542,7 +15594,9 @@
        "store": "HMart",
        "checked": true,
        "price": 11.98,
-       "estimate": 11.98
+       "estimate": 11.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bibigo Steamed Beef Bulgogi Dumpling",
@@ -14566,7 +15620,9 @@
        "store": "HMart",
        "checked": true,
        "price": 17.97,
-       "estimate": 17.98
+       "estimate": 17.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Bibigo Japchae Wang Gyoza",
@@ -14582,7 +15638,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hot Large Dumpling",
@@ -14598,7 +15656,9 @@
        "store": "HMart",
        "checked": true,
        "price": 25.49,
-       "estimate": 25.5
+       "estimate": 25.5,
+       "quantity": 10,
+       "unit": "each"
       },
       {
        "name": "Pumpkin Redbean Tea",
@@ -14606,7 +15666,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.18,
-       "estimate": 3.18
+       "estimate": 3.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Sales Tax",
@@ -14630,7 +15692,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.0,
-       "estimate": 6.0
+       "estimate": 6.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Kimbap",
@@ -14702,7 +15766,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 29.98,
-       "estimate": 29.98
+       "estimate": 29.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Merci Chocolate Sticks",
@@ -14734,7 +15800,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.17,
-       "estimate": 1.25
+       "estimate": 1.25,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pineapple Chunks",
@@ -14758,7 +15826,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.34,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Brazzi Bites",
@@ -14798,7 +15868,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 15.36,
-       "estimate": 15.36
+       "estimate": 15.36,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Delivery",
@@ -14838,7 +15910,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -14894,7 +15968,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.78,
-       "estimate": 1.78
+       "estimate": 1.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Frozen Fruit Bag",
@@ -14910,7 +15986,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.64,
-       "estimate": 1.64
+       "estimate": 1.64,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Strawberry Pocky Crunch",
@@ -14918,7 +15996,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mixed Fruit Jelly",
@@ -14926,7 +16006,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Organic Tofu",
@@ -14934,7 +16016,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 7.96
+       "estimate": 7.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Red Pepper Powder",
@@ -14966,7 +16050,9 @@
        "store": "HMart",
        "checked": false,
        "price": null,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Boneless Chicken Thighs",
@@ -14997,7 +16083,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.98,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beefsteak Tomatoes",
@@ -15037,7 +16125,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Frozen Raw Jumbo Shrimp",
@@ -15045,7 +16135,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 13.58,
-       "estimate": 13.58
+       "estimate": 13.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -15085,7 +16177,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.24,
-       "estimate": 10.18
+       "estimate": 10.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Seasoned BellFlower & Cucumber",
@@ -15101,7 +16195,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.4,
-       "estimate": 3.38
+       "estimate": 3.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pickled Cucumber",
@@ -15141,7 +16237,9 @@
        "store": "HMart",
        "checked": true,
        "price": 2.45,
-       "estimate": 2.44
+       "estimate": 2.44,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fuyu Persimmons",
@@ -15189,7 +16287,9 @@
        "store": "HMart",
        "checked": true,
        "price": 16.06,
-       "estimate": 15.96
+       "estimate": 15.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Oishi Crackling Salt & Vinegar",
@@ -15197,7 +16297,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.02,
-       "estimate": 9.96
+       "estimate": 9.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Sliced Rice Cakes",
@@ -15260,7 +16362,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.05,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Amer Cheese Singles",
@@ -15276,7 +16380,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.47,
-       "estimate": 7.38
+       "estimate": 7.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Korean Pears",
@@ -15284,7 +16390,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.99,
-       "estimate": 12.99
+       "estimate": 12.99,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Fuji Apples",
@@ -15292,7 +16400,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.47,
-       "estimate": 3.47
+       "estimate": 3.47,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Chinese Broccoli",
@@ -15300,7 +16410,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.98,
-       "estimate": 8.98
+       "estimate": 8.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -15396,7 +16508,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.31,
-       "estimate": 1.31
+       "estimate": 1.31,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "White Cabbage",
@@ -15444,7 +16558,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.5,
-       "estimate": 6.5
+       "estimate": 6.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honey Ham",
@@ -15460,7 +16576,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.07,
-       "estimate": 5.07
+       "estimate": 5.07,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Chicken Thighs",
@@ -15468,7 +16586,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 8.56,
-       "estimate": 8.56
+       "estimate": 8.56,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Brown Sugar",
@@ -15573,7 +16693,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 25.98,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -15605,7 +16727,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.26,
-       "estimate": 1.26
+       "estimate": 1.26,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Plum Tomatoes",
@@ -15613,7 +16737,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.11,
-       "estimate": 1.11
+       "estimate": 1.11,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -15621,7 +16747,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.12,
-       "estimate": 2.12
+       "estimate": 2.12,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Green Bell Pepper",
@@ -15677,7 +16805,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.35,
-       "estimate": 7.3
+       "estimate": 7.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Parmessan Cheese",
@@ -15701,7 +16831,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.75,
-       "estimate": 6.7
+       "estimate": 6.7,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Plain Greek Yogurt",
@@ -15733,7 +16865,9 @@
        "store": "HMart",
        "checked": true,
        "price": 2.37,
-       "estimate": 2.37
+       "estimate": 2.37,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Korean Pears - 3 pack",
@@ -15820,7 +16954,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.32,
-       "estimate": 1.32
+       "estimate": 1.32,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Zucchini",
@@ -15852,7 +16988,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.3,
-       "estimate": 7.3
+       "estimate": 7.3,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Scallions",
@@ -15876,7 +17014,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.9,
-       "estimate": 1.9
+       "estimate": 1.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Black Forest Bacon",
@@ -15900,7 +17040,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 16.08,
-       "estimate": 16.08
+       "estimate": 16.08,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Stilton Blue Cheese",
@@ -15931,7 +17073,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Korean Pears",
@@ -15947,7 +17091,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.09,
-       "estimate": 5.09
+       "estimate": 5.09,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Soft Tofu",
@@ -15955,7 +17101,9 @@
        "store": "HMart",
        "checked": true,
        "price": 3.38,
-       "estimate": 3.38
+       "estimate": 3.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Kimchi",
@@ -15963,7 +17111,9 @@
        "store": "HMart",
        "checked": true,
        "price": 10.18,
-       "estimate": 10.18
+       "estimate": 10.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Spicy Pork Bulgoki",
@@ -15971,7 +17121,9 @@
        "store": "HMart",
        "checked": true,
        "price": 22.08,
-       "estimate": 22.08
+       "estimate": 22.08,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Frozen Pork Belly Slices",
@@ -15979,7 +17131,9 @@
        "store": "HMart",
        "checked": true,
        "price": 28.88,
-       "estimate": 28.88
+       "estimate": 28.88,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pure Sesame Oil",
@@ -16130,7 +17284,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.78,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Havarti Cheese Slices",
@@ -16138,7 +17294,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.9,
-       "estimate": 2.9
+       "estimate": 2.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -16146,7 +17304,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Condensed Milk",
@@ -16305,7 +17465,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.97,
-       "estimate": 5.97
+       "estimate": 5.97,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Bulgogi Grilled Dumplings",
@@ -16313,7 +17475,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.96,
-       "estimate": 7.96
+       "estimate": 7.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Shipping Fee",
@@ -16489,7 +17653,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.02,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Cool Cube Gum",
@@ -16497,7 +17663,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 6.02,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -16545,7 +17713,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.61,
-       "estimate": 1.61
+       "estimate": 1.61,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Limes",
@@ -16569,7 +17739,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.59,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Greek Yogurt",
@@ -16604,12 +17776,14 @@
        "estimate": 3.24
       },
       {
-       "name": "Sliced Ribeye Bulgogi, Frozen 3lb",
+       "name": "Sliced Ribeye Bulgogi, Frozen",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 31.78,
-       "estimate": 31.19
+       "estimate": 31.19,
+       "quantity": 3,
+       "unit": "lb"
       },
       {
        "name": "Enoki Mushroom",
@@ -16617,15 +17791,19 @@
        "store": "HMart",
        "checked": true,
        "price": 4.87,
-       "estimate": 4.78
+       "estimate": 4.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
-       "name": "Premium Fuji Apples (2 packs)",
+       "name": "Premium Fuji Apples",
        "category": "Produce",
        "store": "HMart",
        "checked": true,
        "price": 9.76,
-       "estimate": 9.58
+       "estimate": 9.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jelly Candies",
@@ -16633,7 +17811,9 @@
        "store": "HMart",
        "checked": true,
        "price": 22.75,
-       "estimate": 22.33
+       "estimate": 22.33,
+       "quantity": 7,
+       "unit": "each"
       },
       {
        "name": "Kasugai Watermelon Gummy",
@@ -16641,7 +17821,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.5,
-       "estimate": 6.38
+       "estimate": 6.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Vegan Kimchi",
@@ -16649,7 +17831,9 @@
        "store": "HMart",
        "checked": true,
        "price": 9.76,
-       "estimate": 9.58
+       "estimate": 9.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Organic Soft Tofu",
@@ -16657,15 +17841,19 @@
        "store": "HMart",
        "checked": true,
        "price": 4.06,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
-       "name": "Sliced Single Pork Belly, Frozen 2lb",
+       "name": "Sliced Single Pork Belly, Frozen",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 12.63,
-       "estimate": 12.39
+       "estimate": 12.39,
+       "quantity": 2,
+       "unit": "lb"
       },
       {
        "name": "Shipping",
@@ -16690,12 +17878,14 @@
      ],
      "items": [
       {
-       "name": "Top Sirloin Steak (1.5 lbs)",
+       "name": "Top Sirloin Steak",
        "category": "Meat & Seafood",
        "store": "Amazon Fresh",
        "checked": true,
        "price": 18.29,
-       "estimate": 18.29
+       "estimate": 18.29,
+       "quantity": 1.5,
+       "unit": "lb"
       },
       {
        "name": "Pasture Raised Eggs - 18 ct",
@@ -16711,7 +17901,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 2.99,
-       "estimate": 2.99
+       "estimate": 2.99,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Vidalia Onions",
@@ -16719,7 +17911,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 2.99,
-       "estimate": 2.99
+       "estimate": 2.99,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Limes",
@@ -16751,7 +17945,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 4.02,
-       "estimate": 4.02
+       "estimate": 4.02,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Ham & Cheese Croissant",
@@ -16759,7 +17955,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 12.46,
-       "estimate": 12.46
+       "estimate": 12.46,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Philly Cheesesteak Croissant",
@@ -16767,7 +17965,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 12.46,
-       "estimate": 12.46
+       "estimate": 12.46,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Chamomile Lavender Tea",
@@ -16775,7 +17975,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 5.56,
-       "estimate": 5.56
+       "estimate": 5.56,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Thera Tears",
@@ -16783,7 +17985,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 15.36,
-       "estimate": 15.36
+       "estimate": 15.36,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Delivery tip",
@@ -16815,7 +18019,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 9.98,
-       "estimate": 9.98
+       "estimate": 9.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Hillshire Farm - Honey Ham",
@@ -16839,7 +18045,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 7.44,
-       "estimate": 7.44
+       "estimate": 7.44,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Seedless Lemons Pack",
@@ -16863,7 +18071,9 @@
        "store": "Amazon Fresh",
        "checked": true,
        "price": 4.02,
-       "estimate": 4.02
+       "estimate": 4.02,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Hillshire Farm Ham & Cheese Croissant",
@@ -16903,7 +18113,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.85,
-       "estimate": 1.85
+       "estimate": 1.85,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Onions",
@@ -16911,7 +18123,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.25,
-       "estimate": 1.25
+       "estimate": 1.25,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Autumn Crisp Green Grapes",
@@ -16927,7 +18141,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.9,
-       "estimate": 7.9
+       "estimate": 7.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk 1/2 Gal",
@@ -16959,7 +18175,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.47,
-       "estimate": 4.47
+       "estimate": 4.47,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -16967,7 +18185,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 2.67,
-       "estimate": 2.67
+       "estimate": 2.67,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Frozen Fruit Bags",
@@ -16975,7 +18195,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 10.7,
-       "estimate": 10.7
+       "estimate": 10.7,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -16992,12 +18214,14 @@
      ],
      "items": [
       {
-       "name": "Thomas English Muffins (2pks)",
+       "name": "Thomas English Muffins",
        "category": "Bakery",
        "store": "BJ's",
        "checked": true,
        "price": 6.99,
-       "estimate": 6.99
+       "estimate": 6.99,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tyson Buffalo Wings",
@@ -17221,7 +18445,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Coconut Water",
@@ -17229,7 +18455,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 13.74
+       "estimate": 13.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -17237,7 +18465,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Beef Sirloin",
@@ -17253,7 +18483,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 2.98
+       "estimate": 2.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Ranch Salad Dressing",
@@ -17366,7 +18598,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Squash",
@@ -17374,7 +18608,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk",
@@ -17398,7 +18634,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 22.0
+       "estimate": 22.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -17494,7 +18732,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.95
+       "estimate": 1.95,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -17502,7 +18742,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -17558,7 +18800,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.0,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Edameme",
@@ -17566,7 +18810,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.98,
-       "estimate": 3.98
+       "estimate": 3.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Marinara Sauce",
@@ -17670,7 +18916,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.96,
-       "estimate": 11.96
+       "estimate": 11.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Freeze Dried Strawberry Packs",
@@ -17686,7 +18934,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.5,
-       "estimate": 5.5
+       "estimate": 5.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Butter Croissants",
@@ -17702,7 +18952,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.98,
-       "estimate": 7.98
+       "estimate": 7.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Green Grapes",
@@ -17718,7 +18970,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -17734,15 +18988,19 @@
        "store": "HMart",
        "checked": true,
        "price": 20.78,
-       "estimate": 20.78
+       "estimate": 20.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
-       "name": "Frozen Pork Belly - 5 lbs",
+       "name": "Frozen Pork Belly",
        "category": "Meat & Seafood",
        "store": "HMart",
        "checked": true,
        "price": 32.79,
-       "estimate": 32.79
+       "estimate": 32.79,
+       "quantity": 5,
+       "unit": "lb"
       },
       {
        "name": "Korean Pears (3pk)",
@@ -17766,7 +19024,9 @@
        "store": "HMart",
        "checked": true,
        "price": 8.78,
-       "estimate": 8.78
+       "estimate": 8.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Organic Soon Tofu",
@@ -17774,7 +19034,9 @@
        "store": "HMart",
        "checked": true,
        "price": 4.77,
-       "estimate": 4.77
+       "estimate": 4.77,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Braised Lotus Root",
@@ -17830,7 +19092,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.17,
-       "estimate": 7.17
+       "estimate": 7.17,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Mango Jellies",
@@ -17838,7 +19102,9 @@
        "store": "HMart",
        "checked": true,
        "price": 6.38,
-       "estimate": 6.38
+       "estimate": 6.38,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Taxes",
@@ -17910,7 +19176,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 13.74,
-       "estimate": 13.74
+       "estimate": 13.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -17990,7 +19258,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -17998,7 +19268,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -18047,7 +19319,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.88
+       "estimate": 2.88,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Green Cabbage",
@@ -18079,7 +19353,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Squash",
@@ -18087,7 +19363,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk",
@@ -18119,7 +19397,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 22.0
+       "estimate": 22.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jalapeno Sourdough Bread",
@@ -18167,23 +19447,29 @@
        "store": "BJ's",
        "checked": true,
        "price": 9.49,
-       "estimate": 9.49
+       "estimate": 9.49,
+       "quantity": 6,
+       "unit": "each"
       },
       {
-       "name": "Bananas - 3 lbs",
+       "name": "Bananas",
        "category": "Produce",
        "store": "BJ's",
        "checked": true,
        "price": 1.49,
-       "estimate": 1.49
+       "estimate": 1.49,
+       "quantity": 3,
+       "unit": "lb"
       },
       {
-       "name": "Black Seedless Grapes - 3 lbs",
+       "name": "Black Seedless Grapes",
        "category": "Produce",
        "store": "BJ's",
        "checked": true,
        "price": 4.99,
-       "estimate": 4.99
+       "estimate": 4.99,
+       "quantity": 3,
+       "unit": "lb"
       },
       {
        "name": "Sumo Oranges",
@@ -18255,7 +19541,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Frozen Sweet Peas",
@@ -18271,7 +19559,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -18314,12 +19604,14 @@
        "estimate": 7.49
       },
       {
-       "name": "Roast Beef Slices 1 lb",
+       "name": "Roast Beef Slices",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": false,
        "price": null,
-       "estimate": 11.57
+       "estimate": 11.57,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Horseradish Cheese 1/2 1b",
@@ -18359,7 +19651,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.6,
-       "estimate": 2.6
+       "estimate": 2.6,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Grape Tomatoes",
@@ -18367,7 +19661,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 4.0,
-       "estimate": 4.0
+       "estimate": 4.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Fresh Garlic",
@@ -18423,7 +19719,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 13.78,
-       "estimate": 13.78
+       "estimate": 13.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Apple/Strawberry Freeze Dried",
@@ -18431,7 +19729,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.96,
-       "estimate": 11.96
+       "estimate": 11.96,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Bar Mix Nuts",
@@ -18439,7 +19739,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 15.98,
-       "estimate": 15.98
+       "estimate": 15.98,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -18503,7 +19805,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 13.74,
-       "estimate": 13.74
+       "estimate": 13.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -18583,7 +19887,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -18591,7 +19897,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Edamame",
@@ -18599,7 +19907,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 4.0
+       "estimate": 4.0,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -18671,7 +19981,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.79
+       "estimate": 1.79,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -18679,7 +19991,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.14
+       "estimate": 1.14,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -18687,7 +20001,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Squash",
@@ -18695,7 +20011,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk",
@@ -18711,7 +20029,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.33
+       "estimate": 1.33,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -18735,7 +20055,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 22.09,
-       "estimate": 22.0
+       "estimate": 22.0,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -18760,7 +20082,9 @@
        "store": "HMart",
        "checked": true,
        "price": 12.98,
-       "estimate": 12.98
+       "estimate": 12.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -18784,7 +20108,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.08,
-       "estimate": 5.08
+       "estimate": 5.08,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Korean Radish",
@@ -18811,12 +20137,14 @@
        "estimate": 8.49
       },
       {
-       "name": "Premium Fuji Apples (2 pks)",
+       "name": "Premium Fuji Apples",
        "category": "Produce",
        "store": "HMart",
        "checked": true,
        "price": 10.18,
-       "estimate": 10.18
+       "estimate": 10.18,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pork Belly",
@@ -18824,7 +20152,9 @@
        "store": "HMart",
        "checked": true,
        "price": 25.98,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Enoki Mushrooms",
@@ -18864,7 +20194,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Canned Tuna (4 pk)",
@@ -18912,7 +20244,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Rice Syrup",
@@ -19206,7 +20540,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Coconut Water",
@@ -19214,7 +20550,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 13.74
+       "estimate": 13.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -19222,7 +20560,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -19249,12 +20589,14 @@
        "estimate": 12.25
       },
       {
-       "name": "Roast Beef - 1lb",
+       "name": "Roast Beef",
        "category": "Meat & Seafood",
        "store": "BJ's",
        "checked": true,
        "price": 12.53,
-       "estimate": 12.53
+       "estimate": 12.53,
+       "quantity": 1,
+       "unit": "lb"
       },
       {
        "name": "Qtips",
@@ -19310,7 +20652,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Squash",
@@ -19318,7 +20662,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk",
@@ -19342,7 +20688,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 22.0
+       "estimate": 22.0,
+       "quantity": 2,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -19479,7 +20827,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Frozen Sweet Peas",
@@ -19522,12 +20872,14 @@
        "estimate": 4.79
       },
       {
-       "name": "Gochujang Paste 2.2 lb",
+       "name": "Gochujang Paste",
        "category": "Pantry",
        "store": "HMart",
        "checked": true,
        "price": 5.59,
-       "estimate": 5.59
+       "estimate": 5.59,
+       "quantity": 2.2,
+       "unit": "lb"
       },
       {
        "name": "Sriracha Hot Chili Sauce",
@@ -19543,7 +20895,9 @@
        "store": "HMart",
        "checked": true,
        "price": 4.77,
-       "estimate": 4.77
+       "estimate": 4.77,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -19559,7 +20913,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pork Belly Sliced",
@@ -19670,7 +21026,9 @@
        "store": "HMart",
        "checked": true,
        "price": 15.21,
-       "estimate": 15.2
+       "estimate": 15.2,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Beef Bulgoki",
@@ -19734,7 +21092,9 @@
        "store": "HMart",
        "checked": true,
        "price": 5.95,
-       "estimate": 5.94
+       "estimate": 5.94,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Pork sliced Butt Steaks",
@@ -19861,7 +21221,9 @@
        "store": "HMart",
        "checked": true,
        "price": 25.98,
-       "estimate": 25.98
+       "estimate": 25.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Steamed Beef Bulogoki Dumpling",
@@ -19885,7 +21247,9 @@
        "store": "HMart",
        "checked": true,
        "price": 16.78,
-       "estimate": 16.78
+       "estimate": 16.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Salted Edamame",
@@ -19893,7 +21257,9 @@
        "store": "HMart",
        "checked": true,
        "price": 7.17,
-       "estimate": 7.17
+       "estimate": 7.17,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Black Tapioca Pearls",
@@ -19920,12 +21286,14 @@
        "estimate": 6.39
       },
       {
-       "name": "Rice Flour (Red, 2)",
+       "name": "Rice Flour (Red)",
        "category": "Pantry",
        "store": "HMart",
        "checked": true,
        "price": 2.86,
-       "estimate": 2.86
+       "estimate": 2.86,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Purple Sweet Potato Wheat Snack",
@@ -20077,7 +21445,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.78
+       "estimate": 5.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Coconut Water",
@@ -20085,7 +21455,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 13.74
+       "estimate": 13.74,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -20093,7 +21465,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Cottage Cheese",
@@ -20117,7 +21491,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 1.78
+       "estimate": 1.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Honey Ham, Black Forest Ham",
@@ -20133,7 +21509,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 8.78
+       "estimate": 8.78,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Salmon Portions",
@@ -20149,7 +21527,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.9
+       "estimate": 3.9,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -20190,7 +21570,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.8
+       "estimate": 1.8,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Orange & Yellow Peppers - 1 ea",
@@ -20222,7 +21604,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -20230,7 +21614,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.0
+       "estimate": 1.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Squash",
@@ -20238,7 +21624,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Whole Milk",
@@ -20278,7 +21666,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 22.0
+       "estimate": 22.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tomato Paste",
@@ -20351,7 +21741,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 6.39,
-       "estimate": 6.0
+       "estimate": 6.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Baby Bokchoy",
@@ -20391,7 +21783,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 4.61,
-       "estimate": 4.33
+       "estimate": 4.33,
+       "quantity": 10,
+       "unit": "each"
       },
       {
        "name": "Shallots",
@@ -20399,7 +21793,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.0,
-       "estimate": 1.88
+       "estimate": 1.88,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -20407,7 +21803,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 3.2,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Broccoli Crown (small)",
@@ -20447,7 +21845,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.0,
-       "estimate": 3.0
+       "estimate": 3.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Salmon portion",
@@ -20455,7 +21855,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 20.55,
-       "estimate": 20.55
+       "estimate": 20.55,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -20503,7 +21905,9 @@
        "store": "HMart",
        "checked": true,
        "price": 2.55,
-       "estimate": 2.55
+       "estimate": 2.55,
+       "quantity": 3,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -20559,7 +21963,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.66
+       "estimate": 1.66,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Carrot",
@@ -20607,7 +22013,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Hawaiian Brioche Buns",
@@ -20631,7 +22039,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Chicken Bone Broth",
@@ -20639,7 +22049,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.98
+       "estimate": 5.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "ALDI bags",
@@ -20647,7 +22059,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 1.98
+       "estimate": 1.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Unlisted purchases",
@@ -20685,7 +22099,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 17.08,
-       "estimate": 16.98
+       "estimate": 16.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Jello Pack",
@@ -20837,7 +22253,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 13.19,
-       "estimate": 12.98
+       "estimate": 12.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Buffalo Chicken Protein Chips",
@@ -20869,7 +22287,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.55,
-       "estimate": 1.55
+       "estimate": 1.55,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Red Onion",
@@ -20925,7 +22345,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.61,
-       "estimate": 1.61
+       "estimate": 1.61,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Loose Okra",
@@ -20957,7 +22379,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.45,
-       "estimate": 4.45
+       "estimate": 4.45,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Mango/Keylime Parfaits",
@@ -20965,7 +22389,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.94,
-       "estimate": 11.94
+       "estimate": 11.94,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Crème Brulee",
@@ -20973,7 +22399,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.58,
-       "estimate": 3.58
+       "estimate": 3.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Mini Chocolate Butter Biscuits",
@@ -20981,7 +22409,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 4.98,
-       "estimate": 4.98
+       "estimate": 4.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Creamy Peanut Butter",
@@ -21035,7 +22465,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 6.0,
-       "estimate": 6.0
+       "estimate": 6.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Shitake Mushrooms",
@@ -21043,7 +22475,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 2.38,
-       "estimate": 2.38
+       "estimate": 2.38,
+       "quantity": 11,
+       "unit": "each"
       },
       {
        "name": "Okra Tray",
@@ -21075,7 +22509,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.28,
-       "estimate": 1.28
+       "estimate": 1.28,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Cucumber",
@@ -21179,7 +22615,9 @@
        "store": "BJ's",
        "checked": true,
        "price": 14.04,
-       "estimate": 13.98
+       "estimate": 13.98,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Italian Loaf Bread",
@@ -21227,7 +22665,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 0.4,
-       "estimate": 0.4
+       "estimate": 0.4,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Okra tray",
@@ -21267,7 +22707,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.66,
-       "estimate": 1.66
+       "estimate": 1.66,
+       "quantity": 6,
+       "unit": "each"
       },
       {
        "name": "Frozen Blueberries",
@@ -21275,7 +22717,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 7.58,
-       "estimate": 7.58
+       "estimate": 7.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Tomato Sauce",
@@ -21283,7 +22727,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 1.41,
-       "estimate": 1.41
+       "estimate": 1.41,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Burrman Ketchup",
@@ -21307,7 +22753,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 5.58,
-       "estimate": 5.58
+       "estimate": 5.58,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -21315,7 +22763,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 3.56,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Peas & Corn",
@@ -21331,7 +22781,9 @@
        "store": "Aldi",
        "checked": true,
        "price": 11.97,
-       "estimate": 11.97
+       "estimate": 11.97,
+       "quantity": 3,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -21467,7 +22919,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": true,
        "price": 1.04,
-       "estimate": 1.04
+       "estimate": 1.04,
+       "quantity": 3,
+       "unit": "each"
       },
       {
        "name": "Zucchini",
@@ -21483,7 +22937,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "done",
@@ -21611,7 +23067,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Pork and beans",
@@ -21619,7 +23077,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 5.0
+       "estimate": 5.0,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "planned",
@@ -21699,7 +23159,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 5,
+       "unit": "each"
       },
       {
        "name": "Ground Beef 85/15",
@@ -21715,7 +23177,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       }
      ],
      "status": "planned",
@@ -21763,7 +23227,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 1.5
+       "estimate": 1.5,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Yellow Potatoes",
@@ -21771,7 +23237,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Plum Tomatoes",
@@ -21779,7 +23247,9 @@
        "store": "Rt-17 Farmer's Market",
        "checked": false,
        "price": null,
-       "estimate": 2.0
+       "estimate": 2.0,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Orange/Yellow/Red Bell Peppers",
@@ -21803,7 +23273,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 6.0
+       "estimate": 6.0,
+       "quantity": 2,
+       "unit": "each"
       },
       {
        "name": "Water",
@@ -21811,7 +23283,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Turkey Oven bags",
@@ -21955,7 +23429,9 @@
        "store": "Aldi",
        "checked": false,
        "price": null,
-       "estimate": 3.56
+       "estimate": 3.56,
+       "quantity": 4,
+       "unit": "each"
       },
       {
        "name": "Mixed Vegetables",

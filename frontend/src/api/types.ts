@@ -31,7 +31,14 @@ export interface Item {
   // averagePrice backs the trip editor's "fill estimates" button.
   lastPrice: number | null
   averagePrice: number | null
+  // What those prices are per: an item ("each") or a pound ("lb"), for things bought by weight.
+  priceUnit?: PriceUnit
+  // The unit it was last bought in — the trip editor's default for a new line.
+  unit?: QuantityUnit
 }
+
+export type QuantityUnit = 'each' | 'lb' | 'oz' | 'kg' | 'g'
+export type PriceUnit = 'each' | 'lb'
 
 // planned: a shopping list, nothing bought yet. shopping: in the store.
 // done: the shop is over and the trip is history.
@@ -55,6 +62,9 @@ export interface TripItemLine {
   // null while there is no price. priceLocked is the server's verdict right now.
   priceLocksAt: string | null
   priceLocked: boolean
+  // How much the line bought (price stays the whole line's cost). Absent from older servers: 1 each.
+  quantity?: number
+  unit?: QuantityUnit
 }
 
 export interface TripItemInput {
@@ -67,6 +77,9 @@ export interface TripItemInput {
   checked: boolean
   price: number | null
   estimate?: number | null
+  // Omitted keeps the line's current quantity (1 each for a new line).
+  quantity?: number
+  unit?: QuantityUnit
 }
 
 export interface Trip {
@@ -147,6 +160,8 @@ export interface TrackedItem {
   recentPrices: number[]
   trend: 'up' | 'down' | 'flat'
   deltaFromPrevious: number | null
+  // lastPrice/recentPrices are per item, or per pound for things bought by weight.
+  priceUnit?: PriceUnit
 }
 
 export interface DashboardSummary {
@@ -176,12 +191,17 @@ export interface MonthlySpend {
 export interface PurchasePoint {
   date: string
   storeName: string
+  // Per the history's priceUnit (per item, or per pound).
   price: number
   // Compared with the previous purchase even if that one is outside the range.
   deltaFromPrevious: number | null
   lineId: string
   tripId: string
   profileName: string
+  quantity?: number
+  unit?: QuantityUnit
+  // What the whole line cost.
+  lineTotal?: number
 }
 
 export interface ItemHistory {
@@ -204,6 +224,11 @@ export interface ItemHistory {
   // Span of all the item's purchases, whatever the range.
   firstDate: string | null
   lastDate: string | null
+  // Prices are per this; purchases in the other kind of unit (counted vs weighed) are left out.
+  priceUnit?: PriceUnit
+  otherUnitCount?: number
+  // Both kinds when the item was bought both ways (the default first), to switch between them.
+  availableUnits?: { priceUnit: PriceUnit; count: number }[]
 }
 
 // --- Items portal ---
@@ -218,6 +243,7 @@ export interface CatalogItem {
   purchaseCount: number
   lastPurchased: string | null
   averagePrice: number | null
+  priceUnit?: PriceUnit
 }
 
 export interface SaveItemRequest {
@@ -241,12 +267,17 @@ export interface ItemLine {
   estimate: number | null
   priceLocked: boolean
   priceLocksAt: string | null
+  quantity?: number
+  unit?: QuantityUnit
 }
 
 export interface SaveItemLineRequest {
   tripId: string
   storeName: string | null
   price: number | null
+  // Omitted keeps the line's quantity (1 each for a new line).
+  quantity?: number
+  unit?: QuantityUnit
   // Required to change a locked line.
   confirmLocked?: boolean
 }
@@ -351,6 +382,7 @@ export interface RecipeItem {
   // Free text for the cook ("2 cups"); trips don't use it.
   amount: string | null
   averagePrice: number | null
+  priceUnit?: PriceUnit
 }
 
 export interface Recipe {

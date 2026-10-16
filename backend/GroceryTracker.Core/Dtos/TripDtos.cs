@@ -7,7 +7,8 @@ namespace GroceryTracker.Core.Dtos;
 public record TripItemDto(
     Guid Id, Guid ItemId, string ItemName, Guid CategoryId, string CategoryName,
     string? StoreName, bool Checked, decimal? Price,
-    decimal? Estimate, DateTimeOffset? PriceLocksAt, bool PriceLocked);
+    decimal? Estimate, DateTimeOffset? PriceLocksAt, bool PriceLocked,
+    decimal Quantity = 1, string Unit = "each");
 
 // Id is the existing line's id when editing (from TripItemDto.Id) and null for a
 // new line. It is how the server tells "changed this line" from "removed it and
@@ -15,7 +16,8 @@ public record TripItemDto(
 // to an existing one by item name, so payloads queued by older clients still work.
 public record TripItemInput(
     string ItemName, Guid CategoryId, string? StoreName, bool Checked, decimal? Price,
-    decimal? Estimate = null, Guid? Id = null);
+    decimal? Estimate = null, Guid? Id = null,
+    decimal? Quantity = null, string? Unit = null);
 
 // Status is "planned", "shopping" or "done". EstimatedTotal sums the lines that
 // have an estimate. Savings compares estimate against price on the lines that

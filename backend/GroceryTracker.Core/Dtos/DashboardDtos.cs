@@ -9,7 +9,7 @@ public record RecentTripDto(Guid Id, string? Name, string Date, string StoreName
 // LastPrice is null for a pinned item nobody has bought yet.
 public record TrackedItemDto(
     Guid ItemId, string ItemName, string CategoryName, decimal? LastPrice,
-    List<decimal> RecentPrices, string Trend, decimal? DeltaFromPrevious);
+    List<decimal> RecentPrices, string Trend, decimal? DeltaFromPrevious, string PriceUnit = "each");
 
 // One calendar month of the spend chart (Month is "yyyy-MM").
 public record MonthlySpendDto(string Month, decimal Total, int Count);

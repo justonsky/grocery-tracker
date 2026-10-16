@@ -1,10 +1,19 @@
 import { useEffect, useState, type CSSProperties } from 'react'
-import type { Category, TripStatus } from '../api/types'
+import type { Category, PriceUnit, QuantityUnit, TripStatus } from '../api/types'
+import { parseQuantity, perUnit, quantityLabel } from '../trips/quantity'
+import { QuantityField } from './QuantityField'
 import { summarize } from '../trips/costSummary'
 import { STORE_DEFAULT_COLORS, slug } from '../trips/shareGroups'
 import { Combobox, type ComboOption } from './ui/Combobox'
 
 const money = (n: number) => `$${n.toFixed(2)}`
+
+export interface LineAverage {
+  average: number
+  priceUnit: PriceUnit
+  // average × the line's quantity; null when the units don't compare (bought by weight vs by count).
+  lineEstimate: number | null
+}
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 const norm = (name: string | null) => (name ?? '').trim().toLowerCase()
 const parseAmount = (value: string) => {
@@ -25,6 +34,9 @@ export interface DraftItem {
   checked: boolean
   estimate: string
   price: string
+  // How much the line buys, as typed ("2", "3/4"; blank = 1), and its unit. The price is the line total.
+  quantity: string
+  unit: QuantityUnit
   // Read-only: its price was entered more than 7 days ago (server's verdict at load).
   locked: boolean
   priceLocksAt: string | null
@@ -36,9 +48,12 @@ interface ListProps {
   status: TripStatus
   categories: Category[] | undefined
   itemOptions: ComboOption[]
-  averageFor: (itemName: string) => number | null
+  // The item's household average (per item or per pound) and what it makes this line's estimate.
+  averageFor: (item: DraftItem) => LineAverage | null
   onUpdate: (key: string, patch: Partial<DraftItem>) => void
   onName: (key: string, text: string) => void
+  // A suggestion was chosen (not just typed): may also set the line's unit.
+  onPick: (key: string, name: string) => void
   onPrice: (item: DraftItem, text: string) => void
   onRemove: (key: string) => void
   onAdd: (storeName: string | null) => void
@@ -57,9 +72,9 @@ function useIsWide() {
   return wide
 }
 
-// Wide rows: tick, item, category, store, estimate, paid, remove/lock.
+// Wide rows: tick, item, quantity, category, store, estimate, paid, remove/lock.
 const WIDE_COLS =
-  'grid grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto]'
+  'grid grid-cols-[auto_minmax(0,1.5fr)_8.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto]'
 
 const LockIcon = ({ size = 14 }: { size?: number }) => (
   <svg
@@ -129,6 +144,7 @@ export function TripItemList(props: ListProps) {
         >
           <span className="w-11" />
           <span>Item</span>
+          <span>Qty</span>
           <span>Category</span>
           <span>Store</span>
           <span>Estimate</span>
@@ -259,12 +275,14 @@ function ItemRow({
   averageFor,
   onUpdate,
   onName,
+  onPick,
   onPrice,
   onRemove,
 }: ListProps & { item: DraftItem; wide: boolean; first: boolean }) {
   const [open, setOpen] = useState(false)
-  const average = averageFor(item.itemName)
+  const average = averageFor(item)
   const estimate = parseAmount(item.estimate)
+  const amountLabel = quantityLabel(parseQuantity(item.quantity) ?? 1, item.unit)
   const struck = item.checked && status !== 'planned'
 
   // Wrapped in a label so the whole 44px square ticks it, not just the box.
@@ -290,6 +308,7 @@ function ItemRow({
       disabled={item.locked}
       options={itemOptions}
       onChange={(text) => onName(item.key, text)}
+      onSelect={(option) => onPick(item.key, option.value)}
     />
   )
   const category = (
@@ -331,9 +350,9 @@ function ItemRow({
       step="0.01"
       min="0"
       inputMode="decimal"
-      placeholder={average != null ? `avg ${average.toFixed(2)}` : 'Estimate'}
+      placeholder={average?.lineEstimate != null ? `avg ${average.lineEstimate.toFixed(2)}` : 'Estimate'}
       aria-label="Estimate"
-      title={average != null ? `Household average: ${money(average)}` : 'No price history for this item yet'}
+      title={average != null ? `Household average: ${money(average.average)}${perUnit(average.priceUnit)}` : 'No price history for this item yet'}
       value={item.estimate}
       disabled={item.locked}
       onChange={(e) => onUpdate(item.key, { estimate: e.target.value })}
@@ -355,6 +374,15 @@ function ItemRow({
       onChange={(e) => onPrice(item, e.target.value)}
     />
   )
+  const quantityInput = (
+    <QuantityField
+      quantity={item.quantity}
+      unit={item.unit}
+      disabled={item.locked}
+      onQuantity={(text) => onUpdate(item.key, { quantity: text })}
+      onUnit={(unit) => onUpdate(item.key, { unit })}
+    />
+  )
   const lock = (
     <span
       className="flex h-11 w-11 items-center justify-center text-text/60"
@@ -371,6 +399,7 @@ function ItemRow({
       <div className={`${WIDE_COLS} items-center gap-2 py-1.5 pr-2 pl-2 ${first ? '' : 'border-t border-divider'} ${item.locked ? 'opacity-75' : ''}`}>
         {checkbox}
         {name}
+        {quantityInput}
         {category}
         {store}
         {estimateInput}
@@ -393,7 +422,13 @@ function ItemRow({
 
   // Phone: one line (tick, name, paid); everything else behind ⋯.
   const categoryName = categories?.find((c) => c.id === item.categoryId)?.name
-  const meta = [categoryName, estimate == null && average != null ? `avg ${money(average)}` : null].filter(Boolean).join(' · ')
+  const meta = [
+    amountLabel || null,
+    categoryName,
+    estimate == null && average != null ? `avg ${money(average.average)}${perUnit(average.priceUnit)}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
   return (
     <div
       className={`grid grid-cols-[auto_minmax(0,1fr)_5.5rem_auto] items-center gap-x-1.5 gap-y-1 py-1.5 pr-1 pl-0.5 ${
@@ -415,6 +450,7 @@ function ItemRow({
       {!open && meta && <div className="col-start-2 col-end-5 -mt-1 truncate px-1 pb-0.5 text-xs text-text/60">{meta}</div>}
       {open && (
         <div className="col-start-2 col-end-5 grid grid-cols-2 gap-2 pr-1 pb-1.5">
+          <div className="col-span-2">{quantityInput}</div>
           {category}
           {store}
           {estimateInput}

@@ -9,6 +9,8 @@ export interface ShareItem {
   storeName: string | null
   checked: boolean
   price: number | null
+  // "×2", "0.75 lb"; empty for one of an item.
+  amount?: string
 }
 
 export interface ShareGroup {

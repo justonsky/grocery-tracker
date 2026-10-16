@@ -15,8 +15,9 @@ public static class LookupEndpoints
         group.MapGet("/items", async (string? search, LookupService service, CancellationToken ct) =>
             Results.Ok(await service.SearchItemsAsync(search, ct)));
 
-        group.MapGet("/items/{itemId:guid}/history", (Guid itemId, string? from, string? to, ItemHistoryService service, CancellationToken ct) =>
-            GetHistoryAsync(itemId, from, to, service, ct));
+        // unit: "each" or "lb" — which way to show an item bought both ways (default: the way most purchases were).
+        group.MapGet("/items/{itemId:guid}/history", (Guid itemId, string? from, string? to, string? unit, ItemHistoryService service, CancellationToken ct) =>
+            GetHistoryAsync(itemId, from, to, service, ct, unit));
 
         // The routes these used to live at, before items and stores became
         // household-wide. An installed PWA keeps running its cached build until it
@@ -31,13 +32,17 @@ public static class LookupEndpoints
     }
 
     private static async Task<IResult> GetHistoryAsync(
-        Guid itemId, string? from, string? to, ItemHistoryService service, CancellationToken ct)
+        Guid itemId, string? from, string? to, ItemHistoryService service, CancellationToken ct, string? unit = null)
     {
+        if (unit is not null and not ("each" or "lb"))
+        {
+            return Results.Problem(type: ProblemTypes.Validation, title: "unit must be each or lb.", statusCode: StatusCodes.Status400BadRequest);
+        }
         if (!IsIsoDateOrNull(from) || !IsIsoDateOrNull(to))
         {
             return Results.Problem(type: ProblemTypes.Validation, title: "from and to must be dates (YYYY-MM-DD).", statusCode: StatusCodes.Status400BadRequest);
         }
-        var history = await service.GetAsync(itemId, from, to, ct);
+        var history = await service.GetAsync(itemId, from, to, ct, unit);
         return history is null
             ? Results.Problem(type: ProblemTypes.ItemNotFound, title: "Item not found.", statusCode: StatusCodes.Status404NotFound)
             : Results.Ok(history);

@@ -76,6 +76,8 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             e.HasKey(ti => ti.Id);
             e.Property(ti => ti.Id).ValueGeneratedNever();
             e.HasIndex(ti => ti.ItemId); // powers item price-history queries
+            e.Property(ti => ti.QuantityMilli).HasDefaultValue(1000);
+            e.Property(ti => ti.Unit).HasMaxLength(8).HasDefaultValue("each");
             e.HasOne(ti => ti.Trip).WithMany(t => t.Items)
                 .HasForeignKey(ti => ti.TripId).OnDelete(DeleteBehavior.Cascade);
             // Deleting an item (Items portal) deliberately cascades to every trip line

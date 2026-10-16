@@ -100,6 +100,20 @@ as a PNG. Tax, tips and "Unlisted purchases" count toward spend but aren't ranke
 as items. It is computed when you open the page, from one indexed read — about
 15 ms for a quarter and 100 ms for ten years of weekly shopping.
 
+## Quantities and weights
+
+Each trip line has a quantity and a unit: **each** (a count) or a weight (**lb, oz, kg,
+g**). Type `2`, `0.75`, `3/4` or `1 1/2`; blank means 1. The line's price is still what
+the whole line cost, so totals, spend and budgets are unchanged. Averages, price charts,
+the dashboard grid and "Fill estimates from averages" work per item, or **per pound** for
+things bought by weight (12 oz and 0.75 lb are the same amount): fill estimates sets
+average × quantity. An item bought both ways (by the pack and by the pound) uses
+whichever way most of its purchases were; the others are listed on its page as not
+comparable.
+
+`tools/seed/backfill_quantities.py --db <path>` fills in the workbook's quantities for a
+database seeded before this existed (dry run by default; `--apply` writes, after a backup).
+
 ## Recipes
 
 The **Recipes** tab (after Items) is a gallery of the household's recipes, shared by

@@ -348,6 +348,11 @@ namespace GroceryTracker.Core.Migrations
                     b.Property<DateTimeOffset?>("PricedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("QuantityMilli")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1000);
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("INTEGER");
 
@@ -356,6 +361,13 @@ namespace GroceryTracker.Core.Migrations
 
                     b.Property<Guid>("TripId")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(8)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("each");
 
                     b.HasKey("Id");
 

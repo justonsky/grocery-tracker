@@ -9,7 +9,7 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
     // Household-wide: every profile's purchases of the item, so the averages here
     // match the ones the trip editor fills estimates from. from/to (ISO dates,
     // inclusive) narrow the purchases every statistic is computed over.
-    public async Task<ItemHistoryDto?> GetAsync(Guid itemId, string? from = null, string? to = null, CancellationToken ct = default)
+    public async Task<ItemHistoryDto?> GetAsync(Guid itemId, string? from = null, string? to = null, CancellationToken ct = default, string? priceUnit = null)
     {
         var item = await db.Items
             .Where(i => i.Id == itemId)
@@ -26,6 +26,8 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
                     ti.Id,
                     ti.TripId,
                     ti.PriceCents,
+                    ti.QuantityMilli,
+                    ti.Unit,
                     Date = ti.Trip!.Date,
                     ti.Trip!.CreatedAt,
                     ProfileName = ti.Trip!.Profile!.Name,
@@ -37,14 +39,25 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
             .OrderBy(x => x.Date, StringComparer.Ordinal).ThenBy(x => x.CreatedAt)
             .ToList();
 
-        var points = new List<(PurchasePointDto Point, int Cents, string CategoryName)>(all.Count);
-        for (var i = 0; i < all.Count; i++)
+        // Prices per item, or per pound for things bought by weight; purchases in the other kind of
+        // unit can't be compared on the same chart, so they're counted, not plotted.
+        var (dominant, _, _) = Quantities.Summarize(all.Select(p => new Quantities.Purchase(p.PriceCents!.Value, p.QuantityMilli, p.Unit, p.Date, p.CreatedAt)));
+        // An item bought both ways can be viewed either way; by default, the way most purchases were.
+        var available = all.GroupBy(p => Quantities.PriceUnitOf(p.Unit))
+            .Select(g => new PriceUnitCountDto(g.Key, g.Count()))
+            .OrderByDescending(u => u.PriceUnit == dominant).ToList();
+        priceUnit = priceUnit is not null && available.Any(u => u.PriceUnit == priceUnit) ? priceUnit : dominant;
+        var otherUnits = all.Count(p => Quantities.PriceUnitOf(p.Unit) != priceUnit);
+        var comparable = all.Where(p => Quantities.PriceUnitOf(p.Unit) == priceUnit).ToList();
+        var points = new List<(PurchasePointDto Point, decimal Cents, string CategoryName)>(comparable.Count);
+        for (var i = 0; i < comparable.Count; i++)
         {
-            var p = all[i];
-            decimal? delta = i > 0 ? (p.PriceCents!.Value - all[i - 1].PriceCents!.Value) / 100m : null;
+            var p = comparable[i];
+            var cents = Quantities.UnitPriceCents(p.PriceCents!.Value, p.QuantityMilli, p.Unit);
+            decimal? delta = i > 0 ? Quantities.Dollars(cents) - Quantities.Dollars(points[i - 1].Cents) : null;
             var store = p.ItemStoreName ?? p.TripStoreName ?? "—";
-            points.Add((new PurchasePointDto(p.Date, store, p.PriceCents!.Value / 100m, delta, p.Id, p.TripId, p.ProfileName),
-                p.PriceCents!.Value, p.CategoryName));
+            points.Add((new PurchasePointDto(p.Date, store, Quantities.Dollars(cents), delta, p.Id, p.TripId, p.ProfileName,
+                Quantities.FromMilli(p.QuantityMilli), p.Unit, p.PriceCents!.Value / 100m), cents, p.CategoryName));
         }
 
         var firstDate = all.Count > 0 ? all[0].Date : null;
@@ -57,13 +70,13 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
         if (inRange.Count == 0)
         {
             return new ItemHistoryDto(item.Id, item.Name, item.CategoryName, 0, 0, "", 0, "", 0, 0, 0, [],
-                0, from, to, firstDate, lastDate);
+                0, from, to, firstDate, lastDate, priceUnit, otherUnits, available);
         }
 
         var lowest = inRange.MinBy(p => p.Cents);
         var highest = inRange.MaxBy(p => p.Cents);
         var current = inRange[^1];
-        var avgCents = inRange.Sum(p => p.Cents) / (decimal)inRange.Count;
+        var avgCents = inRange.Sum(p => p.Cents) / inRange.Count;
 
         decimal variance = 0m, variancePct = 0m;
         if (inRange.Count > 1)
@@ -74,12 +87,12 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
 
         return new ItemHistoryDto(
             item.Id, item.Name, current.CategoryName,
-            current.Cents / 100m,
-            lowest.Cents / 100m, $"{lowest.Point.StoreName} · {lowest.Point.Date}",
-            highest.Cents / 100m, $"{highest.Point.StoreName} · {highest.Point.Date}",
+            Quantities.Dollars(current.Cents),
+            Quantities.Dollars(lowest.Cents), $"{lowest.Point.StoreName} · {lowest.Point.Date}",
+            Quantities.Dollars(highest.Cents), $"{highest.Point.StoreName} · {highest.Point.Date}",
             avgCents / 100m,
             variance, variancePct,
             Enumerable.Reverse(inRange).Select(p => p.Point).ToList(), // most recent purchase first
-            inRange.Count, from, to, firstDate, lastDate);
+            inRange.Count, from, to, firstDate, lastDate, priceUnit, otherUnits, available);
     }
 }

@@ -122,13 +122,18 @@ public class RecipeService(GroceryTrackerDbContext db, LookupService lookup, Rec
     private async Task<List<RecipeDto>> ToDtosAsync(List<Recipe> recipes, CancellationToken ct)
     {
         var itemIds = recipes.SelectMany(r => r.Items.Select(i => i.ItemId)).Distinct().ToList();
+        // Household average per item (or per pound, for things bought by weight).
         var averages = itemIds.Count == 0
-            ? new Dictionary<Guid, decimal>()
+            ? new Dictionary<Guid, (decimal Price, string PriceUnit)>()
             : (await db.TripItems.Where(ti => itemIds.Contains(ti.ItemId) && ti.PriceCents > 0)
-                    .GroupBy(ti => ti.ItemId)
-                    .Select(g => new { g.Key, Cents = g.Average(ti => (double)ti.PriceCents!.Value) })
+                    .Select(ti => new { ti.ItemId, ti.PriceCents, ti.QuantityMilli, ti.Unit, ti.Trip!.Date, ti.Trip.CreatedAt })
                     .ToListAsync(ct))
-                .ToDictionary(x => x.Key, x => Math.Round((decimal)x.Cents / 100m, 2, MidpointRounding.AwayFromZero));
+                .GroupBy(x => x.ItemId)
+                .ToDictionary(g => g.Key, g =>
+                {
+                    var (priceUnit, points, _) = Quantities.Summarize(g.Select(x => new Quantities.Purchase(x.PriceCents!.Value, x.QuantityMilli, x.Unit, x.Date, x.CreatedAt)));
+                    return (Price: Quantities.Dollars(points.Average(p => p.UnitCents)), PriceUnit: priceUnit);
+                });
 
         var recipeIds = recipes.Select(r => r.Id).ToList();
         var usage = (await db.TripRecipes.Where(tr => recipeIds.Contains(tr.RecipeId))
@@ -140,7 +145,8 @@ public class RecipeService(GroceryTrackerDbContext db, LookupService lookup, Rec
         {
             var items = r.Items.OrderBy(i => i.SortOrder).Select(i => new RecipeItemDto(
                 i.ItemId, i.Item!.Name, i.Item.DefaultCategoryId, i.Item.DefaultCategory?.Name ?? "Other",
-                i.Amount, averages.TryGetValue(i.ItemId, out var avg) ? avg : null)).ToList();
+                i.Amount, averages.TryGetValue(i.ItemId, out var avg) ? avg.Price : null,
+                averages.TryGetValue(i.ItemId, out var unit) ? unit.PriceUnit : Quantities.Each)).ToList();
             var known = items.Where(i => i.AveragePrice is not null).ToList();
             usage.TryGetValue(r.Id, out var u);
             return new RecipeDto(r.Id, r.Name, r.Description, r.PhotoVersion, items,

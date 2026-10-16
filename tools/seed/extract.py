@@ -163,9 +163,26 @@ def categorize(name):
 
 
 QTY_RE = re.compile(r'\s*\((\d+)\)\s*$')
+WEIGHT_UNITS = {'lb': 'lb', 'lbs': 'lb', 'pound': 'lb', 'pounds': 'lb', 'oz': 'oz', 'kg': 'kg', 'g': 'g'}
+_NUM = r'(\d+(?:\.\d+)?|\d+/\d+)'
+_PAREN_WEIGHT = re.compile(_NUM + r'\s*(lbs?|pounds?|oz|kg|g)', re.I)
+# Plural = how many were bought ("(2 pks)"); a singular "(6 pack)" is the size of the one pack bought.
+_PAREN_COUNT = re.compile(r'(\d+)\s*(?:pks|packs|packages|bunches|bags)?', re.I)
+_PAREN_MIXED = re.compile(r'([A-Za-z][A-Za-z ]*?)[,\s]+(\d+)')
+# A weight written in the name itself: "1 lb Roast Beef", "Bananas - 3 lbs", "Pork Belly 5lbs".
+# Only pounds/kilos: an ounce size in a name ("Purell 8 oz") is the bottle, not a weighed amount.
+_NAME_WEIGHT = re.compile(r'(?:^|(?<=[\s-]))' + _NUM + r'\s*(lbs?|pounds?|kg)\b', re.I)
 
 
-def clean_name(raw):
+def _qty_number(text):
+    if '/' in text:
+        a, b = text.split('/')
+        return round(int(a) / int(b), 3)
+    return float(text)
+
+
+def clean_name_v4(raw):
+    """The v4 seed's rule (a trailing "(N)" only): the item names already in a database seeded from it."""
     name = re.sub(r'\s+', ' ', str(raw)).strip()
     qty = 1
     m = QTY_RE.search(name)
@@ -174,6 +191,46 @@ def clean_name(raw):
         name = QTY_RE.sub('', name).strip()
     name = name.strip(' -–—,')
     return name, qty
+
+
+def clean_name(raw):
+    """Item name, quantity and unit from a workbook row ("Scallions (4)" -> Scallions, 4 each).
+
+    In parentheses, a number is how many were bought: "(2)", "(2 pks)", "(3 bags)", "(5 bunches)",
+    "(Red, 2)" (the word stays: "Onions (Red)"), or a weight: "(1.5 lbs)". A singular "(6 pack)"
+    is the pack's size, so it stays. A weight in pounds written in the name ("1 lb Roast Beef",
+    "Bananas - 3 lbs") is the amount bought too; an ounce size ("Purell 8 oz") and a count
+    ("Eggs - 18 ct", "Peanut Butter - 2 pk") describe the product, so they stay in the name.
+    Any other parentheses ("(small)", a brand, a note) stay as they are.
+    """
+    name = re.sub(r'\s+', ' ', str(raw)).strip()
+    found = {'qty': 1.0, 'unit': 'each'}
+
+    def paren(m):
+        inner = m.group(1).strip()
+        w = _PAREN_WEIGHT.fullmatch(inner)
+        if w:
+            found.update(qty=_qty_number(w.group(1)), unit=WEIGHT_UNITS[w.group(2).lower()])
+            return ''
+        c = _PAREN_COUNT.fullmatch(inner)
+        if c:
+            found.update(qty=float(c.group(1)), unit='each')
+            return ''
+        mixed = _PAREN_MIXED.fullmatch(inner)
+        if mixed:
+            found.update(qty=float(mixed.group(2)), unit='each')
+            return f'({mixed.group(1).strip()})'
+        return m.group(0)
+
+    name = re.sub(r'\(([^)]*)\)', paren, name)
+    if found['qty'] == 1 and found['unit'] == 'each':
+        w = _NAME_WEIGHT.search(name)
+        if w:
+            found.update(qty=_qty_number(w.group(1)), unit=WEIGHT_UNITS[w.group(2).lower()])
+            name = name[:w.start()] + name[w.end():]
+    name = re.sub(r'\s+', ' ', name).strip(' -–—,')
+    qty = found['qty']
+    return name, (int(qty) if qty == int(qty) else qty), found['unit']
 
 
 def sheet_month(name):
@@ -306,11 +363,13 @@ def extract():
                 if price <= 0:
                     skipped['nonpositive'] += 1
                     continue
-                name, _qty = clean_name(raw)       # "(N)" is a quantity: the price is the line total
+                # The price is the line total; quantity and unit say how much it bought.
+                name, qty, unit = clean_name(raw)
                 if not name:
                     continue
                 rows.append({'name': name, 'category': categorize(name), 'price': price,
-                             'store': store_from_fill(fill), 'gray': is_gray(fill)})
+                             'store': store_from_fill(fill), 'gray': is_gray(fill),
+                             'quantity': qty, 'unit': unit, 'raw': str(raw)})
             # "Tables in gray" / DELETED BY MISTAKE -> drop the whole block,
             # but a few uncoloured rows inside a normal block are real purchases.
             if deleted:

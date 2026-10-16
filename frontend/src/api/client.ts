@@ -13,6 +13,7 @@ import type {
   Health,
   Item,
   ItemHistory,
+  PriceUnit,
   Profile,
   Recipe,
   RecipeInput,
@@ -106,8 +107,10 @@ export const api = {
 
   items: {
     search: (search?: string) => get<Item[]>(`/items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
-    history: (itemId: string, range?: { from?: string | null; to?: string | null }) => {
+    // unit: show an item bought both ways per item or per pound (default: how most were bought).
+    history: (itemId: string, range?: { from?: string | null; to?: string | null }, unit?: PriceUnit | null) => {
       const params = new URLSearchParams()
+      if (unit) params.set('unit', unit)
       if (range?.from) params.set('from', range.from)
       if (range?.to) params.set('to', range.to)
       const qs = params.toString()

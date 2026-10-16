@@ -97,18 +97,22 @@ public class LookupService(GroceryTrackerDbContext db)
         // Trip.Date is an ISO yyyy-MM-dd string, so ordinal ordering is chronological.
         var prices = (await db.TripItems
                 .Where(ti => ti.PriceCents != null && ti.PriceCents > 0)
-                .Select(ti => new { ti.ItemId, ti.PriceCents, Date = ti.Trip!.Date, ti.Trip!.CreatedAt })
+                .Select(ti => new { ti.ItemId, ti.PriceCents, ti.QuantityMilli, ti.Unit, Date = ti.Trip!.Date, ti.Trip!.CreatedAt })
                 .ToListAsync(ct))
             .GroupBy(ti => ti.ItemId)
-            .ToDictionary(
-                g => g.Key,
-                g => (
-                    Last: g.OrderBy(x => x.Date, StringComparer.Ordinal).ThenBy(x => x.CreatedAt).Last().PriceCents!.Value / 100m,
-                    Average: Math.Round(g.Average(x => (decimal)x.PriceCents!.Value) / 100m, 2, MidpointRounding.AwayFromZero)));
+            .ToDictionary(g => g.Key, g =>
+            {
+                // Per item or per pound, whichever way the item is mostly bought.
+                var (priceUnit, points, _) = Quantities.Summarize(g.Select(x => new Quantities.Purchase(x.PriceCents!.Value, x.QuantityMilli, x.Unit, x.Date, x.CreatedAt)));
+                // The editor's default unit: the last one used among purchases of the dominant kind, so
+                // the default line can be estimated from the average (a stray "each" doesn't win).
+                var lastUnit = points[^1].Purchase.Unit;
+                return (Last: Quantities.Dollars(points[^1].UnitCents), Average: Quantities.Dollars(points.Average(p => p.UnitCents)), priceUnit, lastUnit);
+            });
 
         return items
             .Select(i => prices.TryGetValue(i.Id, out var p)
-                ? new ItemDto(i.Id, i.Name, i.DefaultCategoryId, p.Last, p.Average)
+                ? new ItemDto(i.Id, i.Name, i.DefaultCategoryId, p.Last, p.Average, p.priceUnit, p.lastUnit)
                 : new ItemDto(i.Id, i.Name, i.DefaultCategoryId, null, null))
             .ToList();
     }

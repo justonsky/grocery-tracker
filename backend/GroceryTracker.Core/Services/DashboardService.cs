@@ -170,7 +170,7 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
 
         var purchases = (await db.TripItems
                 .Where(ti => itemIds.Contains(ti.ItemId) && ti.PriceCents != null && ti.PriceCents > 0)
-                .Select(ti => new { ti.ItemId, ti.PriceCents, CategoryName = ti.Category!.Name, ti.Trip!.Date, ti.Trip!.CreatedAt })
+                .Select(ti => new { ti.ItemId, ti.PriceCents, ti.QuantityMilli, ti.Unit, CategoryName = ti.Category!.Name, ti.Trip!.Date, ti.Trip!.CreatedAt })
                 .ToListAsync(ct))
             .GroupBy(p => p.ItemId)
             .ToDictionary(g => g.Key, g => g.OrderBy(p => p.Date, StringComparer.Ordinal).ThenBy(p => p.CreatedAt).ToList());
@@ -185,11 +185,13 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
                 continue;
             }
 
-            var last = ordered[^1];
-            var recentPrices = ordered.TakeLast(SparklinePoints).Select(p => p.PriceCents!.Value / 100m).ToList();
-            decimal? delta = ordered.Count >= 2 ? (ordered[^1].PriceCents!.Value - ordered[^2].PriceCents!.Value) / 100m : null;
+            // Prices per item, or per pound for things bought by weight, so 2 × Water and 1 × Water compare.
+            var (priceUnit, points, _) = Quantities.Summarize(ordered.Select(p => new Quantities.Purchase(p.PriceCents!.Value, p.QuantityMilli, p.Unit, p.Date, p.CreatedAt)));
+            var prices = points.Select(p => Quantities.Dollars(p.UnitCents)).ToList();
+            var recentPrices = prices.TakeLast(SparklinePoints).ToList();
+            decimal? delta = prices.Count >= 2 ? prices[^1] - prices[^2] : null;
             var trend = delta switch { > 0 => "up", < 0 => "down", _ => "flat" };
-            result.Add(new TrackedItemDto(id, item.Name, last.CategoryName, last.PriceCents!.Value / 100m, recentPrices, trend, delta));
+            result.Add(new TrackedItemDto(id, item.Name, ordered[^1].CategoryName, prices[^1], recentPrices, trend, delta, priceUnit));
         }
         return result;
     }

@@ -7,7 +7,8 @@ import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { SharePreview } from '../components/SharePreview'
 import { Combobox, type ComboOption } from '../components/ui/Combobox'
-import { TripItemList, type DraftItem } from '../components/TripItemList'
+import { TripItemList, type DraftItem, type LineAverage } from '../components/TripItemList'
+import { estimateFrom, parseQuantity, perUnit, quantityLabel, validQuantity } from '../trips/quantity'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
 import { PlannedMeals } from '../components/recipes/PlannedMeals'
@@ -27,6 +28,11 @@ const parseAmount = (value: string) => {
   return value.trim() !== '' && Number.isFinite(n) && n >= 0 ? n : null
 }
 const amountText = (n: number | null) => (n != null ? String(n) : '')
+// Blank or unreadable quantity text counts as 1.
+const lineQuantity = (line: DraftItem) => {
+  const q = parseQuantity(line.quantity)
+  return validQuantity(q) ? q : 1
+}
 
 // What the screen is called at each stage: a list you plan with, then the shop
 // itself, then the record of it.
@@ -43,15 +49,19 @@ const newItem = (categoryId: string): DraftItem => ({
   checked: false,
   estimate: '',
   price: '',
+  quantity: '',
+  unit: 'each',
   locked: false,
   priceLocksAt: null,
 })
 
 // A recipe's item as a trip line: estimated at its household average when there is one.
+// (A per-pound average means 1 lb, until the shopper changes it.)
 const recipeLine = (item: Recipe['items'][number], fallbackCategoryId: string, storeName: string | null): DraftItem => ({
   ...newItem(item.categoryId ?? fallbackCategoryId),
   itemName: item.itemName,
   storeName,
+  unit: item.priceUnit === 'lb' ? 'lb' : 'each',
   estimate: item.averagePrice != null ? item.averagePrice.toFixed(2) : '',
 })
 
@@ -141,6 +151,8 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         checked: it.checked,
         estimate: amountText(it.estimate),
         price: amountText(it.price),
+        quantity: it.quantity != null && it.quantity !== 1 ? String(it.quantity) : '',
+        unit: it.unit ?? 'each',
         locked: it.priceLocked,
         priceLocksAt: it.priceLocksAt,
       })),
@@ -213,6 +225,8 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           checked: r.checked,
           estimate: parseAmount(r.estimate),
           price: parseAmount(r.price),
+          quantity: lineQuantity(r),
+          unit: r.unit,
         }))
       const input: TripInput = {
         name: name.trim() || null,
@@ -348,6 +362,17 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     const match = itemSuggestions?.find((i) => normalize(i.name) === normalize(value))
     updateItem(key, match?.defaultCategoryId ? { itemName: value, categoryId: match.defaultCategoryId } : { itemName: value })
   }
+  // Choosing a suggestion (not typing) also brings the unit the item is usually bought in — unless
+  // this line already has a quantity, which says what unit it means.
+  const pickItem = (key: string, value: string) => {
+    const match = itemSuggestions?.find((i) => normalize(i.name) === normalize(value))
+    const line = items.find((it) => it.key === key)
+    updateItem(key, {
+      itemName: value,
+      ...(match?.defaultCategoryId ? { categoryId: match.defaultCategoryId } : {}),
+      ...(match?.unit && line && !line.quantity.trim() ? { unit: match.unit } : {}),
+    })
+  }
   // Entering what you paid never ticks the item: picking it up is the checkbox's
   // job, and ticking it here would also whisk the line out of the "to find" list
   // while its price is still being typed.
@@ -358,7 +383,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       (itemSuggestions ?? []).map((i) => ({
         value: i.name,
         label: i.name,
-        hint: i.averagePrice != null ? `avg ${money(i.averagePrice)}` : undefined,
+        hint: i.averagePrice != null ? `avg ${money(i.averagePrice)}${perUnit(i.priceUnit)}` : undefined,
       })),
     [itemSuggestions],
   )
@@ -370,33 +395,55 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     [storeSuggestions, stores],
   )
 
-  const averageByName = new Map((itemSuggestions ?? []).map((i) => [normalize(i.name), i.averagePrice]))
-  const averageFor = (itemName: string) => averageByName.get(normalize(itemName)) ?? null
+  const itemByName = new Map((itemSuggestions ?? []).map((i) => [normalize(i.name), i]))
+  // The household average per item (or per pound), and what that makes this line's estimate.
+  const averageFor = (line: DraftItem): LineAverage | null => {
+    const item = itemByName.get(normalize(line.itemName))
+    if (item?.averagePrice == null) return null
+    const priceUnit = item.priceUnit ?? 'each'
+    return { average: item.averagePrice, priceUnit, lineEstimate: estimateFrom(item.averagePrice, priceUnit, lineQuantity(line), line.unit) }
+  }
 
   // Fills each estimate with that item's average paid price. Items never bought
   // before have no average, so they keep whatever estimate (if any) was typed.
   const fillEstimates = () => {
     let filled = 0
     let untracked = 0
+    let otherUnit = 0
     const next = items.map((it) => {
       if (it.locked || !it.itemName.trim()) return it
-      const average = averageFor(it.itemName)
+      // average × quantity (2 × Water, 0.75 lb of roast beef); none if the units don't compare.
+      const average = averageFor(it)
       if (average == null) {
         untracked++
         return it
       }
+      const estimate = average.lineEstimate
+      if (estimate == null) {
+        otherUnit++
+        return it
+      }
       filled++
-      return { ...it, estimate: average.toFixed(2) }
+      return { ...it, estimate: estimate.toFixed(2) }
     })
     setItems(next)
     const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
-    toast(
-      'success',
-      filled === 0
-        ? 'None of these items have a price history yet.'
-        : `Filled ${plural(filled, 'estimate')} from average prices.` +
-            (untracked > 0 ? ` ${plural(untracked, 'item')} with no price history left as-is.` : ''),
-    )
+    if (filled > 0 || otherUnit === 0) {
+      toast(
+        'success',
+        filled === 0
+          ? 'None of these items have a price history yet.'
+          : `Filled ${plural(filled, 'estimate')} from average prices.` +
+              (untracked > 0 ? ` ${plural(untracked, 'item')} with no price history left as-is.` : ''),
+      )
+    }
+    if (otherUnit > 0) {
+      const one = otherUnit === 1
+      toast(
+        'error',
+        `${plural(otherUnit, 'item')} ${one ? 'is' : 'are'} usually priced ${one ? 'in a different unit' : 'in different units'} (by the pound vs by the item), so ${one ? 'it was' : 'they were'} left as-is. Change the unit to estimate ${one ? 'it' : 'them'}.`,
+      )
+    }
   }
 
   // Planned meals as shown: the recipe's own data when it's loaded, else what the trip remembered.
@@ -416,6 +463,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     storeName: it.storeName,
     checked: it.checked,
     price: parseAmount(it.price),
+    amount: quantityLabel(lineQuantity(it), it.unit),
   }))
   const hasPreview = previewItems.length > 0
 
@@ -450,7 +498,15 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     if (baselineRef.current === null && !isEditing && items.length > 0) baselineRef.current = edits
   }, [edits, isEditing, items.length])
   useUnsavedChangesGuard(() => baselineRef.current !== null && editsRef.current !== baselineRef.current)
-  const saveAs = (nextStatus: TripStatus, leave: boolean) => save.mutate({ status: nextStatus, leave, edits })
+  const saveAs = (nextStatus: TripStatus, leave: boolean) => {
+    // A quantity that isn't a number would quietly become 1 — ask for it to be fixed instead.
+    const bad = items.find((it) => it.itemName.trim() && it.quantity.trim() && !validQuantity(parseQuantity(it.quantity)))
+    if (bad) {
+      toast('error', `“${bad.quantity}” isn't a quantity for ${bad.itemName}. Use a number like 2, 0.75 or 3/4.`)
+      return
+    }
+    save.mutate({ status: nextStatus, leave, edits })
+  }
 
   return (
     <div className="mx-auto max-w-[860px] px-4 pt-5 pb-25 sm:px-5 sm:pt-6">
@@ -633,6 +689,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           averageFor={averageFor}
           onUpdate={updateItem}
           onName={setItemName}
+          onPick={pickItem}
           onPrice={setItemPrice}
           onRemove={removeItem}
           onAdd={addItem}

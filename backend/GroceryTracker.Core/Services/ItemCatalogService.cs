@@ -26,7 +26,7 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
         var ids = items.Select(i => i.Id).ToList();
         var lines = (await db.TripItems
                 .Where(ti => ids.Contains(ti.ItemId))
-                .Select(ti => new { ti.ItemId, ti.PriceCents, ti.Trip!.Date })
+                .Select(ti => new { ti.ItemId, ti.PriceCents, ti.QuantityMilli, ti.Unit, ti.Trip!.Date, ti.Trip!.CreatedAt })
                 .ToListAsync(ct))
             .GroupBy(l => l.ItemId)
             .ToDictionary(g => g.Key, g => g.ToList());
@@ -35,11 +35,14 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
         {
             var itemLines = lines.GetValueOrDefault(i.Id) ?? [];
             var bought = itemLines.Where(l => l.PriceCents is > 0).ToList();
+            // Average per item, or per pound for things bought by weight.
+            var (priceUnit, points, _) = Quantities.Summarize(bought.Select(l => new Quantities.Purchase(l.PriceCents!.Value, l.QuantityMilli, l.Unit, l.Date, l.CreatedAt)));
             return new CatalogItemDto(
                 i.Id, i.Name, i.DefaultCategoryId, i.CategoryName,
                 itemLines.Count, bought.Count,
                 bought.Count == 0 ? null : bought.Max(l => l.Date),
-                bought.Count == 0 ? null : Math.Round(bought.Average(l => (decimal)l.PriceCents!.Value) / 100m, 2, MidpointRounding.AwayFromZero));
+                points.Count == 0 ? null : Quantities.Dollars(points.Average(p => p.UnitCents)),
+                priceUnit);
         }).ToList();
     }
 
@@ -98,6 +101,7 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
 
     public async Task<(CatalogResult Result, ItemLineDto? Line)> AddLineAsync(Guid itemId, SaveItemLineRequest request, CancellationToken ct = default)
     {
+        if (!Quantities.IsValidQuantity(request.Quantity) || !Quantities.IsValidUnit(request.Unit)) return (CatalogResult.Invalid, null);
         var item = await db.Items.FindAsync([itemId], ct);
         if (item is null) return (CatalogResult.ItemNotFound, null);
         var trip = await db.Trips.Include(t => t.Stores).Include(t => t.Items).FirstOrDefaultAsync(t => t.Id == request.TripId, ct);
@@ -114,6 +118,8 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
             Checked = priceCents is not null,
             PriceCents = priceCents,
             PricedAt = priceCents is null ? null : now,
+            QuantityMilli = request.Quantity is { } quantity ? Quantities.ToMilli(quantity) : Quantities.OneMilli,
+            Unit = request.Unit ?? Quantities.Each,
             SortOrder = trip.Items.Count == 0 ? 0 : trip.Items.Max(i => i.SortOrder) + 1,
         };
         await ApplyStoreAsync(line, trip, request.StoreName, ct);
@@ -125,6 +131,7 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
     public async Task<(CatalogResult Result, ItemLineDto? Line)> UpdateLineAsync(
         Guid itemId, Guid lineId, SaveItemLineRequest request, CancellationToken ct = default)
     {
+        if (!Quantities.IsValidQuantity(request.Quantity) || !Quantities.IsValidUnit(request.Unit)) return (CatalogResult.Invalid, null);
         var line = await db.TripItems.FirstOrDefaultAsync(ti => ti.Id == lineId && ti.ItemId == itemId, ct);
         if (line is null) return (CatalogResult.LineNotFound, null);
         var now = clock.UtcNow;
@@ -145,6 +152,8 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
         line.PricedAt = priceCents is null ? null : line.PriceCents is null ? now : line.PricedAt ?? now;
         line.PriceCents = priceCents;
         if (priceCents is not null) line.Checked = true;
+        if (request.Quantity is { } quantity) line.QuantityMilli = Quantities.ToMilli(quantity);
+        if (request.Unit is { } unit) line.Unit = unit;
         await ApplyStoreAsync(line, trip, request.StoreName, ct);
 
         await db.SaveChangesAsync(ct);
@@ -290,7 +299,8 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
         l.Trip.ProfileId, l.Trip.Profile!.Name,
         l.Store?.Name, EffectiveStoreName(l),
         l.Checked, l.PriceCents / 100m, l.EstimateCents / 100m,
-        IsLocked(l, now), l.PricedAt + TripService.PriceEditWindow);
+        IsLocked(l, now), l.PricedAt + TripService.PriceEditWindow,
+        Quantities.FromMilli(l.QuantityMilli), l.Unit);
 
     private static int? ToCents(decimal? amount) =>
         amount is null or < 0 ? null : (int)Math.Round(amount.Value * 100m, MidpointRounding.AwayFromZero);

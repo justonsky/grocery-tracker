@@ -1,10 +1,12 @@
+import { parseQuantity, perUnit, validQuantity } from '../trips/quantity'
 import { useMemo, useState } from 'react'
 import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api, ApiError } from '../api/client'
 import { ProblemTypes } from '../api/problemTypes'
-import type { HouseholdTrip, ItemLine, SaveItemLineRequest } from '../api/types'
+import type { HouseholdTrip, ItemLine, QuantityUnit, SaveItemLineRequest } from '../api/types'
+import { QuantityField, quantityText } from '../components/QuantityField'
 import { Combobox, type ComboOption } from '../components/ui/Combobox'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
@@ -151,7 +153,7 @@ export function ItemEditor({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs text-text/60">
             {item.purchaseCount} {item.purchaseCount === 1 ? 'purchase' : 'purchases'}
-            {item.averagePrice != null && ` · average ${money(item.averagePrice)}`}
+            {item.averagePrice != null && ` · average ${money(item.averagePrice)}${perUnit(item.priceUnit)}`}
           </span>
           <button
             type="button"
@@ -284,7 +286,13 @@ function LineRow({
   const [tripId, setTripId] = useState(line.tripId)
   const [store, setStore] = useState(line.storeName ?? '')
   const [price, setPrice] = useState(line.price != null ? String(line.price) : '')
-  const dirty = tripId !== line.tripId || store.trim() !== (line.storeName ?? '') || parseAmount(price) !== line.price
+  const [quantity, setQuantity] = useState(quantityText(line.quantity))
+  const [unit, setUnit] = useState<QuantityUnit>(line.unit ?? 'each')
+  const parsedQuantity = quantity.trim() ? parseQuantity(quantity) : 1
+  const quantityOk = validQuantity(parsedQuantity)
+  const dirty =
+    tripId !== line.tripId || store.trim() !== (line.storeName ?? '') || parseAmount(price) !== line.price ||
+    parsedQuantity !== (line.quantity ?? 1) || unit !== (line.unit ?? 'each')
 
   const save = useMutation({
     mutationFn: (body: SaveItemLineRequest) => api.catalog.updateLine(itemId, line.id, body),
@@ -310,7 +318,7 @@ function LineRow({
       })
       if (!confirmLocked) return
     }
-    save.mutate({ tripId, storeName: store.trim() || null, price: parseAmount(price), confirmLocked })
+    save.mutate({ tripId, storeName: store.trim() || null, price: parseAmount(price), confirmLocked, quantity: parsedQuantity ?? 1, unit })
   }
   const onRemove = async () => {
     const ok = await confirm({
@@ -322,7 +330,7 @@ function LineRow({
   }
 
   return (
-    <div className="grid grid-cols-2 items-center gap-2 rounded-[14px] border border-divider bg-bg p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_104px_auto]">
+    <div className="grid grid-cols-2 items-center gap-2 rounded-[14px] border border-divider bg-bg p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_8.5rem_104px_auto]">
       <div className="col-span-2 sm:col-span-1">
         <TripSelect value={tripId} trips={trips} onChange={setTripId} disabled={!online} current={line} />
       </div>
@@ -334,6 +342,7 @@ function LineRow({
         disabled={!online}
         onChange={setStore}
       />
+      <QuantityField quantity={quantity} unit={unit} onQuantity={setQuantity} onUnit={setUnit} disabled={!online} />
       <input
         className="input"
         type="number"
@@ -354,7 +363,7 @@ function LineRow({
             </svg>
           </span>
         )}
-        <button type="button" className="btn btn-primary px-4" disabled={!online || !dirty || !tripId || save.isPending} onClick={onSave}>
+        <button type="button" className="btn btn-primary px-4" disabled={!online || !dirty || !tripId || !quantityOk || save.isPending} onClick={onSave}>
           Save
         </button>
         <button
@@ -369,7 +378,7 @@ function LineRow({
           </svg>
         </button>
       </div>
-      <div className="col-span-2 text-xs text-text/60 sm:col-span-4">
+      <div className="col-span-2 text-xs text-text/60 sm:col-span-5">
         {line.profileName} · {line.tripStatus}
         {line.estimate != null && ` · estimated ${money(line.estimate)}`}
       </div>
@@ -394,15 +403,20 @@ function AddLine({
   const [tripId, setTripId] = useState('')
   const [store, setStore] = useState('')
   const [price, setPrice] = useState('')
+  const [quantity, setQuantity] = useState('')
+  const [unit, setUnit] = useState<QuantityUnit>('each')
+  const parsedQuantity = quantity.trim() ? parseQuantity(quantity) : 1
 
   const add = useMutation({
-    mutationFn: () => api.catalog.addLine(itemId, { tripId, storeName: store.trim() || null, price: parseAmount(price) }),
+    mutationFn: () => api.catalog.addLine(itemId, { tripId, storeName: store.trim() || null, price: parseAmount(price), quantity: parsedQuantity ?? 1, unit }),
     onSuccess: () => {
       invalidateItemData(queryClient)
       setOpen(false)
       setTripId('')
       setStore('')
       setPrice('')
+      setQuantity('')
+      setUnit('each')
       toast('success', 'Purchase record added.')
     },
     onError: (error) => toast('error', errorMessage(error, "Couldn't add this record.")),
@@ -416,11 +430,12 @@ function AddLine({
     )
   }
   return (
-    <div className="grid grid-cols-2 items-center gap-2 rounded-[14px] border border-dashed border-control p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_104px_auto]">
+    <div className="grid grid-cols-2 items-center gap-2 rounded-[14px] border border-dashed border-control p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_8.5rem_104px_auto]">
       <div className="col-span-2 sm:col-span-1">
         <TripSelect value={tripId} trips={trips} onChange={setTripId} disabled={!online} />
       </div>
       <Combobox aria-label="Store" placeholder="Store" value={store} options={storeOptions} onChange={setStore} />
+      <QuantityField quantity={quantity} unit={unit} onQuantity={setQuantity} onUnit={setUnit} />
       <input
         className="input"
         type="number"
@@ -436,7 +451,7 @@ function AddLine({
         <button type="button" className="btn btn-secondary px-3.5" onClick={() => setOpen(false)}>
           Cancel
         </button>
-        <button type="button" className="btn btn-primary px-4" disabled={!tripId || add.isPending} onClick={() => add.mutate()}>
+        <button type="button" className="btn btn-primary px-4" disabled={!tripId || !validQuantity(parsedQuantity) || add.isPending} onClick={() => add.mutate()}>
           Add
         </button>
       </div>

@@ -42,6 +42,7 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - Unknown `/api/*` routes return a 404 ProblemDetails — never the SPA's index.html (which a client would fail to parse silently)
 
 **Domain model (see entity comments in `GroceryTracker.Core/Entities/`):**
+- `TripItem.QuantityMilli` (thousandths, default 1000) + `Unit` (`each|lb|oz|kg|g`): price stays the line total. Anything that averages or charts prices must go through `Quantities.Summarize` (per item, or per pound for weights; an item's dominant price unit wins, the rest are excluded and counted). `TripItemInput.Quantity/Unit` null = keep the line's (older queued saves). Frontend: `trips/quantity.ts`, `components/QuantityField.tsx`.
 - `Trip` is both the shopping list and the record of the shop; `Status` is Planned → Shopping → Done. `TripItem` carries `EstimateCents`, `PriceCents` and `PricedAt`.
 - A trip line's price locks 7 days after it was first entered (`TripService.PriceEditWindow`). A trip save keeps locked lines exactly as stored (changes to them, or leaving them out, are ignored — so a queued offline save that crossed the lock still applies everything else), and a trip with locked lines keeps its date. Only the Items portal can correct a locked line, and only with `ConfirmLocked: true` (else 409 `/errors/price-locked`).
 - A line's store comes back in the trip's own spelling (`TripStore.Name`), and the editor compares store names case-insensitively.

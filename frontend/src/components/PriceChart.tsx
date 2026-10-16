@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import { perUnit, quantityLabel } from '../trips/quantity'
 
 export interface PricePoint {
   date: string // ISO yyyy-MM-dd
   price: number
   storeName: string
   profileName: string
+  // How much that purchase was and what the whole line cost, for the tooltip ("0.75 lb · $9.08").
+  quantity?: number
+  unit?: string
+  lineTotal?: number
 }
 
 const money = (n: number) => `$${n.toFixed(2)}`
@@ -90,7 +95,9 @@ function timeTicks(start: number, end: number, width: number): { t: number; labe
 // purchases show as gaps), clean currency ticks, and a crosshair that snaps to
 // the nearest purchase. Arrow keys step through purchases when focused. The
 // purchase table beside it carries every value without hovering.
-export function PriceChart({ points }: { points: PricePoint[] }) {
+// priceUnit "lb": the prices are per pound (an item bought by weight).
+export function PriceChart({ points, priceUnit }: { points: PricePoint[]; priceUnit?: string }) {
+  const unitSuffix = perUnit(priceUnit)
   const wrapRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(640)
   const [active, setActive] = useState<number | null>(null)
@@ -198,7 +205,7 @@ export function PriceChart({ points }: { points: PricePoint[] }) {
         className="relative touch-pan-y outline-none focus-visible:rounded-md focus-visible:shadow-[0_0_0_2px_var(--color-accent)]"
         tabIndex={0}
         role="img"
-        aria-label={`Price over time: ${points.length} ${points.length === 1 ? 'purchase' : 'purchases'} from ${longDate(first.date)} (${money(first.price)}) to ${longDate(last.date)} (${money(last.price)}). Use the left and right arrow keys to step through them.`}
+        aria-label={`Price over time: ${points.length} ${points.length === 1 ? 'purchase' : 'purchases'} from ${longDate(first.date)} (${money(first.price)}${unitSuffix}) to ${longDate(last.date)} (${money(last.price)}${unitSuffix}). Use the left and right arrow keys to step through them.`}
         onPointerMove={onPointerMove}
         onPointerDown={onPointerMove}
         onPointerLeave={(e) => e.pointerType === 'mouse' && setActive(null)}
@@ -251,7 +258,15 @@ export function PriceChart({ points }: { points: PricePoint[] }) {
               ...(activeCoord.x > width - 180 ? { right: width - activeCoord.x + 14 } : { left: activeCoord.x + 14 }),
             }}
           >
-            <div className="font-heading text-xl leading-tight font-bold tabular-nums">{money(activePoint.price)}</div>
+            <div className="font-heading text-xl leading-tight font-bold tabular-nums">
+              {money(activePoint.price)}
+              {unitSuffix}
+            </div>
+            {quantityLabel(activePoint.quantity, activePoint.unit) && activePoint.lineTotal != null && (
+              <div className="opacity-85">
+                {quantityLabel(activePoint.quantity, activePoint.unit)} · {money(activePoint.lineTotal)} paid
+              </div>
+            )}
             <div className="opacity-85">{longDate(activePoint.date)}</div>
             <div className="flex items-center gap-1.5 opacity-85">
               <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ background: colorOf(activePoint) }} />

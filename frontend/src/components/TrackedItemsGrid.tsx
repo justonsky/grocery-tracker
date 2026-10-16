@@ -1,3 +1,4 @@
+import { perUnit } from '../trips/quantity'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -228,7 +229,7 @@ export function TrackedItemsGrid({ profileId, dashboard }: { profileId: string; 
                 <div className="card-meta justify-between text-[13px] text-text/70">
                   <span className="truncate">{item.categoryName}</span>
                   <span className="shrink-0 font-bold text-text tabular-nums">
-                    {item.lastPrice != null ? money(item.lastPrice) : <span className="font-normal text-text/70">Not bought yet</span>}
+                    {item.lastPrice != null ? `${money(item.lastPrice)}${perUnit(item.priceUnit)}` : <span className="font-normal text-text/70">Not bought yet</span>}
                   </span>
                 </div>
               </Link>

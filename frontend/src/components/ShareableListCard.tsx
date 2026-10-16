@@ -33,7 +33,10 @@ function Row({ item, showStore }: { item: ShareItem; showStore: boolean }) {
         <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
         {item.checked && <path d="M8 12.5l3 3 5-6" />}
       </svg>
-      <span className={`flex-1 font-medium ${item.checked ? 'opacity-60' : ''}`}>{item.itemName}</span>
+      <span className={`flex-1 font-medium ${item.checked ? 'opacity-60' : ''}`}>
+        {item.itemName}
+        {item.amount && <span className="ml-1.5 font-normal opacity-70">{item.amount}</span>}
+      </span>
       {showStore && item.storeName && (
         <span className="inline-flex items-center rounded-full border border-current px-2 py-0.5 text-[11px] font-semibold tracking-wide opacity-80">
           {item.storeName}

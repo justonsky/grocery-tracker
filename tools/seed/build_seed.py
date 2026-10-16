@@ -60,11 +60,16 @@ def spread(total, weights):
 
 
 def line(src, checked, price_cents=None, estimate=True):
-    return {
+    out = {
         'name': src['name'], 'category': src['category'], 'store': src['store'],
         'checked': checked, 'price': None if price_cents is None else money(price_cents),
         'estimate': src['price'] if estimate else None,
     }
+    # Only when it isn't the default of one each, to keep the file small.
+    if src.get('quantity', 1) != 1 or src.get('unit', 'each') != 'each':
+        out['quantity'] = src['quantity']
+        out['unit'] = src['unit']
+    return out
 
 
 def unlisted(store, price_cents):
@@ -99,7 +104,7 @@ def settle_pool(store, actual, group, out, stats):
 
 
 def build_trip(week, last_actual_date, stats):
-    lines = [dict(l) for l in week['lines']]
+    lines = [{k: v for k, v in l.items() if k != 'raw'} for l in week['lines']]
     total = cents(week['total_actuals']) if week['total_actuals'] else 0
     out = []
 
@@ -202,6 +207,8 @@ def main():
           '| derived:', sum(1 for w in weeks if w['date_source'] == 'derived'),
           '| range:', weeks[0]['date'], '->', weeks[-1]['date'])
     print('skipped rows:', dict(skipped))
+    with_qty = [i for t in trips for i in t['items'] if 'quantity' in i]
+    print('lines with a quantity:', len(with_qty), '| by weight:', sum(1 for i in with_qty if i['unit'] != 'each'))
 
 
 if __name__ == '__main__':

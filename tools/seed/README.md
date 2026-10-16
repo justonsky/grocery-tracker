@@ -90,6 +90,22 @@ longest (most specific) keyword wins — so `peanut butter` is Pantry although
 is a stem. Tax, Tip and Driver Tip lines stay as items in category Other so
 the week's spend reconciles with the sheet.
 
+### Quantities
+
+`clean_name` reads how much was bought from the name, and the price stays the line total:
+`Water (2)`, `(2 pks)`, `(3 bags)`, `(5 bunches)` → that many each; `Onions (Red, 2)` → 2 of
+"Onions (Red)"; `(1.5 lbs)`, `(3/4 lb)` and a pound weight in the name (`1 lb Roast Beef`,
+`Bananas - 3 lbs`) → that weight. A singular `(6 pack)`, an ounce size (`Purell 8 oz`) and a
+count (`Eggs - 18 ct`) describe the product and stay in the name. Lines carry `quantity` and
+`unit` only when they aren't 1 each (738 lines, 30 by weight, in the current workbook).
+
+`backfill_quantities.py --db <grocerytracker.db>` applies the same quantities to a database
+seeded from the v4 file (which dropped them): it finds each line by profile, trip date and the
+v4 item name (pairing repeated items in the order the trip lists them), only changes lines
+still at 1 each, and with `--apply` writes a timestamped backup first (none when there is nothing
+to change). Stop the server first; the database must already have been migrated by the new
+server. Tests: `python3 -m unittest test_backfill_quantities`.
+
 ### Other rules
 
 - **Stores** come from the legend colours (including lighter/darker shades) and
@@ -97,8 +113,6 @@ the week's spend reconciles with the sheet.
 - **Whole blocks are dropped** when struck out in grey or marked
   `DELETED BY MISTAKE` (5). Individual grey rows in a normal block are kept —
   they are real purchases whose store was never colour-coded.
-- A trailing `(N)` is a quantity and is stripped; the price is already the line
-  total, which keeps price history for "Water" joined up.
 - Non-positive prices (coupons), unpriced rows and unnamed priced rows are skipped.
 - Where the sheet's own `Estimated` cell disagrees with its rows (20 weeks with
   stale `SUM` ranges), the rows win.

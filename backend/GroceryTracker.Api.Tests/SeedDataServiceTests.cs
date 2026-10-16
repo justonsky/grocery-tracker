@@ -88,6 +88,36 @@ public class SeedDataServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SeedIfEmpty_ReadsQuantitiesAndUnits_DefaultingToOneEach()
+    {
+        var seed = new
+        {
+            version = 4,
+            profiles = new[]
+            {
+                new
+                {
+                    name = "Mom",
+                    trips = new object[]
+                    {
+                        new { name = (string?)null, date = "2026-08-01", budget = (decimal?)null, stores = new[] { "BJ's" },
+                              items = new object[]
+                              { new { name = "Water", category = "Beverages", store = "BJ's", @checked = true, price = (decimal?)7.12m, quantity = 2m, unit = "each" },
+                                new { name = "Roast Beef", category = "Meat & Seafood", store = "BJ's", @checked = true, price = (decimal?)9.08m, quantity = 0.75m, unit = "lb" },
+                                new { name = "Bananas", category = "Produce", store = "BJ's", @checked = true, price = (decimal?)1.20m } },
+                              status = "done" },
+                    },
+                },
+            },
+        };
+
+        (await new SeedDataService(_db).SeedIfEmptyAsync(WriteSeed(seed))).Should().Be(SeedOutcome.Seeded);
+
+        var lines = await _db.TripItems.OrderBy(ti => ti.SortOrder).ToListAsync();
+        lines.Select(ti => (ti.QuantityMilli, ti.Unit)).Should().Equal((2000, "each"), (750, "lb"), (1000, "each"));
+    }
+
+    [Fact]
     public async Task SeedIfEmpty_V3File_HonorsStatusAndEstimates()
     {
         var seed = new
