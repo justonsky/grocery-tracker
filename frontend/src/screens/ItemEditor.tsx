@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api, ApiError } from '../api/client'
@@ -63,6 +64,8 @@ export function ItemEditor({
   const nameValue = name ?? item?.name ?? ''
   const categoryValue = categoryId ?? item?.defaultCategoryId ?? ''
   const detailsDirty = !!item && (nameValue.trim() !== item.name || categoryValue !== (item.defaultCategoryId ?? ''))
+
+  useUnsavedChangesGuard(detailsDirty)
 
   const saveDetails = useMutation({
     mutationFn: () => api.catalog.update(itemId, { name: nameValue.trim(), defaultCategoryId: categoryValue || null }),

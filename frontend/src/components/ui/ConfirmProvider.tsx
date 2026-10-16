@@ -5,6 +5,7 @@ interface ConfirmOptions {
   title: string
   body?: string
   confirmLabel?: string
+  cancelLabel?: string
 }
 
 const ConfirmContext = createContext<((options: ConfirmOptions) => Promise<boolean>) | null>(null)
@@ -42,7 +43,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           {state.options.body && <p className="m-0 text-sm leading-relaxed text-text/80">{state.options.body}</p>}
           <div className="mt-2 flex flex-wrap justify-end gap-2">
             <button type="button" className="btn btn-secondary" onClick={() => settle(false)}>
-              Cancel
+              {state.options.cancelLabel ?? 'Cancel'}
             </button>
             <button type="button" className="btn btn-danger" onClick={() => settle(true)}>
               {state.options.confirmLabel ?? 'Delete'}

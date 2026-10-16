@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
-import { BrowserRouter } from 'react-router-dom'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './app/App.tsx'
 import { ConnectivityProvider } from './app/ConnectivityProvider.tsx'
@@ -35,6 +35,10 @@ const persister = createSyncStoragePersister({
   key: 'grocery-tracker-query-cache',
 })
 
+// A data router (rather than <BrowserRouter>) so screens can guard unsaved edits with
+// useBlocker. App owns the real route table; this just hands it every URL.
+const router = createBrowserRouter([{ path: '*', element: <App /> }])
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <PersistQueryClientProvider
@@ -44,9 +48,7 @@ createRoot(document.getElementById('root')!).render(
       <ToastProvider>
         <ConnectivityProvider>
           <SyncProvider>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
+            <RouterProvider router={router} />
           </SyncProvider>
         </ConnectivityProvider>
       </ToastProvider>

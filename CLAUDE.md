@@ -56,6 +56,7 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - Writes go through `performOrQueue`: send now, or queue in IndexedDB on a network-class failure (and always queue while the server is unrecognised, or while a known server's first check is pending). Every queued op is an idempotent PUT/DELETE keyed by a client-generated id. Entities: trip, profile, category, tracked-items.
 - The drain runs when the server becomes reachable and on every successful probe (~30s) while anything is queued.
 - Each server has an instance id (stored in its DB). A device that sees a different one pauses all reads and holds writes until the user picks "Use this server" (`WrongServerBanner`).
+- Unsaved edits: `app/useUnsavedChangesGuard.ts` (needs the data router in `main.tsx`; `useBlocker`) raises a "Leave this page?" confirm on tab switches, Back and links, plus the browser's own prompt on close/reload. The trip editor (dirty = form differs from the last loaded/saved copy) and the Items portal's item details use it; Settings is a dialog over the page (`app/settingsLink.ts`), so opening it never prompts.
 - The Items portal (`/items`) is online-only — direct API calls, not queued.
 - Trip saves replace the whole trip (last writer wins); lines carry ids so edits keep their `PricedAt`.
 

@@ -9,6 +9,7 @@ import { SharePreview } from '../components/SharePreview'
 import { Combobox, type ComboOption } from '../components/ui/Combobox'
 import { TripItemList, type DraftItem } from '../components/TripItemList'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
+import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
 import { summarize, summarizeByStore } from '../trips/costSummary'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
@@ -95,8 +96,14 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   // whether anything has been edited since.
   const loadedSnapshotRef = useRef<string | null>(null)
   const copiedRef = useRef(false)
+  // The form's content (see `edits` below) as last loaded or saved: leaving with anything
+  // different asks first. Null until the form has settled (a new list's first blank row).
+  const baselineRef = useRef<string | null>(null)
   const snapshot = (draft: { name: string; date: string; budget: string; status: TripStatus; stores: string[]; items: DraftItem[] }) =>
     JSON.stringify({ ...draft, items: draft.items.map(({ key: _key, ...rest }) => rest) })
+
+  const editsOf = (d: { name: string; date: string; budget: string; stores: string[]; items: DraftItem[] }) =>
+    JSON.stringify({ name: d.name, date: d.date, budget: d.budget, stores: d.stores, items: d.items.map(({ key: _key, ...rest }) => rest) })
 
   const hydrate = (trip: Trip) => {
     const draft = {
@@ -125,6 +132,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     setStores(draft.stores)
     setItems(draft.items)
     loadedSnapshotRef.current = snapshot(draft)
+    baselineRef.current = editsOf(draft)
   }
 
   useEffect(() => {
@@ -203,6 +211,8 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       queryClient.invalidateQueries({ queryKey: ['item-history'] })
       setPersisted(true)
       setStatus(nextStatus)
+      // What was just sent (or queued) is saved: leaving now loses nothing.
+      if (editsRef.current === edits) baselineRef.current = edits
 
       const queuedMessage = "Saved on this device — will sync when you're back online."
       if (leave) {
@@ -244,6 +254,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
       queryClient.invalidateQueries({ queryKey: ['trips', profileId] })
       toast('success', outcome.sent ? 'Trip deleted.' : "Delete saved — will sync when you're back online.")
+      baselineRef.current = editsRef.current // deleted: nothing left to lose
       navigate('/trips')
     },
     onError: () => toast('error', "Couldn't delete this trip."),
@@ -365,9 +376,14 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const pickedCount = totals.lineCount > 0 ? namedItems.filter((it) => it.checked).length : null
 
   // The form's content minus status, to tell whether it changed during a save.
-  const edits = JSON.stringify({ name, date, budget, stores, items: items.map(({ key: _key, ...rest }) => rest) })
+  const edits = editsOf({ name, date, budget, stores, items })
   const editsRef = useRef(edits)
   editsRef.current = edits
+  // A new list has no server copy to hydrate from: its baseline is the blank (or copied) form once it appears.
+  useEffect(() => {
+    if (baselineRef.current === null && !isEditing && items.length > 0) baselineRef.current = edits
+  }, [edits, isEditing, items.length])
+  useUnsavedChangesGuard(() => baselineRef.current !== null && editsRef.current !== baselineRef.current)
   const saveAs = (nextStatus: TripStatus, leave: boolean) => save.mutate({ status: nextStatus, leave, edits })
 
   return (
