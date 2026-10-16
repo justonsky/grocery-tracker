@@ -43,13 +43,17 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 
 **Domain model (see entity comments in `GroceryTracker.Core/Entities/`):**
 - `Trip` is both the shopping list and the record of the shop; `Status` is Planned → Shopping → Done. `TripItem` carries `EstimateCents`, `PriceCents` and `PricedAt`.
-- A trip line's price locks 7 days after it was first entered (`TripService.PriceEditWindow`). The trip editor can't change a locked line (409 `/errors/price-locked`); the Items portal can, only with `ConfirmLocked: true`.
+- A trip line's price locks 7 days after it was first entered (`TripService.PriceEditWindow`). A trip save keeps locked lines exactly as stored (changes to them, or leaving them out, are ignored — so a queued offline save that crossed the lock still applies everything else), and a trip with locked lines keeps its date. Only the Items portal can correct a locked line, and only with `ConfirmLocked: true` (else 409 `/errors/price-locked`).
+- A line's store comes back in the trip's own spelling (`TripStore.Name`), and the editor compares store names case-insensitively.
 - `Item` and `Store` are household-wide (no `ProfileId`); prices, averages and item history pool every profile's purchases. Trips and spend stay per profile.
 - `TrackedItem` + `Profile.TrackedItemsCustomized`: the dashboard grid is the 8 most recent items until a profile customizes it.
-- `Profile.Theme` is a theme id; the catalogue and colors live in `frontend/src/app/themes.ts` + `index.css`.
+- `Profile.Theme` is a theme id (default `fresh` = "Market Fresh"; `nocturne` is the old purple look, still selectable); the catalogue and colors live in `frontend/src/app/themes.ts` + `index.css`.
+- Household settings (`AppSettings` key/value rows, `SettingsService`): `ThemeMode`, `ChartScheme` (`fresh|citrus|berry`; applied as `data-chart` on `<html>` by `useTheme`, so every chart follows it) and `GroupColors` — the share card's group backgrounds, a JSON map of `store:<slug>`/`category:<slug>` → `#rrggbb` or `none` (grouping and default store colors in `frontend/src/trips/shareGroups.ts`). Settings writes are online-only, not queued.
+- Dashboard (`DashboardService`): spend today/month/year, `MonthBudget`/`MonthBudgetSpent` (budgets of this month's trips and what those trips cost → the Budget-left card), and `MonthlySpend` (12 calendar months, zero-filled → `MonthlySpendChart`).
+- Backup (`ExportService`): sheets Profiles, Trips (per-trip totals, same math as `TripService`), Trip Items (per line), and Items (catalogue) when `?includeItems=true`. Keep it in step when trip/line fields change.
 
 **Offline/sync (frontend `src/offline/`, `app/ConnectivityProvider.tsx`, `app/SyncProvider.tsx`):**
-- Writes go through `performOrQueue`: send now, or queue in IndexedDB on a network-class failure. Every queued op is an idempotent PUT/DELETE keyed by a client-generated id. Entities: trip, profile, category, tracked-items.
+- Writes go through `performOrQueue`: send now, or queue in IndexedDB on a network-class failure (and always queue while the server is unrecognised, or while a known server's first check is pending). Every queued op is an idempotent PUT/DELETE keyed by a client-generated id. Entities: trip, profile, category, tracked-items.
 - The drain runs when the server becomes reachable and on every successful probe (~30s) while anything is queued.
 - Each server has an instance id (stored in its DB). A device that sees a different one pauses all reads and holds writes until the user picks "Use this server" (`WrongServerBanner`).
 - The Items portal (`/items`) is online-only — direct API calls, not queued.
@@ -61,6 +65,12 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - `backend/GroceryTracker.Api.Tests/` — WebApplicationFactory integration tests (hit real DB)
 - `frontend/src/` — React app (main layout in `main.tsx`, routes in `app/`, screens in `screens/`, API client in `api/`, components in `components/`, offline queue in `offline/`, trip cost math in `trips/`)
 - Autocomplete fields use `components/ui/Combobox.tsx` (capped, ranked suggestions) — not native `<datalist>`, which can't limit a 1,000+ item catalogue
+
+**Design system (`frontend/src/index.css` — keep screens on these, no hard-coded hex):**
+- Tokens as Tailwind colours: `bg-bg`, `bg-surface`, `text-text` (`/60` for secondary), `border-divider` (hairline), `border-control` (inputs), `bg-chip`; `accent` (+ `text-on-accent`, scale `accent-100..900` that inverts in dark mode, so `bg-accent-800 text-accent-200` is always a tinted chip); `highlight` (coral: `bg-highlight text-on-highlight`, tint `bg-highlight-bg text-highlight-ink`) — at most one per screen; `danger`; charts `var(--chart-1..4)` (colourblind-checked; `data-chart="citrus|berry"` swaps schemes, and the generic themes defer to `--scheme-N` so a chosen scheme beats their own chart colours).
+- Classes: `.btn` + `.btn-primary|.btn-highlight|.btn-secondary|.btn-ghost|.btn-danger`, `.btn-sm`, `.btn-icon` (44px); `.card` + `.elev-sm|md|lg`, `.card-kicker|title|meta`; `.tag` + `.tag-accent|highlight|neutral|outline`; `.input`, `.field label`, `.seg`/`.seg-opt`; `.nav*`/`.tab-*`; `.table`; `.dialog*`.
+- Theme blocks: `:root`/`.dark` hold the shared tokens; `fresh`/`nocturne` are hand-set palettes; the other 20 themes are a hue + chroma pair expanded in OKLCH (warm hues get a teal highlight via `--th-hl`). Titles are Bricolage Grotesque 700, body Figtree; prices use `tabular-nums`.
+- Icons are inline stroke SVG (no emoji or glyph icons); the app icon is `tools/icon/` → `frontend/public`.
 
 **Frontend state management:**
 - TanStack Query (with localStorage persistence via `query-sync-storage-persister`)
@@ -85,7 +95,7 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - Modify entity in `GroceryTracker.Core/`
 - Create EF Core migration: `dotnet ef migrations add [Name] --project backend/GroceryTracker.Core --startup-project backend/GroceryTracker.Api` (needs the `dotnet-ef` tool, version matching EF Core 10.0.x)
 - Migrations run automatically at app startup; write data backfills (`migrationBuilder.Sql`) into the same migration and check them against a copy of a real database
-- Seed data (`GroceryTracker.Api/SeedData/seed-data.json`) loads only into an empty database; keep `SeedDataService` in step with entity changes
+- Seed data (`GroceryTracker.Api/SeedData/seed-data.json`, format v4: one trip per workbook week under profile "Mom"; item `estimate` = the sheet's listed price, `price` = paid, trip `status`/`total`/`estimatedTotal`/`savings`) loads only into an empty database; regenerate it with `python3 tools/seed/build_seed.py [--source workbook.xlsx]` and keep `SeedDataService` and the tools in `tools/seed/` in step with entity changes (rules and verification: `tools/seed/README.md`)
 
 ## Security & deployment notes
 

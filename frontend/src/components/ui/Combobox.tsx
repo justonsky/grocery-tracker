@@ -31,7 +31,7 @@ function Highlight({ text, query }: { text: string; query: string }): ReactNode 
   return (
     <>
       {text.slice(0, at)}
-      <strong className="font-semibold">{text.slice(at, at + q.length)}</strong>
+      <strong className="font-bold text-accent-200">{text.slice(at, at + q.length)}</strong>
       {text.slice(at + q.length)}
     </>
   )
@@ -141,7 +141,7 @@ export function Combobox({
         <ul
           id={listId}
           role="listbox"
-          className="absolute top-full right-0 left-0 z-30 m-0 mt-1 max-h-[min(22rem,50dvh)] min-w-[12rem] list-none overflow-y-auto rounded-md bg-surface p-1"
+          className="absolute top-full right-0 left-0 z-30 m-0 mt-1.5 max-h-[min(22rem,50dvh)] min-w-[12rem] list-none overflow-y-auto rounded-[14px] bg-surface p-1.5"
           style={{ boxShadow: 'var(--shadow-lg)' }}
         >
           {shown.map((option, i) => (
@@ -156,18 +156,18 @@ export function Combobox({
                 pick(option)
               }}
               onMouseEnter={() => setActive(i)}
-              className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded px-2.5 text-sm text-text ${
-                i === active ? 'bg-accent/12' : ''
+              className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-[10px] px-3 text-sm text-text ${
+                i === active ? 'bg-accent-800' : ''
               }`}
             >
               <span className="min-w-0 truncate">
                 <Highlight text={option.label} query={value} />
               </span>
-              {option.hint && <span className="shrink-0 text-xs text-text/55">{option.hint}</span>}
+              {option.hint && <span className="shrink-0 text-xs text-text/60 tabular-nums">{option.hint}</span>}
             </li>
           ))}
           {hidden > 0 && (
-            <li role="presentation" className="px-2.5 py-1.5 text-xs text-text/50">
+            <li role="presentation" className="px-3 py-2 text-xs text-text/60">
               {hidden} more — keep typing to narrow it down
             </li>
           )}

@@ -15,5 +15,5 @@ public class Profile
     public List<Trip> Trips { get; set; } = [];
     public List<TrackedItem> TrackedItems { get; set; } = [];
 
-    public const string DefaultTheme = "nocturne";
+    public const string DefaultTheme = "fresh";
 }

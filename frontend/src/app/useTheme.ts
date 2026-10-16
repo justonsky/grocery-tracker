@@ -28,5 +28,14 @@ export function useTheme() {
     return () => media.removeEventListener('change', listener)
   }, [themeMode])
 
+  // Chart colors are a household setting like light/dark: data-chart on <html>
+  // swaps --chart-1..4 (index.css). "fresh" is the default and sets nothing.
+  const chartScheme = settings?.chartScheme ?? 'fresh'
+  useEffect(() => {
+    const root = document.documentElement
+    if (chartScheme === 'fresh') delete root.dataset.chart
+    else root.dataset.chart = chartScheme
+  }, [chartScheme])
+
   return { themeMode }
 }

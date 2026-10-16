@@ -15,6 +15,10 @@ const longDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })
 
 const MARGIN = { top: 14, right: 18, bottom: 30, left: 56 }
+
+// Stores take the chart series colours in order of first appearance; a fifth
+// store onwards shares the last colour. The line itself always stays chart-1.
+const STORE_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)']
 const HEIGHT = 260
 
 // Clean y ticks: a 1/2/2.5/5 × 10^k step giving about four intervals.
@@ -99,6 +103,15 @@ export function PriceChart({ points }: { points: PricePoint[] }) {
     return () => observer.disconnect()
   }, [])
 
+  const storeColors = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const p of points) {
+      if (!map.has(p.storeName)) map.set(p.storeName, STORE_COLORS[Math.min(map.size, STORE_COLORS.length - 1)])
+    }
+    return map
+  }, [points])
+  const colorOf = (p: PricePoint) => storeColors.get(p.storeName) ?? STORE_COLORS[0]
+
   const geometry = useMemo(() => {
     if (points.length === 0) return null
     const times = points.map((p) => toTime(p.date))
@@ -129,7 +142,9 @@ export function PriceChart({ points }: { points: PricePoint[] }) {
   const baseline = HEIGHT - MARGIN.bottom
   const line = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x},${c.y}`).join(' ')
   const area = coords.length > 1 ? `${line} L${coords[coords.length - 1].x},${baseline} L${coords[0].x},${baseline} Z` : ''
-  const showAllMarkers = coords.length <= 40
+  // Dots carry the store colours the legend explains, so keep them for long histories too (smaller).
+  const showAllMarkers = coords.length <= 160
+  const dotRadius = coords.length > 40 ? 3 : 4.5
 
   const nearest = (clientX: number) => {
     const rect = wrapRef.current!.getBoundingClientRect()
@@ -164,71 +179,87 @@ export function PriceChart({ points }: { points: PricePoint[] }) {
   const last = points[points.length - 1]
 
   return (
-    <div
-      ref={wrapRef}
-      className="relative touch-pan-y outline-none focus-visible:rounded-md focus-visible:shadow-[0_0_0_2px_var(--color-accent)]"
-      tabIndex={0}
-      role="img"
-      aria-label={`Price over time: ${points.length} ${points.length === 1 ? 'purchase' : 'purchases'} from ${longDate(first.date)} (${money(first.price)}) to ${longDate(last.date)} (${money(last.price)}). Use the left and right arrow keys to step through them.`}
-      onPointerMove={onPointerMove}
-      onPointerDown={onPointerMove}
-      onPointerLeave={(e) => e.pointerType === 'mouse' && setActive(null)}
-      onKeyDown={onKeyDown}
-      onFocus={() => active === null && setActive(coords.length - 1)}
-      onBlur={() => setActive(null)}
-    >
-      <svg width={width} height={HEIGHT} className="block overflow-visible" aria-hidden="true">
-        {/* Gridlines + y axis labels */}
-        {yTicks.map((v) => (
-          <g key={v}>
-            <line x1={MARGIN.left} x2={width - MARGIN.right} y1={y(v)} y2={y(v)} stroke="var(--color-divider)" strokeWidth={1} />
-            <text x={MARGIN.left - 8} y={y(v)} dy="0.32em" textAnchor="end" fontSize={11} fill="currentColor" className="text-text/60">
-              {money(v)}
-            </text>
-          </g>
-        ))}
-        {/* x axis line, ticks and labels */}
-        <line x1={MARGIN.left} x2={width - MARGIN.right} y1={baseline} y2={baseline} stroke="var(--color-text)" strokeOpacity={0.35} />
-        {xTicks.map((tick) => (
-          <g key={tick.t}>
-            <line x1={tick.x} x2={tick.x} y1={baseline} y2={baseline + 4} stroke="var(--color-text)" strokeOpacity={0.35} />
-            <text x={tick.x} y={baseline + 17} textAnchor="middle" fontSize={11} fill="currentColor" className="text-text/60">
-              {tick.label}
-            </text>
-          </g>
-        ))}
+    <div>
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5">
+        <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0" aria-label="Stores">
+          {[...storeColors].map(([name, color]) => (
+            <li key={name} className="inline-flex items-center gap-1.5 text-[13px] text-text/80">
+              <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
+              {name}
+            </li>
+          ))}
+        </ul>
+        <span className="text-[13px] text-text/70">
+          {points.length} {points.length === 1 ? 'purchase' : 'purchases'} · household-wide
+        </span>
+      </div>
+      <div
+        ref={wrapRef}
+        className="relative touch-pan-y outline-none focus-visible:rounded-md focus-visible:shadow-[0_0_0_2px_var(--color-accent)]"
+        tabIndex={0}
+        role="img"
+        aria-label={`Price over time: ${points.length} ${points.length === 1 ? 'purchase' : 'purchases'} from ${longDate(first.date)} (${money(first.price)}) to ${longDate(last.date)} (${money(last.price)}). Use the left and right arrow keys to step through them.`}
+        onPointerMove={onPointerMove}
+        onPointerDown={onPointerMove}
+        onPointerLeave={(e) => e.pointerType === 'mouse' && setActive(null)}
+        onKeyDown={onKeyDown}
+        onFocus={() => active === null && setActive(coords.length - 1)}
+        onBlur={() => setActive(null)}
+      >
+        <svg width={width} height={HEIGHT} className="block overflow-visible" aria-hidden="true">
+          {/* Gridlines + y axis labels */}
+          {yTicks.map((v) => (
+            <g key={v}>
+              <line x1={MARGIN.left} x2={width - MARGIN.right} y1={y(v)} y2={y(v)} stroke="var(--color-divider)" strokeWidth={1} />
+              <text x={MARGIN.left - 8} y={y(v)} dy="0.32em" textAnchor="end" fontSize={12} fill="currentColor" className="text-text/70 tabular-nums">
+                {money(v)}
+              </text>
+            </g>
+          ))}
+          {/* x axis line, ticks and labels */}
+          <line x1={MARGIN.left} x2={width - MARGIN.right} y1={baseline} y2={baseline} stroke="var(--color-control)" strokeWidth={1} />
+          {xTicks.map((tick) => (
+            <g key={tick.t}>
+              <line x1={tick.x} x2={tick.x} y1={baseline} y2={baseline + 4} stroke="var(--color-control)" strokeWidth={1} />
+              <text x={tick.x} y={baseline + 17} textAnchor="middle" fontSize={12} fill="currentColor" className="text-text/70 tabular-nums">
+                {tick.label}
+              </text>
+            </g>
+          ))}
 
-        {area && <path d={area} fill="var(--color-accent)" fillOpacity={0.1} />}
-        {coords.length > 1 && <path d={line} fill="none" stroke="var(--color-accent)" strokeWidth={2} strokeLinejoin="round" />}
-        {(showAllMarkers ? coords : coords.length === 1 ? coords : []).map((c, i) => (
-          <circle key={i} cx={c.x} cy={c.y} r={4} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
-        ))}
+          {area && <path d={area} fill="var(--chart-1)" fillOpacity={0.13} />}
+          {coords.length > 1 && <path d={line} fill="none" stroke="var(--chart-1)" strokeWidth={2.5} strokeLinejoin="round" />}
+          {(showAllMarkers || coords.length === 1 ? coords : []).map((c, i) => (
+            <circle key={i} cx={c.x} cy={c.y} r={dotRadius} fill={colorOf(points[i])} stroke="var(--color-surface)" strokeWidth={coords.length > 40 ? 1.5 : 2} />
+          ))}
 
-        {activeCoord && (
-          <g>
-            <line x1={activeCoord.x} x2={activeCoord.x} y1={MARGIN.top} y2={baseline} stroke="var(--color-text)" strokeOpacity={0.4} strokeWidth={1} />
-            <circle cx={activeCoord.x} cy={activeCoord.y} r={6} fill="var(--color-accent)" stroke="var(--color-surface)" strokeWidth={2} />
-          </g>
-        )}
-      </svg>
+          {activeCoord && (
+            <g>
+              <line x1={activeCoord.x} x2={activeCoord.x} y1={MARGIN.top} y2={baseline} stroke="var(--color-text)" strokeOpacity={0.35} strokeWidth={1} />
+              <circle cx={activeCoord.x} cy={activeCoord.y} r={7} fill={colorOf(points[active!])} stroke="var(--color-surface)" strokeWidth={3} />
+            </g>
+          )}
+        </svg>
 
-      {activePoint && activeCoord && (
-        <div
-          className="pointer-events-none absolute z-10 rounded-md bg-surface px-2.5 py-1.5 text-xs whitespace-nowrap"
-          style={{
-            boxShadow: 'var(--shadow-md)',
-            top: Math.max(0, activeCoord.y - 58),
-            // Flip to the left of the crosshair near the right edge.
-            ...(activeCoord.x > width - 170 ? { right: width - activeCoord.x + 10 } : { left: activeCoord.x + 10 }),
-          }}
-        >
-          <div className="text-sm font-semibold text-text">{money(activePoint.price)}</div>
-          <div className="text-text/70">{longDate(activePoint.date)}</div>
-          <div className="text-text/60">
-            {activePoint.storeName} · {activePoint.profileName}
+        {activePoint && activeCoord && (
+          <div
+            className="pointer-events-none absolute z-10 min-w-[150px] rounded-md bg-text px-3 py-2.5 text-xs whitespace-nowrap text-bg"
+            style={{
+              boxShadow: 'var(--shadow-lg)',
+              top: Math.max(0, activeCoord.y - 86),
+              // Flip to the left of the crosshair near the right edge.
+              ...(activeCoord.x > width - 180 ? { right: width - activeCoord.x + 14 } : { left: activeCoord.x + 14 }),
+            }}
+          >
+            <div className="font-heading text-xl leading-tight font-bold tabular-nums">{money(activePoint.price)}</div>
+            <div className="opacity-85">{longDate(activePoint.date)}</div>
+            <div className="flex items-center gap-1.5 opacity-85">
+              <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ background: colorOf(activePoint) }} />
+              {activePoint.storeName} · {activePoint.profileName}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

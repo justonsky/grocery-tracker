@@ -45,30 +45,33 @@ export function History({ profileId }: { profileId: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-[900px] px-5 pt-6 pb-15">
-      <h3 className="mb-4 text-lg">All trips</h3>
+    <div className="mx-auto max-w-[900px] px-4 pt-5 pb-15 sm:px-5 sm:pt-6">
+      <h3 className="mb-5">All trips</h3>
       {trips?.length === 0 && (
         <p className="text-text/70">
           No trips yet.{' '}
           <Link to="/trips/new">Log one now.</Link>
         </p>
       )}
-      <div className="grid gap-5.5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5.5">
         {groups.slice(0, monthsShown).map((group) => (
           <div key={group.label}>
-            <div className="mb-2 flex items-baseline justify-between">
-              <h4 className="m-0">{group.label}</h4>
-              <div className="text-xs text-text/70">
-                {group.trips.length} {group.trips.length === 1 ? 'trip' : 'trips'} · {money(group.total)}
+            <div className="mb-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <h4 className="m-0 text-lg">{group.label}</h4>
+              <div className="flex items-center gap-2 text-xs text-text/70">
+                <span>
+                  {group.trips.length} {group.trips.length === 1 ? 'trip' : 'trips'}
+                </span>
+                <span className="tag tag-accent py-0.5 text-[13px] tabular-nums">{money(group.total)}</span>
               </div>
             </div>
-            <div className="card elev-sm overflow-x-auto p-0">
+            <div className="card elev-sm overflow-x-auto border border-divider p-0">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Date</th>
+                    <th className="whitespace-nowrap">Date</th>
                     <th>Trip</th>
-                    <th>Items</th>
+                    <th className="text-right max-sm:hidden">Items</th>
                     <th className="text-right">Total</th>
                     <th></th>
                   </tr>
@@ -76,17 +79,17 @@ export function History({ profileId }: { profileId: string }) {
                 <tbody>
                   {group.trips.map((trip) => (
                     <tr key={trip.id}>
-                      <td>{trip.date}</td>
+                      <td className="whitespace-nowrap">{trip.date}</td>
                       <td>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex min-w-24 items-center gap-1.5">
                           {trip.name || trip.stores.join(', ') || '—'}
                           {pendingTripIds.has(trip.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
                         </span>
                       </td>
-                      <td>{trip.itemCount}</td>
-                      <td className="text-right">{money(trip.total)}</td>
+                      <td className="text-right max-sm:hidden">{trip.itemCount}</td>
+                      <td className="text-right font-semibold">{money(trip.total)}</td>
                       <td className="text-right">
-                        <Link to={`/trips/${trip.id}`} className="btn btn-ghost px-2 py-0.5 text-xs">
+                        <Link to={`/trips/${trip.id}`} className="btn btn-ghost btn-sm max-sm:min-h-11">
                           Edit
                         </Link>
                       </td>
@@ -99,7 +102,7 @@ export function History({ profileId }: { profileId: string }) {
         ))}
       </div>
       {groups.length > monthsShown && (
-        <button type="button" className="btn btn-secondary btn-block mt-4" onClick={() => setMonthsShown((n) => n + MONTHS_PER_PAGE)}>
+        <button type="button" className="btn btn-secondary btn-block mt-5" onClick={() => setMonthsShown((n) => n + MONTHS_PER_PAGE)}>
           Show older months ({groups.length - monthsShown} more)
         </button>
       )}

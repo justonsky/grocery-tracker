@@ -84,52 +84,54 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
   const askDelete = async (id: string, name: string) => {
     const ok = await confirm({
       title: `Delete ${name}?`,
-      body: 'This permanently deletes their trips and price history on this device.',
+      body: 'This permanently deletes their trips on every device. Items stay, but their purchases stop counting toward the household price averages.',
     })
     if (ok) deleteProfile.mutate(id)
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-7 px-5 py-8">
-      <div className="text-center">
-        <h1 className="text-[clamp(28px,4vw,38px)]">Grocery Tracker</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-bg px-5 py-10">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <img src="/favicon.svg" alt="" className="h-14 w-14 rounded-[16px]" />
+        <h1 className="m-0 text-[clamp(28px,4vw,38px)] leading-tight">Grocery Tracker</h1>
         <p className="m-0 text-text/70">Who's shopping today?</p>
       </div>
-      <div className="flex max-w-[720px] flex-wrap justify-center gap-4.5">
+      <div className="flex w-full max-w-[760px] flex-wrap justify-center gap-4">
         {!isLoading &&
           profiles?.map((p) => (
             <div
               key={p.id}
               data-theme={themeOf(p.theme)}
-              className="card elev-sm relative w-[150px] cursor-pointer items-center px-3.5 py-5.5 text-center transition-transform hover:-translate-y-0.5 hover:shadow-md"
+              className="card elev-sm relative w-[calc(50%-0.5rem)] cursor-pointer items-center gap-0 px-3 pt-7 pb-5 text-center transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md sm:w-[168px]"
               onClick={() => onSelect(p.id)}
             >
               <button
                 type="button"
                 aria-label="Delete profile"
-                className="btn btn-ghost btn-icon absolute top-1.5 right-1.5 h-6.5 w-6.5"
-                style={{ color: 'var(--color-danger)' }}
+                className="btn btn-ghost btn-icon absolute top-1 right-1 text-text/55 hover:bg-danger-bg hover:text-danger"
                 onClick={(e) => {
                   e.stopPropagation()
                   askDelete(p.id, p.name)
                 }}
               >
-                ×
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
               </button>
-              <div className="mb-2.5">
-                <Avatar name={p.name} size={56} />
+              <div className="mb-3">
+                <Avatar name={p.name} size={72} />
               </div>
-              <div className="font-heading text-[15px]">{p.name}</div>
-              <div className="mt-0.5 text-[11px] text-text/70">
+              <div className="max-w-full truncate font-heading text-base font-bold">{p.name}</div>
+              <span className="tag tag-neutral mt-2 px-2.5 py-0.5 font-semibold">
                 {p.tripCount} {p.tripCount === 1 ? 'trip' : 'trips'}
-              </div>
+              </span>
             </div>
           ))}
 
         {creating ? (
-          <div className="card elev-sm w-[150px] items-center gap-2 px-3.5 py-5.5">
+          <div className="card elev-sm w-[calc(50%-0.5rem)] items-center justify-center gap-2 px-3 py-5 sm:w-[168px]">
             <input
-              className="input text-center text-[13px]"
+              className="input text-center"
               placeholder="Name"
               autoFocus
               value={newName}
@@ -137,12 +139,12 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
               onKeyDown={(e) => e.key === 'Enter' && newName.trim() && createProfile.mutate(newName.trim())}
             />
             <div className="flex gap-1.5">
-              <button type="button" className="btn btn-secondary px-2.5 py-1 text-xs" onClick={() => setCreating(false)}>
+              <button type="button" className="btn btn-secondary px-3" onClick={() => setCreating(false)}>
                 Cancel
               </button>
               <button
                 type="button"
-                className="btn btn-primary px-2.5 py-1 text-xs"
+                className="btn btn-primary px-3"
                 disabled={!newName.trim()}
                 onClick={() => createProfile.mutate(newName.trim())}
               >
@@ -152,11 +154,15 @@ export function ProfilePicker({ onSelect }: { onSelect: (profileId: string) => v
           </div>
         ) : (
           <div
-            className="card elev-sm w-[150px] cursor-pointer items-center justify-center gap-2 border border-dashed border-divider bg-transparent px-3.5 py-5.5 text-center"
+            className="flex min-h-[188px] w-[calc(50%-0.5rem)] cursor-pointer flex-col items-center justify-center gap-2 rounded-[18px] border-2 border-dashed border-control bg-transparent px-3 py-5 text-center text-accent transition-colors hover:border-accent hover:bg-accent/5 sm:w-[168px]"
             onClick={() => setCreating(true)}
           >
-            <span className="text-2xl text-accent">+</span>
-            <div className="text-[13px] text-accent">Add profile</div>
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-800 text-accent-200">
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </span>
+            <div className="text-sm font-semibold">Add profile</div>
           </div>
         )}
       </div>

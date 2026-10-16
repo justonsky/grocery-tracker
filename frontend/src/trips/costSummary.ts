@@ -66,19 +66,22 @@ export function summarize(lines: CostLine[]): CostSummary {
 // names that isn't on the trip's list, then the unassigned lines last. Stores
 // with no lines are left out.
 export function summarizeByStore(lines: CostLine[], storeOrder: string[]): StoreSubtotal[] {
-  const groups = new Map<string | null, CostLine[]>()
-  for (const name of storeOrder) groups.set(name, [])
+  // Keyed ignoring case ("aldi" and "Aldi" are one store), labelled with the
+  // trip's own spelling when it has one.
+  const key = (name: string) => name.trim().toLowerCase()
+  const groups = new Map<string | null, { label: string | null; lines: CostLine[] }>()
+  for (const name of storeOrder) if (!groups.has(key(name))) groups.set(key(name), { label: name, lines: [] })
   for (const line of lines) {
-    const key = line.storeName ?? null
-    if (!groups.has(key)) groups.set(key, [])
-    groups.get(key)!.push(line)
+    const k = line.storeName ? key(line.storeName) : null
+    if (!groups.has(k)) groups.set(k, { label: line.storeName, lines: [] })
+    groups.get(k)!.lines.push(line)
   }
 
   const unassigned = groups.get(null)
   groups.delete(null)
   if (unassigned) groups.set(null, unassigned)
 
-  return [...groups.entries()]
-    .filter(([, group]) => group.length > 0)
-    .map(([storeName, group]) => ({ storeName, ...summarize(group) }))
+  return [...groups.values()]
+    .filter((group) => group.lines.length > 0)
+    .map((group) => ({ storeName: group.label, ...summarize(group.lines) }))
 }

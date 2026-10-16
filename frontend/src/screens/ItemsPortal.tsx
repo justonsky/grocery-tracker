@@ -55,9 +55,9 @@ export function ItemsPortal() {
   })
 
   return (
-    <div className="mx-auto max-w-[1180px] px-5 pt-6 pb-15">
+    <div className="mx-auto max-w-[1180px] px-4 pt-6 pb-15 sm:px-5">
       {!online && (
-        <div className="card elev-sm mb-4 text-sm text-text/80">
+        <div className="card elev-sm mb-4 text-sm leading-relaxed text-text/80">
           Editing items needs a connection to your home server. You can look, but changes are turned off until you're back online.
         </div>
       )}
@@ -65,14 +65,14 @@ export function ItemsPortal() {
       <div className="grid gap-5 lg:grid-cols-[minmax(280px,360px)_1fr]">
         {/* List — hidden on small screens while an item is open. */}
         <div className={selectedId ? 'hidden lg:block' : ''}>
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="m-0">Items</h3>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="m-0 text-2xl">Items</h3>
             <button type="button" className="btn btn-primary" disabled={!online} onClick={() => setCreating(true)}>
               + New item
             </button>
           </div>
           {creating && (
-            <div className="card elev-sm mb-3 gap-2">
+            <div className="card elev-md mb-3 gap-2.5">
               <input
                 className="input"
                 placeholder="Item name"
@@ -103,8 +103,8 @@ export function ItemsPortal() {
               setItemsShown(ITEMS_PER_PAGE)
             }}
           />
-          {isLoading && <div className="skel h-40" />}
-          {items?.length === 0 && <p className="text-sm text-text/70">{debouncedSearch ? 'No items match.' : 'No items yet.'}</p>}
+          {isLoading && <div className="skel h-40 rounded-[18px]" />}
+          {items?.length === 0 && <p className="mb-3 text-sm text-text/70">{debouncedSearch ? 'No items match.' : 'No items yet.'}</p>}
           <div className="card elev-sm max-h-none gap-0 overflow-hidden p-0 lg:max-h-[calc(100dvh-220px)] lg:overflow-y-auto">
             {items?.slice(0, itemsShown).map((item) => (
               <button
@@ -112,24 +112,24 @@ export function ItemsPortal() {
                 type="button"
                 aria-current={item.id === selectedId ? 'true' : undefined}
                 onClick={() => select(item.id)}
-                className={`flex w-full cursor-pointer items-center justify-between gap-3 border-0 border-b border-divider px-3 py-2.5 text-left last:border-b-0 ${
-                  item.id === selectedId ? 'bg-accent/10' : 'bg-transparent hover:bg-text/5'
+                className={`flex min-h-14 w-full cursor-pointer items-center justify-between gap-3 border-0 border-b border-divider px-4 py-2.5 text-left font-body last:border-b-0 ${
+                  item.id === selectedId ? 'bg-accent-800' : 'bg-transparent hover:bg-chip'
                 }`}
               >
                 <span className="min-w-0">
-                  <span className="block truncate text-sm text-text">{item.name}</span>
-                  <span className="block text-[11px] text-text/55">
+                  <span className={`block truncate text-sm text-text ${item.id === selectedId ? 'font-bold' : 'font-semibold'}`}>{item.name}</span>
+                  <span className="block text-xs text-text/60">
                     {item.categoryName} · {item.purchaseCount} {item.purchaseCount === 1 ? 'purchase' : 'purchases'}
                     {item.lastPurchased && ` · last ${item.lastPurchased}`}
                   </span>
                 </span>
-                {item.averagePrice != null && <span className="shrink-0 text-xs text-text/70">avg {money(item.averagePrice)}</span>}
+                {item.averagePrice != null && <span className="tag tag-neutral shrink-0 px-2.5 py-0.5 tabular-nums">avg {money(item.averagePrice)}</span>}
               </button>
             ))}
             {items && items.length > itemsShown && (
               <button
                 type="button"
-                className="btn btn-ghost w-full rounded-none py-2.5"
+                className="btn btn-ghost w-full rounded-none"
                 onClick={() => setItemsShown((n) => n + ITEMS_PER_PAGE)}
               >
                 Show {Math.min(ITEMS_PER_PAGE, items.length - itemsShown)} more of {items.length - itemsShown}
@@ -137,7 +137,7 @@ export function ItemsPortal() {
             )}
           </div>
           {items && items.length > ITEMS_PER_PAGE && !debouncedSearch && (
-            <p className="mt-2 text-center text-xs text-text/55">{items.length} items — search to find one quickly.</p>
+            <p className="mt-2 text-center text-xs text-text/60">{items.length} items — search to find one quickly.</p>
           )}
         </div>
 
@@ -145,7 +145,7 @@ export function ItemsPortal() {
           {selectedId ? (
             <ItemEditor key={selectedId} itemId={selectedId} online={online} onClose={() => select(null)} onSelect={select} />
           ) : (
-            <div className="card elev-sm items-center px-6 py-10 text-center text-sm text-text/60">
+            <div className="card elev-sm items-center px-6 py-12 text-center text-sm text-text/60">
               Pick an item to rename it, fix its purchase records, or merge it into another.
             </div>
           )}

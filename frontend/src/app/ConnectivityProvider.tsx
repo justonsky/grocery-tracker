@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { onlineManager, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
-import { setConnectivityStatus, type ConnectivityStatus } from '../offline/connectivityStatus'
+import { KNOWN_SERVER_KEY, setConnectivityStatus, type ConnectivityStatus } from '../offline/connectivityStatus'
 
 export type { ConnectivityStatus }
 
@@ -21,7 +21,6 @@ const ConnectivityContext = createContext<ConnectivityContextValue | null>(null)
 // networks — "something answered on this port" is not proof it's *your*
 // server. Once we've seen a real grocery-tracker instanceId, any other one
 // is a distinct "wrong-server" state, not "online".
-const KNOWN_SERVER_KEY = 'grocery-tracker-known-server-instance-id'
 
 const PROBE_TIMEOUT_MS = 3000
 const REACHABLE_POLL_MS = 30_000
@@ -176,10 +175,15 @@ export function ConnectivityProvider({ children }: { children: ReactNode }) {
   const adoptCurrentServer = useCallback(async () => {
     if (!state.serverInstanceId) return
     localStorage.setItem(KNOWN_SERVER_KEY, state.serverInstanceId)
-    await probeRef.current()
+    // The server just answered with this id, so it's trusted now — switch at once
+    // rather than waiting on a probe (one may already be in flight and be skipped).
+    failuresRef.current = 0
+    statusRef.current = 'online'
+    setState((s) => ({ ...s, status: 'online', lastCheckedAt: Date.now() }))
     // Everything cached came from the old server's database; drop it and
-    // refetch from this one.
+    // refetch from this one, then re-check the connection in the background.
     await queryClient.resetQueries()
+    void probeRef.current()
   }, [state.serverInstanceId, queryClient])
 
   return (

@@ -114,16 +114,18 @@ export function ItemEditor({
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="btn btn-ghost btn-icon lg:hidden" aria-label="Back to items" onClick={onClose}>
-          ←
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
-        <h3 className="m-0 min-w-0 break-words">{item.name}</h3>
-        <Link to={`/items/${itemId}`} className="btn btn-ghost ml-auto">
+        <h3 className="m-0 min-w-0 text-2xl break-words">{item.name}</h3>
+        <Link to={`/items/${itemId}`} className="btn btn-secondary ml-auto">
           Price history
         </Link>
       </div>
 
-      <section className="card elev-sm gap-3" aria-labelledby="item-details">
-        <h4 id="item-details" className="m-0">
+      <section className="card elev-md gap-3" aria-labelledby="item-details">
+        <h4 id="item-details" className="m-0 text-lg">
           Details
         </h4>
         <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
@@ -134,7 +136,7 @@ export function ItemEditor({
           <div className="field">
             <label htmlFor="item-category">Default category</label>
             <select id="item-category" className="input" value={categoryValue} disabled={!online} onChange={(e) => setCategoryId(e.target.value)}>
-              <option value="">Other</option>
+              <option value="">No default category</option>
               {categories?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -144,7 +146,7 @@ export function ItemEditor({
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs text-text/55">
+          <span className="text-xs text-text/60">
             {item.purchaseCount} {item.purchaseCount === 1 ? 'purchase' : 'purchases'}
             {item.averagePrice != null && ` · average ${money(item.averagePrice)}`}
           </span>
@@ -159,12 +161,12 @@ export function ItemEditor({
         </div>
       </section>
 
-      <section className="card elev-sm gap-3" aria-labelledby="item-records">
+      <section className="card elev-md gap-3" aria-labelledby="item-records">
         <div>
-          <h4 id="item-records" className="m-0">
+          <h4 id="item-records" className="m-0 text-lg">
             Purchase records
           </h4>
-          <p className="m-0 mt-0.5 text-xs text-text/55">
+          <p className="m-0 mt-0.5 text-xs text-text/60">
             Every trip this item is on. Change the price, the store, or which trip it belongs to.
           </p>
         </div>
@@ -192,15 +194,14 @@ export function ItemEditor({
         onMerged={(targetId, sourceDeleted) => (sourceDeleted ? onSelect(targetId) : undefined)}
       />
 
-      <section className="card elev-sm gap-2" aria-labelledby="item-delete">
-        <h4 id="item-delete" className="m-0">
+      <section className="card elev-sm gap-2 border border-danger/25" aria-labelledby="item-delete">
+        <h4 id="item-delete" className="m-0 text-lg">
           Delete item
         </h4>
         <p className="m-0 text-xs text-text/60">Removes the item and every purchase record above. This can't be undone.</p>
         <button
           type="button"
-          className="btn btn-secondary self-start"
-          style={{ color: 'var(--color-danger)' }}
+          className="btn btn-danger self-start"
           disabled={!online || deleteItem.isPending}
           onClick={askDelete}
         >
@@ -318,7 +319,7 @@ function LineRow({
   }
 
   return (
-    <div className="grid grid-cols-2 items-center gap-2 rounded-md border border-divider p-2.5 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_96px_auto]">
+    <div className="grid grid-cols-2 items-center gap-2 rounded-[14px] border border-divider bg-bg p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_104px_auto]">
       <div className="col-span-2 sm:col-span-1">
         <TripSelect value={tripId} trips={trips} onChange={setTripId} disabled={!online} current={line} />
       </div>
@@ -342,29 +343,30 @@ function LineRow({
         disabled={!online}
         onChange={(e) => setPrice(e.target.value)}
       />
-      <div className="col-span-2 flex items-center justify-end gap-1 sm:col-span-1">
+      <div className="col-span-2 flex items-center justify-end gap-1.5 sm:col-span-1">
         {line.priceLocked && (
-          <span className="text-text/55" role="img" aria-label="Locked in the trip editor" title="Locked in the trip editor — saving needs confirmation">
+          <span className="tag tag-neutral h-8 w-8 justify-center p-0" role="img" aria-label="Locked in the trip editor" title="Locked in the trip editor — saving needs confirmation">
             <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
               <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z" />
             </svg>
           </span>
         )}
-        <button type="button" className="btn btn-primary px-2.5 py-1 text-xs" disabled={!online || !dirty || !tripId || save.isPending} onClick={onSave}>
+        <button type="button" className="btn btn-primary px-4" disabled={!online || !dirty || !tripId || save.isPending} onClick={onSave}>
           Save
         </button>
         <button
           type="button"
-          className="btn btn-ghost btn-icon h-8 w-8"
+          className="btn btn-ghost btn-icon text-danger hover:bg-danger-bg"
           aria-label={`Remove the ${line.tripDate} record`}
-          style={{ color: 'var(--color-danger)' }}
           disabled={!online || remove.isPending}
           onClick={onRemove}
         >
-          ×
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
         </button>
       </div>
-      <div className="col-span-2 text-[11px] text-text/50 sm:col-span-4">
+      <div className="col-span-2 text-xs text-text/60 sm:col-span-4">
         {line.profileName} · {line.tripStatus}
         {line.estimate != null && ` · estimated ${money(line.estimate)}`}
       </div>
@@ -411,7 +413,7 @@ function AddLine({
     )
   }
   return (
-    <div className="grid grid-cols-2 items-center gap-2 rounded-md border border-dashed border-divider p-2.5 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_96px_auto]">
+    <div className="grid grid-cols-2 items-center gap-2 rounded-[14px] border border-dashed border-control p-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_104px_auto]">
       <div className="col-span-2 sm:col-span-1">
         <TripSelect value={tripId} trips={trips} onChange={setTripId} disabled={!online} />
       </div>
@@ -427,11 +429,11 @@ function AddLine({
         value={price}
         onChange={(e) => setPrice(e.target.value)}
       />
-      <div className="col-span-2 flex justify-end gap-1 sm:col-span-1">
-        <button type="button" className="btn btn-secondary px-2.5 py-1 text-xs" onClick={() => setOpen(false)}>
+      <div className="col-span-2 flex justify-end gap-1.5 sm:col-span-1">
+        <button type="button" className="btn btn-secondary px-3.5" onClick={() => setOpen(false)}>
           Cancel
         </button>
-        <button type="button" className="btn btn-primary px-2.5 py-1 text-xs" disabled={!tripId || add.isPending} onClick={() => add.mutate()}>
+        <button type="button" className="btn btn-primary px-4" disabled={!tripId || add.isPending} onClick={() => add.mutate()}>
           Add
         </button>
       </div>
@@ -505,12 +507,12 @@ function MergeSection({
   }
 
   return (
-    <section className="card elev-sm gap-3" aria-labelledby="item-merge">
+    <section className="card elev-md gap-3" aria-labelledby="item-merge">
       <div>
-        <h4 id="item-merge" className="m-0">
+        <h4 id="item-merge" className="m-0 text-lg">
           Merge into another item
         </h4>
-        <p className="m-0 mt-0.5 text-xs text-text/55">
+        <p className="m-0 mt-0.5 text-xs text-text/60">
           For duplicates like "milk" and "whole milk": move this item's records to the other one, optionally only those from one store.
         </p>
       </div>
@@ -538,12 +540,12 @@ function MergeSection({
           </select>
         </div>
       </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" className="h-4 w-4 accent-accent" checked={deleteIfEmpty} disabled={!online} onChange={(e) => setDeleteIfEmpty(e.target.checked)} />
+      <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm">
+        <input type="checkbox" className="h-5 w-5 accent-accent" checked={deleteIfEmpty} disabled={!online} onChange={(e) => setDeleteIfEmpty(e.target.checked)} />
         Delete "{itemName}" once it has no records left
       </label>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs text-text/55">
+        <span className="text-xs text-text/60">
           {targetName && !target ? `No item called "${targetName.trim()}".` : target ? `${moving} ${moving === 1 ? 'record' : 'records'} will move.` : ''}
         </span>
         <button type="button" className="btn btn-primary" disabled={!online || !target || moving === 0 || merge.isPending} onClick={askMerge}>

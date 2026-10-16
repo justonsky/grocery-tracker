@@ -86,6 +86,15 @@ function useSyncStatusView() {
   return { view, isDraining, handleClick }
 }
 
+// State → chip colours: synced is a tinted green chip, syncing/pending a
+// neutral chip, and anything that needs the user (failures, offline, a
+// different server) a danger-tinted chip.
+function toneClass(view: ViewState) {
+  if (view.danger) return 'bg-danger-bg text-danger'
+  if (view.accentWork) return 'bg-chip text-text/80'
+  return 'bg-accent-800 text-accent-200'
+}
+
 // Desktop nav pill — a real button (was a passive, non-interactive span).
 export function SyncStatusPill({ onOpenFailures }: { onOpenFailures: () => void }) {
   const { view, isDraining, handleClick } = useSyncStatusView()
@@ -93,16 +102,15 @@ export function SyncStatusPill({ onOpenFailures }: { onOpenFailures: () => void 
   return (
     <button
       type="button"
-      className={`tag flex items-center gap-1.5 border-none ${!view.danger && !view.accentWork ? 'tag-accent' : 'tag-neutral'}`}
-      style={view.danger ? { color: 'var(--color-danger)' } : view.accentWork ? { color: 'var(--color-accent)' } : undefined}
+      className={`tag min-h-8 cursor-pointer gap-1.5 border-none font-body whitespace-nowrap transition-[filter] hover:brightness-95 disabled:cursor-default disabled:hover:brightness-100 ${toneClass(view)}`}
       onClick={() => handleClick(onOpenFailures)}
       disabled={isDraining}
       aria-live="polite"
       title={view.tooltip}
     >
       <span
-        className={`inline-block h-1.5 w-1.5 rounded-full ${isDraining ? 'animate-pulse' : ''}`}
-        style={{ background: 'currentcolor' }}
+        aria-hidden="true"
+        className={`inline-block h-2 w-2 shrink-0 rounded-full ${view.accentWork ? 'bg-accent' : 'bg-current'} ${isDraining ? 'animate-pulse' : ''}`}
       />
       {view.label}
     </button>
@@ -112,6 +120,7 @@ export function SyncStatusPill({ onOpenFailures }: { onOpenFailures: () => void 
 // Mobile-only status strip above the bottom tab bar — occupies zero pixels
 // when online and clean, so it doesn't compete with the pill for a single
 // connectivity surface per breakpoint (desktop: pill in the nav; mobile: strip).
+// data-sync-strip lets AppShell pad the page so the strip never covers content.
 export function SyncStatusStrip({ onOpenFailures }: { onOpenFailures: () => void }) {
   const { status } = useConnectivity()
   const { pendingCount, isDraining, failedOps, blockedOps } = useSync()
@@ -123,12 +132,16 @@ export function SyncStatusStrip({ onOpenFailures }: { onOpenFailures: () => void
   return (
     <button
       type="button"
+      data-sync-strip=""
       onClick={() => handleClick(onOpenFailures)}
       disabled={isDraining}
-      className="w-full border-none px-4 py-2 text-center text-xs"
-      style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}
+      className={`flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 border-0 border-t border-divider px-4 py-2 text-left font-body text-xs leading-snug font-semibold disabled:cursor-default ${toneClass(view)}`}
     >
-      {view.tooltip}
+      <span
+        aria-hidden="true"
+        className={`inline-block h-2 w-2 shrink-0 rounded-full ${view.accentWork ? 'bg-accent' : 'bg-current'} ${isDraining ? 'animate-pulse' : ''}`}
+      />
+      <span className="min-w-0">{view.tooltip}</span>
     </button>
   )
 }

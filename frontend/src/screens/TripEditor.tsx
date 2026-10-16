@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toJpeg, toPng } from 'html-to-image'
-import { api, ApiError } from '../api/client'
-import { ProblemTypes } from '../api/problemTypes'
+import { api } from '../api/client'
 import type { Trip, TripInput, TripItemInput, TripStatus } from '../api/types'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
-import { ShareableListCard } from '../components/ShareableListCard'
+import { SharePreview } from '../components/SharePreview'
 import { Combobox, type ComboOption } from '../components/ui/Combobox'
 import { TripItemList, type DraftItem } from '../components/TripItemList'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
@@ -96,6 +94,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   // What the form held right after it last loaded a server copy, to tell
   // whether anything has been edited since.
   const loadedSnapshotRef = useRef<string | null>(null)
+  const copiedRef = useRef(false)
   const snapshot = (draft: { name: string; date: string; budget: string; status: TripStatus; stores: string[]; items: DraftItem[] }) =>
     JSON.stringify({ ...draft, items: draft.items.map(({ key: _key, ...rest }) => rest) })
 
@@ -137,9 +136,11 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         loadedSnapshotRef.current !== null &&
         snapshot({ name, date, budget, status, stores, items }) !== loadedSnapshotRef.current
       if (!edited) hydrate(existingTrip)
-    } else if (sourceTrip) {
+    } else if (sourceTrip && !copiedRef.current) {
       // Shopping again from a past trip: same name, stores and items, as a
-      // fresh plan — nothing ticked off, priced or estimated yet.
+      // fresh plan — nothing ticked off, priced or estimated yet. Once only: a
+      // later refetch of the source must not wipe what's been typed since.
+      copiedRef.current = true
       setName(sourceTrip.name ?? '')
       setStores(sourceTrip.stores)
       setItems(
@@ -160,7 +161,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     // See ProfilePicker's create — without this, useMutation pauses entirely while
     // offline instead of ever reaching performOrQueue's own fallback logic.
     networkMode: 'always',
-    mutationFn: async ({ status: nextStatus }: { status: TripStatus; leave: boolean }) => {
+    mutationFn: async ({ status: nextStatus }: { status: TripStatus; leave: boolean; edits: string }) => {
       const cleanItems: TripItemInput[] = items
         .filter((r) => r.itemName.trim())
         .map((r) => ({
@@ -194,7 +195,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         label: `Trip "${input.name || input.date}"`,
       })
     },
-    onSuccess: (outcome, { status: nextStatus, leave }) => {
+    onSuccess: (outcome, { status: nextStatus, leave, edits }) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
       queryClient.invalidateQueries({ queryKey: ['trips', profileId] })
       queryClient.invalidateQueries({ queryKey: ['items'] })
@@ -213,20 +214,18 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       // Staying on the trip (a status change): take the server's copy so new
       // lines get their ids and lock dates. A new trip moves to its own URL;
       // the cache entry set here is what the remounted editor loads from.
+      // Only while the form is still what was sent: anything changed while the
+      // request was in flight is kept (and goes out with the next save).
       if (outcome.sent) {
         queryClient.setQueryData(['trip', profileId, id], outcome.result)
-        hydrate(outcome.result)
-        if (!isEditing) navigate(`/trips/${id}`, { replace: true })
+        if (editsRef.current === edits) {
+          hydrate(outcome.result)
+          if (!isEditing) navigate(`/trips/${id}`, { replace: true })
+        }
       }
       toast('success', outcome.sent ? SAVED[nextStatus] : queuedMessage)
     },
-    onError: (error) =>
-      toast(
-        'error',
-        error instanceof ApiError && error.problemType === ProblemTypes.PriceLocked
-          ? `${error.message} Reload the trip to see its current prices.`
-          : "Couldn't save this trip.",
-      ),
+    onError: () => toast('error', "Couldn't save this trip."),
   })
 
   const del = useMutation({
@@ -263,7 +262,9 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   }
   const removeStore = (storeName: string) => {
     setStores((s) => s.filter((x) => x !== storeName))
-    setItems((its) => its.map((it) => (it.storeName === storeName && !it.locked ? { ...it, storeName: null } : it)))
+    setItems((its) =>
+      its.map((it) => (it.storeName && normalize(it.storeName) === normalize(storeName) && !it.locked ? { ...it, storeName: null } : it)),
+    )
   }
 
   const updateItem = (key: string, patch: Partial<DraftItem>) => {
@@ -329,13 +330,12 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     )
   }
 
-  const previewRef = useRef<HTMLDivElement>(null)
   const categoryName = (categoryId: string) => categories?.find((c) => c.id === categoryId)?.name ?? 'Other'
   const namedItems = items.filter((it) => it.itemName.trim())
   const previewItems = namedItems.map((it) => ({
     itemName: it.itemName,
     categoryName: categoryName(it.categoryId),
-    preferredStoreName: it.storeName,
+    storeName: it.storeName,
     checked: it.checked,
     price: parseAmount(it.price),
   }))
@@ -361,46 +361,49 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const overBudget = parsedBudget != null && projected > parsedBudget
   const showSummary = totals.pricedCount > 0
   const hasLockedItems = items.some((it) => it.locked)
+  const pickedCount = totals.lineCount > 0 ? namedItems.filter((it) => it.checked).length : null
 
-  const exportImage = async (format: 'png' | 'jpeg') => {
-    if (!previewRef.current) return
-    try {
-      const dataUrl =
-        format === 'png' ? await toPng(previewRef.current) : await toJpeg(previewRef.current, { quality: 0.95 })
-      const a = document.createElement('a')
-      a.href = dataUrl
-      a.download = `${(name || 'grocery-trip').toLowerCase().replace(/\s+/g, '-')}.${format === 'jpeg' ? 'jpg' : 'png'}`
-      a.click()
-    } catch {
-      toast('error', "Couldn't export this trip as an image.")
-    }
-  }
-
-  const saveAs = (nextStatus: TripStatus, leave: boolean) => save.mutate({ status: nextStatus, leave })
+  // The form's content minus status, to tell whether it changed during a save.
+  const edits = JSON.stringify({ name, date, budget, stores, items: items.map(({ key: _key, ...rest }) => rest) })
+  const editsRef = useRef(edits)
+  editsRef.current = edits
+  const saveAs = (nextStatus: TripStatus, leave: boolean) => save.mutate({ status: nextStatus, leave, edits })
 
   return (
-    <div className="mx-auto max-w-[860px] px-5 pt-6 pb-25">
-      <div className="mb-4.5 flex flex-wrap items-center gap-2.5">
-        <button type="button" className="btn btn-ghost btn-icon" aria-label="Back" onClick={() => navigate('/trips')}>
-          ←
+    <div className="mx-auto max-w-[860px] px-4 pt-5 pb-25 sm:px-5 sm:pt-6">
+      <div className="mb-4 flex flex-wrap items-center gap-x-2.5 gap-y-2">
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon -ml-2 text-text"
+          aria-label="Back"
+          onClick={() => navigate('/trips')}
+        >
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
-        <h3 className="m-0">{persisted ? TITLE[status] : copyFromId ? 'Shop again' : 'New shopping list'}</h3>
-        <span className={`tag text-[10px] ${status === 'done' ? 'tag-neutral' : 'tag-outline'}`}>{STATUS_TAG[status]}</span>
-        <div className="ml-auto flex gap-1">
-          {isEditing && (
-            <button type="button" className="btn btn-ghost" onClick={() => navigate(`/trips/new?from=${tripId}`)}>
-              Shop again
-            </button>
-          )}
-          {isEditing && (
-            <button type="button" className="btn btn-ghost" style={{ color: 'var(--color-danger)' }} onClick={askDelete}>
-              Delete
-            </button>
+        <div className="min-w-0 flex-1 basis-40">
+          <h3 className="m-0 truncate">{persisted ? TITLE[status] : copyFromId ? 'Shop again' : 'New shopping list'}</h3>
+          {pickedCount != null && (
+            <div className="text-xs text-text/70 tabular-nums">
+              {pickedCount} of {totals.lineCount} picked up
+            </div>
           )}
         </div>
+        <span className={`tag text-[11px] ${STATUS_TAG_CLASS[status]}`}>{STATUS_TAG[status]}</span>
+        {isEditing && (
+          <div className="flex w-full justify-end gap-1.5 sm:w-auto">
+            <button type="button" className="btn btn-secondary btn-sm max-sm:min-h-11" onClick={() => navigate(`/trips/new?from=${tripId}`)}>
+              Shop again
+            </button>
+            <button type="button" className="btn btn-ghost btn-sm text-danger hover:bg-danger-bg max-sm:min-h-11" onClick={askDelete}>
+              Delete
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="card elev-sm gap-4">
+      <div className="card gap-4 border border-divider p-4 elev-sm sm:p-5">
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-[2fr_1fr_1fr]">
           <div className="field">
             <label htmlFor="trip-name">Name</label>
@@ -414,7 +417,15 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           </div>
           <div className="field">
             <label htmlFor="trip-date">Date</label>
-            <input id="trip-date" className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <input
+              id="trip-date"
+              className="input"
+              type="date"
+              value={date}
+              disabled={hasLockedItems}
+              title={hasLockedItems ? 'Fixed once prices on this trip are locked — price history is dated by the trip' : undefined}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
           <div className="field">
             <label htmlFor="trip-budget">Budget (optional)</label>
@@ -435,15 +446,20 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           <label>Stores</label>
           <div className="mb-2 flex flex-wrap gap-1.5">
             {stores.map((s) => (
-              <span key={s} className="tag tag-neutral flex items-center gap-1.5">
+              <span key={s} className="tag tag-neutral flex items-center gap-1 py-0.5 pr-0.5 pl-3 text-[13px]">
                 {s}
-                <button type="button" className="cursor-pointer border-none bg-transparent p-0 text-xs" onClick={() => removeStore(s)}>
+                <button
+                  type="button"
+                  title={`Remove ${s}`}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-base leading-none text-text/70 hover:bg-text/10 hover:text-text"
+                  onClick={() => removeStore(s)}
+                >
                   ×
                 </button>
               </span>
             ))}
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <Combobox
               wrapperClassName="flex-1"
               aria-label="Store to add"
@@ -460,47 +476,67 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
             </button>
           </div>
         </div>
+      </div>
 
-        <div className="hr" />
-
+      <div className="mt-4 grid gap-3.5">
         {/* Running totals. Pinned to the top of the screen while shopping, so the
             numbers stay in view as you work down a long list. */}
         <div
-          className={`flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-md bg-surface text-sm ${
-            status === 'shopping' ? 'sticky top-0 z-10 -mx-3 border-b border-divider px-3 py-2' : ''
+          className={`grid gap-2.5 ${
+            status === 'shopping' ? 'sticky top-0 z-10 -mx-4 border-b border-divider bg-bg px-4 py-2.5 sm:-mx-5 sm:px-5' : ''
           }`}
         >
-          <span>
-            <span className="text-text/60">Estimated </span>
-            <strong>{estimatedCostLabel ?? '—'}</strong>
-          </span>
-          <span>
-            <span className="text-text/60">Spent </span>
-            <strong>{money(totals.spent)}</strong>
-            {totals.lineCount > 0 && (
-              <span className="text-text/50">
-                {' '}
-                · {namedItems.filter((it) => it.checked).length}/{totals.lineCount} picked up
-              </span>
+          <div className={`grid gap-2 ${parsedBudget != null ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            <div className="min-w-0 rounded-md border border-divider bg-surface px-3 py-2">
+              <div className="text-[11px] font-semibold text-text/70">Estimated</div>
+              <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">{estimatedCostLabel ?? '—'}</div>
+            </div>
+            <div className="min-w-0 rounded-md border border-divider bg-surface px-3 py-2">
+              <div className="text-[11px] font-semibold text-text/70">Spent</div>
+              <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">{money(totals.spent)}</div>
+            </div>
+            {parsedBudget != null && (
+              <div className={`min-w-0 rounded-md border px-3 py-2 ${overBudget ? 'border-danger/30 bg-danger-bg text-danger' : 'border-divider bg-surface'}`}>
+                <div className={`text-[11px] font-semibold ${overBudget ? '' : 'text-text/70'}`}>Budget</div>
+                <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">
+                  {overBudget ? `${money(projected - parsedBudget)} over` : `${money(parsedBudget - projected)} left`}
+                </div>
+              </div>
             )}
-          </span>
-          {parsedBudget != null && (
-            <span className={overBudget ? 'text-danger' : ''}>
-              <span className={overBudget ? '' : 'text-text/60'}>Budget </span>
-              <strong>
-                {overBudget ? `${money(projected - parsedBudget)} over` : `${money(parsedBudget - projected)} left`}
-              </strong>
-            </span>
+          </div>
+          {pickedCount != null && (
+            <div className="flex items-center gap-3">
+              <div
+                className="h-1.5 flex-1 overflow-hidden rounded-full bg-chip"
+                role="progressbar"
+                aria-label="Trip progress"
+                aria-valuemin={0}
+                aria-valuemax={totals.lineCount}
+                aria-valuenow={pickedCount}
+              >
+                <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${(pickedCount / totals.lineCount) * 100}%` }} />
+              </div>
+              <span className="shrink-0 text-xs text-text/70 tabular-nums">
+                {pickedCount}/{totals.lineCount} picked up
+              </span>
+              {totals.savings != null && totals.savings > 0 && (
+                <span className={`tag shrink-0 py-0.5 text-[11px] tabular-nums ${status === 'done' ? 'tag-highlight' : 'tag-accent'}`}>
+                  Saved {money(totals.savings)}
+                </span>
+              )}
+            </div>
           )}
-          <button
-            type="button"
-            className="btn btn-secondary ml-auto px-2.5 py-1 text-xs"
-            disabled={namedItems.length === 0}
-            title="Set each item's estimate to the average price you've paid for it. Items with no price history are left as they are."
-            onClick={fillEstimates}
-          >
-            Fill estimates from averages
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm max-sm:min-h-11"
+              disabled={namedItems.length === 0}
+              title="Set each item's estimate to the average price you've paid for it. Items with no price history are left as they are."
+              onClick={fillEstimates}
+            >
+              Fill estimates from averages
+            </button>
+          </div>
         </div>
 
         <TripItemList
@@ -517,33 +553,35 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           onAdd={addItem}
         />
         {hasLockedItems && (
-          <p className="m-0 text-xs text-text/60">Items marked with a lock were bought more than 7 days ago and can no longer be changed.</p>
+          <p className="m-0 flex items-center gap-1.5 text-xs text-text/70">Items marked with a lock were bought more than 7 days ago and can no longer be changed.</p>
         )}
 
-        <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/trips')}>
+        {/* On a phone this is a bar docked above the bottom tab bar (nothing hides
+            behind it: the page pads for it); from lg up it is a plain row. */}
+        <div className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 flex gap-2 border-t border-divider bg-surface px-3 py-2.5 group-has-[[data-sync-strip]]:bottom-[calc(7.25rem+env(safe-area-inset-bottom))] lg:static lg:z-auto lg:flex-wrap lg:justify-end lg:border-0 lg:bg-transparent lg:p-0">
+          <button type="button" className="btn btn-ghost max-lg:min-h-12 max-lg:px-3 text-text" onClick={() => navigate('/trips')}>
             Cancel
           </button>
           {status === 'done' && (
-            <button type="button" className="btn btn-secondary" disabled={save.isPending} onClick={() => saveAs('shopping', false)}>
+            <button type="button" className="btn btn-secondary max-lg:min-h-12" disabled={save.isPending} onClick={() => saveAs('shopping', false)}>
               Reopen
             </button>
           )}
           <button
             type="button"
-            className={status === 'done' ? 'btn btn-primary' : 'btn btn-secondary'}
+            className={`btn max-lg:min-h-12 ${status === 'done' ? 'btn-primary max-lg:flex-1' : 'btn-secondary'}`}
             disabled={save.isPending}
             onClick={() => saveAs(status, true)}
           >
             {status === 'planned' ? 'Save list' : 'Save'}
           </button>
           {status === 'planned' && (
-            <button type="button" className="btn btn-primary" disabled={save.isPending} onClick={() => saveAs('shopping', false)}>
+            <button type="button" className="btn btn-highlight max-lg:min-h-12 max-lg:flex-1" disabled={save.isPending} onClick={() => saveAs('shopping', false)}>
               Start shopping
             </button>
           )}
           {status === 'shopping' && (
-            <button type="button" className="btn btn-primary" disabled={save.isPending} onClick={() => saveAs('done', false)}>
+            <button type="button" className="btn btn-highlight max-lg:min-h-12 max-lg:flex-1" disabled={save.isPending} onClick={() => saveAs('done', false)}>
               Finish trip
             </button>
           )}
@@ -551,13 +589,17 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       </div>
 
       {showSummary && (
-        <div className="card elev-sm mt-5.5 gap-3">
+        <div className="card mt-5.5 gap-3 border border-divider elev-sm sm:p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h4 className="m-0">{status === 'done' ? 'Trip summary' : 'So far'}</h4>
+            <h4 className="m-0 text-lg">{status === 'done' ? 'Trip summary' : 'So far'}</h4>
             {totals.savings != null && (
-              <span className={`text-sm ${totals.savings < 0 ? 'text-danger' : 'text-accent'}`}>
+              <span
+                className={`tag text-[13px] font-semibold tabular-nums ${
+                  totals.savings < 0 ? 'bg-danger-bg text-danger' : status === 'done' && totals.savings > 0 ? 'tag-highlight' : 'tag-accent'
+                }`}
+              >
                 {totals.savings >= 0 ? 'Estimated savings ' : 'Over estimate by '}
-                <strong>{money(Math.abs(totals.savings))}</strong>
+                <strong className="ml-1">{money(Math.abs(totals.savings))}</strong>
               </span>
             )}
           </div>
@@ -600,47 +642,25 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
               )}
             </table>
           </div>
-          <p className="m-0 text-xs text-text/50">Savings compare estimate and price on the items that have both.</p>
+          <p className="m-0 text-xs text-text/60">Savings compare estimate and price on the items that have both.</p>
         </div>
       )}
 
       {hasPreview && (
-        <div className="mt-5.5">
-          <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
-            <h4 className="m-0">Preview &amp; share</h4>
-            <div className="flex gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => exportImage('png')}>
-                Export PNG
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={() => exportImage('jpeg')}>
-                Export JPG
-              </button>
-            </div>
-          </div>
-          {/* The card is fixed-width for a consistent image export; on a phone it
-              scrolls inside this box rather than widening the whole page. */}
-          <div className="max-w-full overflow-x-auto pb-1">
-            <ShareableListCard
-              ref={previewRef}
-              name={name || date}
-              date={date}
-              items={previewItems}
-              estimatedCostLabel={estimatedCostLabel}
-            />
-          </div>
-        </div>
+        <SharePreview name={name} date={date} items={previewItems} stores={stores} estimatedCostLabel={estimatedCostLabel} />
       )}
     </div>
   )
 }
 
 const STATUS_TAG: Record<TripStatus, string> = { planned: 'Planned', shopping: 'Shopping', done: 'Done' }
+const STATUS_TAG_CLASS: Record<TripStatus, string> = { planned: 'tag-neutral', shopping: 'tag-outline', done: 'tag-accent' }
 
 function SavingsCell({ savings }: { savings: number | null }) {
-  if (savings == null) return <span className="text-text/40">—</span>
+  if (savings == null) return <span className="text-text/50">—</span>
   if (savings === 0) return <span>{money(0)}</span>
   return savings > 0 ? (
-    <span className="text-accent">{money(savings)} under</span>
+    <span className="font-semibold text-accent">{money(savings)} under</span>
   ) : (
     <span className="text-danger">{money(-savings)} over</span>
   )

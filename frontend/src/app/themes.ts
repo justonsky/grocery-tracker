@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
+import type { ChartScheme } from '../api/types'
 
 // Per-profile color themes. Only ids and display names live here; the colors
 // themselves are in index.css, where each theme is a hue + chroma pair that the
 // shared palette rules expand into full light and dark accent scales. Light/dark
 // stays a household setting (see useTheme) — a theme only changes the hue.
-export const DEFAULT_THEME = 'nocturne'
+export const DEFAULT_THEME = 'fresh'
 
 export const THEMES = [
+  { id: 'fresh', name: 'Market Fresh' },
   { id: 'nocturne', name: 'Nocturne' },
   { id: 'iris', name: 'Iris' },
   { id: 'ocean', name: 'Ocean' },
@@ -29,6 +31,14 @@ export const THEMES = [
   { id: 'cocoa', name: 'Cocoa' },
   { id: 'mono', name: 'Mono' },
 ] as const
+
+// Chart palettes (household-wide, see useTheme). "fresh" is the default: the
+// Market Fresh teal-led set, or the profile theme's own accent on other themes.
+export const CHART_SCHEMES: { id: ChartScheme; name: string }[] = [
+  { id: 'fresh', name: 'Fresh' },
+  { id: 'citrus', name: 'Citrus' },
+  { id: 'berry', name: 'Berry' },
+]
 
 // A theme id from the server that this build doesn't know (renamed, or set by a
 // newer build) falls back to the default rather than rendering with no palette.

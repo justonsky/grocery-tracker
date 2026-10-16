@@ -34,4 +34,57 @@ public class SettingsEndpointsTests : IDisposable
         var refetched = await (await _client.GetAsync("/api/v1/settings")).ReadAsAsync<SettingsDto>();
         refetched!.ThemeMode.Should().Be("dark");
     }
+
+    [Fact]
+    public async Task GroupColors_DefaultEmpty_ReplaceWholesale_AndLeaveThemeAlone()
+    {
+        (await (await _client.GetAsync("/api/v1/settings")).ReadAsAsync<SettingsDto>())!.GroupColors.Should().BeEmpty();
+
+        await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest("dark"));
+        var colors = new Dictionary<string, string> { ["store:aldi"] = "#FDE2C8", ["category:produce"] = "none" };
+        var updated = await (await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest(null, colors))).ReadAsAsync<SettingsDto>();
+
+        updated!.GroupColors.Should().BeEquivalentTo(colors);
+        updated.ThemeMode.Should().Be("dark");
+
+        // A theme-only update doesn't touch the colors.
+        var themeOnly = await (await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest("light"))).ReadAsAsync<SettingsDto>();
+        themeOnly!.GroupColors.Should().BeEquivalentTo(colors);
+    }
+
+    [Theory]
+    [InlineData("store:aldi", "red")]
+    [InlineData("store:aldi", "#12345")]
+    [InlineData("aisle:3", "#123456")]
+    [InlineData("store:Aldi Store", "#123456")]
+    public async Task GroupColors_Invalid_AreRejected(string key, string value)
+    {
+        var response = await _client.PutJsonAsync("/api/v1/settings",
+            new UpdateSettingsRequest(null, new Dictionary<string, string> { [key] = value }));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ChartScheme_DefaultsToFresh_AndPersists()
+    {
+        var initial = await (await _client.GetAsync("/api/v1/settings")).ReadAsAsync<SettingsDto>();
+        initial!.ChartScheme.Should().Be("fresh");
+
+        var updated = await (await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest(null, null, "berry")))
+            .ReadAsAsync<SettingsDto>();
+        updated!.ChartScheme.Should().Be("berry");
+        updated.ThemeMode.Should().Be("system");
+
+        // Changing something else keeps it.
+        await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest("dark"));
+        var after = await (await _client.GetAsync("/api/v1/settings")).ReadAsAsync<SettingsDto>();
+        after!.ChartScheme.Should().Be("berry");
+    }
+
+    [Fact]
+    public async Task ChartScheme_Unknown_IsRejected()
+    {
+        var response = await _client.PutJsonAsync("/api/v1/settings", new UpdateSettingsRequest(null, null, "neon"));
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
 }

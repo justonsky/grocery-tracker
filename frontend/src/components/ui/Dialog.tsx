@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 
 export function Dialog({
   title,
@@ -9,6 +9,7 @@ export function Dialog({
   children: ReactNode
   onClose: () => void
 }) {
+  const titleId = useId()
   return (
     <div
       className="dialog-backdrop"
@@ -16,8 +17,10 @@ export function Dialog({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="dialog" role="dialog" aria-modal="true">
-        <div className="dialog-title">{title}</div>
+      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <div id={titleId} className="dialog-title">
+          {title}
+        </div>
         {children}
       </div>
     </div>

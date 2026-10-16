@@ -59,4 +59,47 @@ public class DashboardEndpointsTests : IDisposable
         dashboard.RecentTrip.Should().BeNull();
         dashboard.TrackedItems.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Dashboard_ReportsMonthBudget_AndTwelveMonthsOfSpend()
+    {
+        var profileId = (await (await _client.PostJsonAsync("/api/v1/profiles", new CreateProfileRequest("Budgeter")))
+            .ReadAsAsync<ProfileDto>())!.Id;
+        var categories = await (await _client.GetAsync("/api/v1/categories")).ReadAsAsync<List<CategoryDto>>();
+        var categoryId = categories!.First(c => c.Name == "Dairy").Id;
+
+        async Task CreateTripAsync(string date, decimal? budget, decimal price)
+        {
+            var trip = TestTrips.At(date, "Store", TestTrips.Bought("Milk", categoryId, price)) with { Budget = budget };
+            await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips", trip);
+        }
+
+        await CreateTripAsync("2026-08-12", 100m, 40m);  // budgeted, this month
+        await CreateTripAsync("2026-08-05", 50m, 30m);   // budgeted, this month
+        await CreateTripAsync("2026-08-02", null, 25m);  // no budget: spend counts, but not toward the budget
+        await CreateTripAsync("2025-09-10", null, 7m);   // oldest of the 12 months shown
+        await CreateTripAsync("2025-08-10", null, 99m);  // 13 months back — not shown
+
+        var dashboard = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/dashboard")).ReadAsAsync<DashboardSummaryDto>();
+
+        dashboard!.MonthBudget.Should().Be(150m);
+        dashboard.MonthBudgetSpent.Should().Be(70m);
+        dashboard.MonthSpend.Should().Be(95m);
+        dashboard.MonthlySpend.Should().HaveCount(12);
+        dashboard.MonthlySpend.First().Should().Be(new MonthlySpendDto("2025-09", 7m, 1));
+        dashboard.MonthlySpend.Last().Should().Be(new MonthlySpendDto("2026-08", 95m, 3));
+        dashboard.MonthlySpend.Single(m => m.Month == "2026-03").Should().Be(new MonthlySpendDto("2026-03", 0m, 0));
+    }
+
+    [Fact]
+    public async Task Dashboard_WithoutBudgets_HasNoMonthBudget()
+    {
+        var profileId = (await (await _client.PostJsonAsync("/api/v1/profiles", new CreateProfileRequest("No Budget")))
+            .ReadAsAsync<ProfileDto>())!.Id;
+
+        var dashboard = await (await _client.GetAsync($"/api/v1/profiles/{profileId}/dashboard")).ReadAsAsync<DashboardSummaryDto>();
+
+        dashboard!.MonthBudget.Should().BeNull();
+        dashboard.MonthlySpend.Should().HaveCount(12).And.OnlyContain(m => m.Total == 0m);
+    }
 }

@@ -6,6 +6,17 @@ export type ConnectivityStatus = 'checking' | 'online' | 'offline' | 'wrong-serv
 let current: ConnectivityStatus = 'checking'
 
 export const getConnectivityStatus = () => current
+
+// The instance id of the server this device last trusted (see ConnectivityProvider).
+export const KNOWN_SERVER_KEY = 'grocery-tracker-known-server-instance-id'
+
+export function hasKnownServer(): boolean {
+  try {
+    return localStorage.getItem(KNOWN_SERVER_KEY) !== null
+  } catch {
+    return false
+  }
+}
 export const setConnectivityStatus = (status: ConnectivityStatus) => {
   current = status
 }

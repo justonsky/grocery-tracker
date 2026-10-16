@@ -43,10 +43,6 @@ public static class TripEndpoints
                 TripUpsertResult.Updated => Results.Ok(trip),
                 TripUpsertResult.CrossProfile => Results.Problem(
                     type: ProblemTypes.CrossProfile, title: "This trip belongs to a different profile.", statusCode: StatusCodes.Status409Conflict),
-                TripUpsertResult.PriceLocked => Results.Problem(
-                    type: ProblemTypes.PriceLocked,
-                    title: $"Bought items become read-only {TripService.PriceEditWindow.TotalDays:0} days after their price is entered.",
-                    statusCode: StatusCodes.Status409Conflict),
                 _ => Results.Problem(
                     type: ProblemTypes.ProfileNotFound, title: "Profile not found.", statusCode: StatusCodes.Status404NotFound),
             };

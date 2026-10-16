@@ -43,13 +43,13 @@ public class ProfileEndpointsTests : IDisposable
     }
 
     [Fact]
-    public async Task Theme_DefaultsToNocturne_IsSetByUpsert_AndSurvivesARename()
+    public async Task Theme_DefaultsToFresh_IsSetByUpsert_AndSurvivesARename()
     {
         var id = Guid.NewGuid();
 
         var created = await (await _client.PutJsonAsync($"/api/v1/profiles/{id}", new CreateProfileRequest("Sam")))
             .ReadAsAsync<ProfileDto>();
-        created!.Theme.Should().Be("nocturne");
+        created!.Theme.Should().Be("fresh");
 
         var themed = await (await _client.PutJsonAsync($"/api/v1/profiles/{id}", new CreateProfileRequest("Sam", "ocean")))
             .ReadAsAsync<ProfileDto>();

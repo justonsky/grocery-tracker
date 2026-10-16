@@ -97,10 +97,16 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
                 // Seeded history was bought on the trip's date, not today, so its
                 // prices (and completion) are stamped then — and come in already locked.
                 var shoppedAt = DateTimeOffset.TryParse($"{seedTrip.Date}T12:00:00Z", out var parsed) ? parsed : now;
-                var settled = seedTrip.Items.Count(i => i.Checked || i.Price is not null);
-                var status = settled == 0 ? TripStatus.Planned
-                    : settled == seedTrip.Items.Count ? TripStatus.Done
-                    : TripStatus.Shopping;
+                var status = ParseStatus(seedTrip.Status) ?? InferStatus(seedTrip.Items);
+
+                // total/estimatedTotal/savings are informational (the app derives its
+                // own); a total that disagrees with the lines means a hand-edited file.
+                var linesTotal = seedTrip.Items.Sum(i => i.Price ?? 0m);
+                if (seedTrip.Total is { } fileTotal && Math.Abs(fileTotal - linesTotal) > 0.005m)
+                {
+                    logger?.LogWarning("Seed trip on {Date} has total {FileTotal} but its items sum to {LinesTotal}.",
+                        seedTrip.Date, fileTotal, linesTotal);
+                }
 
                 var trip = new Trip
                 {
@@ -141,6 +147,7 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
                         StoreId = string.IsNullOrWhiteSpace(line.Store) ? null : ResolveStore(line.Store!).Id,
                         Checked = line.Checked,
                         PriceCents = priceCents,
+                        EstimateCents = ToCents(line.Estimate),
                         PricedAt = priceCents is null ? null : shoppedAt,
                         SortOrder = order++,
                     });
@@ -159,18 +166,37 @@ public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService
     private static int? ToCents(decimal? amount) =>
         amount is null or < 0 ? null : (int)Math.Round(amount.Value * 100m, MidpointRounding.AwayFromZero);
 
+    // v3 files say the status outright; anything else (v2, or a typo) falls back
+    // to inferring it from how many lines are ticked off or priced. Matched by
+    // name only, so "1" or "planned,done" don't sneak through Enum.TryParse.
+    private static TripStatus? ParseStatus(string? status) =>
+        Enum.GetValues<TripStatus>().Cast<TripStatus?>()
+            .FirstOrDefault(s => string.Equals(s.ToString(), status?.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private static TripStatus InferStatus(List<SeedTripItem> items)
+    {
+        var settled = items.Count(i => i.Checked || i.Price is not null);
+        return settled == 0 ? TripStatus.Planned
+            : settled == items.Count ? TripStatus.Done
+            : TripStatus.Shopping;
+    }
+
     private sealed record SeedProfile(string Name, List<SeedTrip> Trips)
     {
         public List<SeedTrip> Trips { get; init; } = Trips ?? [];
     }
 
-    private sealed record SeedTrip(string? Name, string Date, decimal? Budget, List<string> Stores, List<SeedTripItem> Items)
+    // Status/Total/EstimatedTotal/Savings arrived in v3 and are optional, so v2
+    // files still deserialize.
+    private sealed record SeedTrip(string? Name, string Date, decimal? Budget, List<string> Stores, List<SeedTripItem> Items,
+        string? Status = null, decimal? Total = null, decimal? EstimatedTotal = null, decimal? Savings = null)
     {
         public List<string> Stores { get; init; } = Stores ?? [];
         public List<SeedTripItem> Items { get; init; } = Items ?? [];
     }
 
-    private sealed record SeedTripItem(string Name, string? Category, string? Store, bool Checked, decimal? Price);
+    private sealed record SeedTripItem(string Name, string? Category, string? Store, bool Checked, decimal? Price,
+        decimal? Estimate = null);
 }
 
 public enum SeedOutcome { Seeded, SkippedNotEmpty, SkippedNoFile }

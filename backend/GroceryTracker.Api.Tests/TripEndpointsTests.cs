@@ -51,9 +51,9 @@ public class TripEndpointsTests : IDisposable
         var second = await _client.PostJsonAsync($"/api/v1/profiles/{profileId}/trips",
             TestTrips.At("2026-08-08", "trader joe's", TestTrips.Bought("whole milk", dairyId, 3.59m)));
         var secondTrip = await second.ReadAsAsync<TripDto>();
-        // The trip's own store list keeps whatever was typed, but the per-item store
-        // resolves through the shared lookup table — same row, original casing.
-        secondTrip!.Items[0].StoreName.Should().Be("Trader Joe's");
+        // The per-item store resolves to the same shared row (asserted below), but is
+        // reported in the trip's own spelling so the trip's store list and its lines match.
+        secondTrip!.Items[0].StoreName.Should().Be("trader joe's");
         secondTrip.Items[0].ItemId.Should().Be(trip.Items.First(i => i.ItemName == "Whole Milk").ItemId);
 
         var stores = await (await _client.GetAsync($"/api/v1/stores")).ReadAsAsync<List<StoreDto>>();

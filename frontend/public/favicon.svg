@@ -1,1 +1,122 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="46" fill="none" viewBox="0 0 48 46"><path fill="#863bff" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z" style="fill:#863bff;fill:color(display-p3 .5252 .23 1);fill-opacity:1"/><mask id="a" width="48" height="46" x="0" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M25.842 44.938c-.664.844-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.183c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.498 0-3.579-1.842-3.579H1.133c-.92 0-1.456-1.04-.92-1.787L9.91.473c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.578 1.842 3.578h11.377c.943 0 1.473 1.088.89 1.832L25.843 44.94z" style="fill:#000;fill-opacity:1"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#ede6ff" rx="5.508" ry="14.704" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -4.47 31.516)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#ede6ff" rx="10.399" ry="29.851" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -39.328 7.883)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#7e14ff" rx="5.508" ry="30.487" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -25.913 -14.639)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.814 -32.644 -3.334)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#7e14ff" rx="5.508" ry="30.599" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="matrix(.00324 1 1 -.00324 -34.34 30.47)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#ede6ff" rx="14.072" ry="22.078" style="fill:#ede6ff;fill:color(display-p3 .9275 .9033 1);fill-opacity:1" transform="rotate(93.35 24.506 48.493)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#7e14ff" rx="3.47" ry="21.501" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(89.009 28.708 47.59)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx=".387" cy="8.972" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(39.51 .387 8.972)"/></g><g filter="url(#k)"><ellipse cx="47.523" cy="-6.092" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 47.523 -6.092)"/></g><g filter="url(#l)"><ellipse cx="41.412" cy="6.333" fill="#47bfff" rx="5.971" ry="9.665" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 41.412 6.333)"/></g><g filter="url(#m)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#n)"><ellipse cx="-1.879" cy="38.332" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 -1.88 38.332)"/></g><g filter="url(#o)"><ellipse cx="35.651" cy="29.907" fill="#7e14ff" rx="4.407" ry="29.108" style="fill:#7e14ff;fill:color(display-p3 .4922 .0767 1);fill-opacity:1" transform="rotate(37.892 35.651 29.907)"/></g><g filter="url(#p)"><ellipse cx="38.418" cy="32.4" fill="#47bfff" rx="5.971" ry="15.297" style="fill:#47bfff;fill:color(display-p3 .2799 .748 1);fill-opacity:1" transform="rotate(37.892 38.418 32.4)"/></g></g><defs><filter id="b" width="60.045" height="41.654" x="-19.77" y="16.149" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-54.613" y="-7.533" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-49.64" y="2.03" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-45.045" y="20.029" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-43.513" y="21.178" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="15.756" y="-17.901" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="23.548" y="2.284" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-27.636" y="-22.853" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="20.116" y="-38.415" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="24.641" y="-11.323" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-29.286" y="6.009" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="8.244" y="-2.416" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="18.713" y="10.588" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17158" stdDeviation="4.596"/></filter></defs></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Grocery Tracker">
+<title>Grocery Tracker</title>
+<defs>
+  <!-- A wet-edged wash: wobbly outline, soft bleed, darker pigment pooled at the rim, faint granulation. -->
+  <filter id="wash" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="15" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="1.1" result="b"/>
+    <feMorphology in="b" operator="erode" radius="3.2" result="inner"/>
+    <feComposite in="b" in2="inner" operator="out" result="rim"/>
+    <feColorMatrix in="rim" type="matrix" values="0.55 0 0 0 0  0 0.6 0 0 0  0 0 0.6 0 0  0 0 0 0.62 0" result="rimDark"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.8 1.28" result="gAlpha"/>
+    <feComposite in="b" in2="gAlpha" operator="in" result="grainy"/>
+    <feMerge><feMergeNode in="grainy"/><feMergeNode in="rimDark"/></feMerge>
+  </filter>
+  <!-- A looser, lighter wash for background clouds and splashes. -->
+  <filter id="cloud" x="-30%" y="-30%" width="160%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="11" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="38" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="9"/>
+  </filter>
+  <filter id="drop" x="-30%" y="-30%" width="160%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="5" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feGaussianBlur in="d" stdDeviation="1.4"/>
+  </filter>
+  <!-- Cold-press paper grain over everything. -->
+  <filter id="paper" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="4" seed="2" result="t"/>
+    <feColorMatrix in="t" type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.22  0 0 0 -0.9 0.5"/>
+  </filter>
+  <filter id="deckle" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <radialGradient id="glow" cx="50%" cy="46%" r="55%">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/>
+    <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+  <clipPath id="frame"><rect x="14" y="14" width="484" height="484" rx="118"/></clipPath>
+</defs>
+
+<g clip-path="url(#frame)" filter="url(#deckle)">
+  <!-- paper -->
+  <rect width="512" height="512" fill="#F8F4E9"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <!-- background clouds -->
+  <g filter="url(#cloud)">
+    <ellipse cx="120" cy="120" rx="130" ry="100" fill="#8FD3B6" opacity="0.38"/>
+    <ellipse cx="420" cy="150" rx="110" ry="90" fill="#FFC7A8" opacity="0.42"/>
+    <ellipse cx="400" cy="420" rx="140" ry="95" fill="#9ED8D0" opacity="0.40"/>
+    <ellipse cx="90" cy="410" rx="110" ry="85" fill="#F7DE9A" opacity="0.40"/>
+  </g>
+  <!-- splashes -->
+  <g filter="url(#drop)">
+    <circle cx="84" cy="236" r="9" fill="#F26B3A" opacity="0.55"/>
+    <circle cx="70" cy="270" r="5" fill="#F26B3A" opacity="0.45"/>
+    <circle cx="436" cy="262" r="8" fill="#17A78F" opacity="0.5"/>
+    <circle cx="452" cy="300" r="4.5" fill="#17A78F" opacity="0.45"/>
+    <circle cx="402" cy="78" r="7" fill="#F2B544" opacity="0.6"/>
+    <circle cx="116" cy="84" r="5" fill="#2E9E6B" opacity="0.5"/>
+  </g>
+
+  <!-- tote straps, behind everything on top -->
+  <g fill="none" stroke-linecap="round" filter="url(#wash)">
+    <path d="M156 270 C100 120 412 120 356 270" stroke="#0F6F5A" stroke-width="13" opacity="0.78"/>
+    <path d="M156 270 C104 134 408 134 356 270" stroke="#7BD4BE" stroke-width="4" opacity="0.5"/>
+  </g>
+  <!-- leafy greens behind the produce -->
+  <g filter="url(#wash)">
+    <path d="M262 250 C226 214 200 160 214 98 C256 120 284 170 282 250 Z" fill="#3BA46E" opacity="0.82"/>
+    <path d="M250 250 C240 200 244 150 262 104 C284 150 286 206 270 250 Z" fill="#17734B" opacity="0.5"/>
+    <path d="M272 250 C300 206 326 160 352 108 C392 142 380 206 322 250 Z" fill="#59B684" opacity="0.8"/>
+    <path d="M290 250 C312 214 330 178 346 136 C366 168 352 214 316 250 Z" fill="#17734B" opacity="0.38"/>
+  </g>
+  <g fill="none" stroke="#0F5537" stroke-width="3" stroke-linecap="round" opacity="0.5" filter="url(#drop)">
+    <path d="M262 246 C250 206 242 160 238 120"/>
+    <path d="M286 246 C312 204 334 160 350 120"/>
+  </g>
+
+  <!-- tomato -->
+  <g filter="url(#wash)">
+    <circle cx="204" cy="228" r="60" fill="#F26B3A" opacity="0.88"/>
+    <circle cx="190" cy="244" r="40" fill="#D9421F" opacity="0.38"/>
+    <ellipse cx="184" cy="204" rx="17" ry="11" fill="#FFD2B8" opacity="0.78" transform="rotate(-28 184 204)"/>
+  </g>
+  <g filter="url(#wash)">
+    <path d="M204 172 L190 154 L204 160 L206 140 L216 158 L232 150 L220 172 Z" fill="#17734B" opacity="0.88"/>
+  </g>
+  <!-- lemon -->
+  <g filter="url(#wash)">
+    <ellipse cx="318" cy="222" rx="54" ry="48" fill="#F5BE3F" opacity="0.9" transform="rotate(-14 318 222)"/>
+    <ellipse cx="330" cy="240" rx="34" ry="28" fill="#E0962A" opacity="0.34" transform="rotate(-14 330 240)"/>
+    <ellipse cx="304" cy="206" rx="14" ry="9" fill="#FFF3C4" opacity="0.8" transform="rotate(-26 304 206)"/>
+  </g>
+
+  <!-- the tote -->
+  <g filter="url(#wash)">
+    <path d="M142 262 L370 262 L388 424 Q390 446 368 446 L144 446 Q122 446 124 424 Z" fill="#1AA383" opacity="0.9"/>
+    <path d="M124 424 Q122 446 144 446 L250 446 L214 262 L142 262 Z" fill="#0F6F5A" opacity="0.34"/>
+    <path d="M276 262 L370 262 L388 424 Q390 446 368 446 L300 446 Z" fill="#7BD4BE" opacity="0.4"/>
+  </g>
+  <!-- fold line and rim -->
+  <g fill="none" stroke-linecap="round" filter="url(#drop)">
+    <path d="M142 276 Q256 296 370 276" stroke="#0B5A48" stroke-width="5" opacity="0.5"/>
+    <path d="M140 270 Q256 288 372 270" stroke="#FFFFFF" stroke-width="3.5" opacity="0.55"/>
+  </g>
+  <!-- a hand-lettered price tag tied on -->
+  <g filter="url(#wash)">
+    <path d="M214 330 L298 330 Q312 330 312 344 L312 392 Q312 406 298 406 L214 406 Q200 406 200 392 L200 344 Q200 330 214 330 Z" fill="#FFF6E2" opacity="0.96"/>
+    <path d="M200 392 Q200 406 214 406 L298 406 Q312 406 312 392 L312 384 L200 388 Z" fill="#F2B544" opacity="0.28"/>
+  </g>
+  <g filter="url(#drop)">
+    <circle cx="256" cy="344" r="5" fill="#0F6F5A" opacity="0.65"/>
+    <path d="M236 378 L248 392 L278 358" fill="none" stroke="#F26B3A" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  </g>
+
+  <!-- paper grain -->
+  <rect width="512" height="512" filter="url(#paper)" opacity="0.32"/>
+</g>
+</svg>

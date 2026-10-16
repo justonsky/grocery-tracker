@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import type { Category, TripStatus } from '../api/types'
 import { summarize } from '../trips/costSummary'
+import { STORE_DEFAULT_COLORS, slug } from '../trips/shareGroups'
 import { Combobox, type ComboOption } from './ui/Combobox'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const shortDate = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+const norm = (name: string | null) => (name ?? '').trim().toLowerCase()
 const parseAmount = (value: string) => {
   const n = Number.parseFloat(value)
   return value.trim() !== '' && Number.isFinite(n) && n >= 0 ? n : null
@@ -54,9 +56,36 @@ function useIsWide() {
   return wide
 }
 
+// Wide rows: tick, item, category, store, estimate, paid, remove/lock.
+const WIDE_COLS =
+  'grid grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto]'
+
 const LockIcon = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
-    <path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z" />
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </svg>
+)
+const CloseIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+)
+const MoreIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <circle cx="5" cy="12" r="1.8" />
+    <circle cx="12" cy="12" r="1.8" />
+    <circle cx="19" cy="12" r="1.8" />
   </svg>
 )
 
@@ -75,8 +104,16 @@ export function TripItemList(props: ListProps) {
     return next
   }
 
-  // Trip stores in order, then any store a line uses that isn't on the trip, then unassigned.
-  const extraStores = [...new Set(items.map((i) => i.storeName).filter((s): s is string => !!s && !stores.includes(s)))]
+  // Trip stores in order, then any store a line uses that isn't on the trip, then
+  // unassigned. Matched ignoring case, so "aldi" and "Aldi" are one section.
+  const extraStores = [
+    ...new Map(
+      items
+        .map((i) => i.storeName)
+        .filter((s): s is string => !!s && !stores.some((t) => norm(t) === norm(s)))
+        .map((s) => [norm(s), s] as const),
+    ).values(),
+  ]
   const sections: (string | null)[] = [...stores, ...extraStores]
   if (items.some((i) => !i.storeName) || sections.length === 0) sections.push(null)
   const showHeaders = sections.some((s) => s !== null)
@@ -85,19 +122,22 @@ export function TripItemList(props: ListProps) {
   return (
     <div className="grid gap-3">
       {wide && (
-        <div className="grid grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto] gap-2 text-[11px] tracking-wide text-text/60 uppercase">
-          <span className="w-6" />
+        <div
+          aria-hidden="true"
+          className={`${WIDE_COLS} gap-2 px-4 text-[11px] font-bold tracking-[0.08em] text-text/60 uppercase`}
+        >
+          <span className="w-11" />
           <span>Item</span>
           <span>Category</span>
           <span>Store</span>
           <span>Estimate</span>
           <span>Paid</span>
-          <span className="w-9" />
+          <span className="w-11" />
         </div>
       )}
       {sections.map((storeName) => {
         const key = storeName ?? ''
-        const sectionItems = items.filter((i) => (i.storeName ?? null) === storeName)
+        const sectionItems = items.filter((i) => (storeName === null ? !i.storeName : norm(i.storeName) === norm(storeName)))
         const named = sectionItems.filter((i) => i.itemName.trim())
         const toFind = shopping ? sectionItems.filter((i) => !i.checked) : sectionItems
         const inCart = shopping ? sectionItems.filter((i) => i.checked) : []
@@ -105,54 +145,95 @@ export function TripItemList(props: ListProps) {
         const picked = named.filter((i) => i.checked).length
         const isCollapsed = collapsed.has(key)
         const cartIsOpen = cartOpen.has(key)
+        const tint = storeName ? STORE_DEFAULT_COLORS[slug(storeName)] : undefined
 
         return (
-          <section key={key} aria-label={storeName ?? 'Any store'} className="grid gap-2">
+          // No overflow-hidden here: it would clip the item-name suggestion list.
+          <section key={key} aria-label={storeName ?? 'Any store'} className="card elev-sm gap-0 p-0">
             {showHeaders && (
               <button
                 type="button"
                 aria-expanded={!isCollapsed}
                 onClick={() => setCollapsed((s) => toggle(s, key))}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-md border-0 bg-text/5 px-2.5 py-2 text-left text-sm text-text hover:bg-text/8"
+                // Regular stores keep their share-card tint, blended into the
+                // surface (lighter blend in dark mode so the ink stays legible).
+                style={tint ? ({ '--tint': tint } as CSSProperties) : undefined}
+                className={`flex min-h-13 w-full cursor-pointer items-center gap-2.5 border-0 px-3.5 text-left text-[15px] text-text hover:brightness-[0.98] sm:min-h-14 sm:px-4 ${
+                  isCollapsed ? 'rounded-[18px]' : 'rounded-t-[18px]'
+                } ${
+                  tint
+                    ? 'bg-[color-mix(in_srgb,var(--tint)_60%,var(--color-surface))] dark:bg-[color-mix(in_srgb,var(--tint)_16%,var(--color-surface))]'
+                    : 'bg-chip'
+                }`}
               >
-                <span aria-hidden="true" className={`inline-block text-xs transition-transform ${isCollapsed ? '' : 'rotate-90'}`}>
-                  ▸
+                <svg
+                  aria-hidden="true"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`shrink-0 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+                <span className="min-w-0 flex-1 truncate font-bold">{storeName ?? 'Any store'}</span>
+                <span className="shrink-0 text-xs font-medium text-text/70 sm:text-[13px]">
+                  {picked > 0 || shopping
+                    ? `${picked}/${named.length} picked up`
+                    : `${named.length} ${named.length === 1 ? 'item' : 'items'}`}
                 </span>
-                <span className="font-medium">{storeName ?? 'Any store'}</span>
-                <span className="text-xs text-text/55">
-                  {named.length} {named.length === 1 ? 'item' : 'items'}
-                  {picked > 0 && ` · ${picked} picked up`}
-                </span>
-                <span className="ml-auto text-xs text-text/70">
-                  {totals.pricedCount > 0 ? money(totals.spent) : totals.estimatedCount > 0 ? `est. ${money(totals.estimated)}` : ''}
+                <span className="shrink-0 text-sm font-bold tabular-nums">
+                  {totals.pricedCount > 0 ? money(totals.spent) : totals.estimatedCount > 0 ? `est ${money(totals.estimated)}` : ''}
                 </span>
               </button>
             )}
             {!isCollapsed && (
-              <>
-                {toFind.map((item) => (
-                  <ItemRow key={item.key} item={item} wide={wide} {...props} />
+              <div className="flex flex-col">
+                {toFind.map((item, i) => (
+                  <ItemRow key={item.key} item={item} wide={wide} first={!showHeaders && i === 0} {...props} />
                 ))}
                 {shopping && toFind.length === 0 && named.length > 0 && (
-                  <p className="m-0 px-1 text-xs text-text/55">Everything here is in the cart.</p>
+                  <p className={`m-0 px-4 py-3 text-xs text-text/60 ${showHeaders ? 'border-t border-divider' : ''}`}>
+                    Everything here is in the cart.
+                  </p>
                 )}
                 {inCart.length > 0 && (
-                  <div className="grid gap-2">
+                  <>
                     <button
                       type="button"
                       aria-expanded={cartIsOpen}
                       onClick={() => setCartOpen((s) => toggle(s, key))}
-                      className="btn btn-ghost justify-self-start px-1 text-xs"
+                      className="flex min-h-12 w-full cursor-pointer items-center gap-2 border-0 border-t border-divider bg-bg px-4 text-left text-[13px] font-semibold text-accent-200 hover:bg-chip"
                     >
+                      <svg
+                        aria-hidden="true"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="shrink-0"
+                      >
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
                       {cartIsOpen ? 'Hide' : 'Show'} {inCart.length} in the cart
                     </button>
-                    {cartIsOpen && inCart.map((item) => <ItemRow key={item.key} item={item} wide={wide} {...props} />)}
-                  </div>
+                    {cartIsOpen && inCart.map((item) => <ItemRow key={item.key} item={item} wide={wide} first={false} {...props} />)}
+                  </>
                 )}
-                <button type="button" className="btn btn-ghost justify-self-start" onClick={() => props.onAdd(storeName)}>
-                  + Add item{storeName ? ` at ${storeName}` : ''}
-                </button>
-              </>
+                <div className={`px-2 py-1 sm:px-2.5 ${showHeaders || sectionItems.length > 0 ? 'border-t border-divider' : ''}`}>
+                  <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAdd(storeName)}>
+                    + Add item{storeName ? ` at ${storeName}` : ''}
+                  </button>
+                </div>
+              </div>
             )}
           </section>
         )
@@ -164,6 +245,7 @@ export function TripItemList(props: ListProps) {
 function ItemRow({
   item,
   wide,
+  first,
   stores,
   status,
   categories,
@@ -173,26 +255,29 @@ function ItemRow({
   onName,
   onPrice,
   onRemove,
-}: ListProps & { item: DraftItem; wide: boolean }) {
+}: ListProps & { item: DraftItem; wide: boolean; first: boolean }) {
   const [open, setOpen] = useState(false)
   const average = averageFor(item.itemName)
   const estimate = parseAmount(item.estimate)
   const struck = item.checked && status !== 'planned'
 
+  // Wrapped in a label so the whole 44px square ticks it, not just the box.
   const checkbox = (
-    <input
-      type="checkbox"
-      title="Picked up"
-      aria-label={`Picked up ${item.itemName || 'item'}`}
-      checked={item.checked}
-      disabled={item.locked}
-      onChange={(e) => onUpdate(item.key, { checked: e.target.checked })}
-      className="h-6 w-6 shrink-0 accent-accent"
-    />
+    <label className={`flex h-11 w-11 shrink-0 items-center justify-center ${item.locked ? '' : 'cursor-pointer'}`}>
+      <input
+        type="checkbox"
+        title="Picked up"
+        aria-label={`Picked up ${item.itemName || 'item'}`}
+        checked={item.checked}
+        disabled={item.locked}
+        onChange={(e) => onUpdate(item.key, { checked: e.target.checked })}
+        className="h-[22px] w-[22px] cursor-[inherit] accent-accent"
+      />
+    </label>
   )
   const name = (
     <Combobox
-      className={struck ? 'text-text/60 line-through' : ''}
+      className={`font-semibold ${struck ? 'text-text/60 line-through' : ''}`}
       placeholder="Item name"
       aria-label="Item name"
       value={item.itemName}
@@ -226,7 +311,7 @@ function ItemRow({
     >
       <option value="">Any store</option>
       {/* Keep a store that's no longer on the trip selectable for the line that uses it. */}
-      {[...stores, ...(item.storeName && !stores.includes(item.storeName) ? [item.storeName] : [])].map((s) => (
+      {[...stores, ...(item.storeName && !stores.some((s) => norm(s) === norm(item.storeName)) ? [item.storeName] : [])].map((s) => (
         <option key={s} value={s}>
           {s}
         </option>
@@ -235,7 +320,7 @@ function ItemRow({
   )
   const estimateInput = (
     <input
-      className="input"
+      className="input tabular-nums"
       type="number"
       step="0.01"
       min="0"
@@ -250,7 +335,7 @@ function ItemRow({
   )
   const paid = (
     <input
-      className="input"
+      className="input tabular-nums"
       type="number"
       step="0.01"
       min="0"
@@ -266,7 +351,7 @@ function ItemRow({
   )
   const lock = (
     <span
-      className="flex h-9 w-9 items-center justify-center text-text/60"
+      className="flex h-11 w-11 items-center justify-center text-text/60"
       role="img"
       aria-label="Locked — prices become read-only 7 days after they're entered"
       title="Locked — prices become read-only 7 days after they're entered"
@@ -277,9 +362,7 @@ function ItemRow({
 
   if (wide) {
     return (
-      <div
-        className={`grid grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto] items-center gap-2 ${item.locked ? 'opacity-75' : ''}`}
-      >
+      <div className={`${WIDE_COLS} items-center gap-2 py-1.5 pr-2 pl-2 ${first ? '' : 'border-t border-divider'} ${item.locked ? 'opacity-75' : ''}`}>
         {checkbox}
         {name}
         {category}
@@ -289,8 +372,13 @@ function ItemRow({
         {item.locked ? (
           lock
         ) : (
-          <button type="button" className="btn btn-ghost btn-icon" aria-label="Remove item" onClick={() => onRemove(item.key)}>
-            ×
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon text-text/60 hover:bg-danger-bg hover:text-danger"
+            aria-label="Remove item"
+            onClick={() => onRemove(item.key)}
+          >
+            <CloseIcon />
           </button>
         )}
       </div>
@@ -301,22 +389,26 @@ function ItemRow({
   const categoryName = categories?.find((c) => c.id === item.categoryId)?.name
   const meta = [categoryName, estimate == null && average != null ? `avg ${money(average)}` : null].filter(Boolean).join(' · ')
   return (
-    <div className={`grid grid-cols-[auto_minmax(0,1fr)_5.5rem_auto] items-center gap-x-2 gap-y-1 ${item.locked ? 'opacity-75' : ''}`}>
+    <div
+      className={`grid grid-cols-[auto_minmax(0,1fr)_5.5rem_auto] items-center gap-x-1.5 gap-y-1 py-1.5 pr-1 pl-0.5 ${
+        first ? '' : 'border-t border-divider'
+      } ${item.locked ? 'opacity-75' : ''}`}
+    >
       {checkbox}
       {name}
       {paid}
       <button
         type="button"
-        className="btn btn-ghost btn-icon h-11 w-9"
+        className="btn btn-ghost btn-icon text-text/70"
         aria-expanded={open}
         aria-label={`${open ? 'Hide' : 'Show'} details for ${item.itemName || 'item'}`}
         onClick={() => setOpen((o) => !o)}
       >
-        {item.locked ? <LockIcon /> : '⋯'}
+        {item.locked ? <LockIcon size={16} /> : <MoreIcon />}
       </button>
-      {!open && meta && <div className="col-start-2 col-end-5 -mt-0.5 truncate px-1 text-[11px] text-text/50">{meta}</div>}
+      {!open && meta && <div className="col-start-2 col-end-5 -mt-1 truncate px-1 pb-0.5 text-xs text-text/60">{meta}</div>}
       {open && (
-        <div className="col-start-2 col-end-5 grid grid-cols-2 gap-2 pb-1">
+        <div className="col-start-2 col-end-5 grid grid-cols-2 gap-2 pr-1 pb-1.5">
           {category}
           {store}
           {estimateInput}
@@ -325,7 +417,7 @@ function ItemRow({
               <LockIcon /> Locked
             </span>
           ) : (
-            <button type="button" className="btn btn-secondary" style={{ color: 'var(--color-danger)' }} onClick={() => onRemove(item.key)}>
+            <button type="button" className="btn btn-danger" onClick={() => onRemove(item.key)}>
               Remove
             </button>
           )}

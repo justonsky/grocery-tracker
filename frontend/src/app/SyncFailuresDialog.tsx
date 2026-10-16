@@ -31,40 +31,33 @@ export function SyncFailuresDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog title="Sync needs your attention" onClose={onClose}>
       {hasNothingToShow ? (
-        <p className="text-sm text-text/70">Nothing needs attention right now.</p>
+        <p className="m-0 text-sm text-text/70">Nothing needs attention right now.</p>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-2.5">
           {failedOps.map((op) => (
-            <div key={op.opId} className="rounded-md border border-divider p-2.5">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-sm font-medium">{op.label}</div>
-                  <div className="mt-0.5 text-xs" style={{ color: 'var(--color-danger)' }}>
-                    {op.lastError?.detail ?? 'This change was rejected by your home server.'}
-                  </div>
-                  {op.lastError && <div className="mt-0.5 text-[11px] text-text/50">{timeAgo(op.lastError.at)}</div>}
+            <div key={op.opId} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 rounded-[14px] border border-danger/30 bg-danger-bg p-3">
+              <div className="min-w-0 flex-1 basis-48">
+                <div className="text-sm font-semibold text-text">{op.label}</div>
+                <div className="mt-0.5 text-xs leading-snug text-danger">
+                  {op.lastError?.detail ?? 'This change was rejected by your home server.'}
                 </div>
-                <div className="flex flex-none gap-1.5">
-                  <button type="button" className="btn btn-secondary px-2.5 py-1 text-xs" onClick={() => retry(op)}>
-                    Retry
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost px-2.5 py-1 text-xs"
-                    style={{ color: 'var(--color-danger)' }}
-                    onClick={() => discard(op)}
-                  >
-                    Discard
-                  </button>
-                </div>
+                {op.lastError && <div className="mt-1 text-[11px] text-text/60">{timeAgo(op.lastError.at)}</div>}
+              </div>
+              <div className="flex flex-none gap-1.5">
+                <button type="button" className="btn btn-secondary px-3 text-xs" onClick={() => retry(op)}>
+                  Retry
+                </button>
+                <button type="button" className="btn btn-ghost px-3 text-xs text-danger hover:bg-danger/10" onClick={() => discard(op)}>
+                  Discard
+                </button>
               </div>
             </div>
           ))}
 
           {blockedOps.map((op) => (
-            <div key={op.opId} className="rounded-md border border-divider p-2.5">
-              <div className="text-sm font-medium">{op.label}</div>
-              <div className="mt-0.5 text-xs text-text/70">
+            <div key={op.opId} className="rounded-[14px] border border-divider bg-surface p-3">
+              <div className="text-sm font-semibold text-text">{op.label}</div>
+              <div className="mt-0.5 text-xs leading-snug text-text/70">
                 Waiting on another change above that needs your attention first — resolve that one and this will continue automatically.
               </div>
             </div>
@@ -72,15 +65,12 @@ export function SyncFailuresDialog({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      {failedOps.length > 0 && (
-        <div className="mt-1 flex justify-end gap-2">
-          <button type="button" className="btn btn-secondary" onClick={() => void retryAllFailed()}>
+      <div className="mt-2 flex flex-wrap justify-end gap-2">
+        {failedOps.length > 0 && (
+          <button type="button" className="btn btn-primary" onClick={() => void retryAllFailed()}>
             Retry all
           </button>
-        </div>
-      )}
-
-      <div className="mt-2 flex justify-end gap-2">
+        )}
         <button type="button" className="btn btn-secondary" onClick={onClose}>
           Close
         </button>

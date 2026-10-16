@@ -10,17 +10,22 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Grocery Tracker',
         short_name: 'Groceries',
         description: 'Track grocery trips, lists, and price history.',
-        theme_color: '#6a5dc7',
-        background_color: '#f2f1f7',
+        theme_color: '#17734B',
+        background_color: '#F6F7F3',
         display: 'standalone',
-        // TODO(PWA phase): replace with real 192/512 PNG icons — SVG-only
-        // manifest icons are unsupported on iOS home-screen installs.
-        icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+        // A watercolor tote of produce. PNGs (not just the SVG) so Android and
+        // iOS home-screen installs get a real icon; the maskable one has a safe margin.
+        icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' },
+        ],
       },
       workbox: {
         // Precache the app shell only — API responses are handled by TanStack

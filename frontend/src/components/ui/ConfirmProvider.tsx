@@ -39,17 +39,12 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
       {children}
       {state && (
         <Dialog title={state.options.title} onClose={() => settle(false)}>
-          {state.options.body && <div className="text-sm opacity-85">{state.options.body}</div>}
-          <div className="mt-2 flex justify-end gap-2">
+          {state.options.body && <p className="m-0 text-sm leading-relaxed text-text/80">{state.options.body}</p>}
+          <div className="mt-2 flex flex-wrap justify-end gap-2">
             <button type="button" className="btn btn-secondary" onClick={() => settle(false)}>
               Cancel
             </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
-              onClick={() => settle(true)}
-            >
+            <button type="button" className="btn btn-danger" onClick={() => settle(true)}>
               {state.options.confirmLabel ?? 'Delete'}
             </button>
           </div>

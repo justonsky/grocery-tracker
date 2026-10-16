@@ -13,6 +13,20 @@ public static class SettingsEndpoints
             Results.Ok(await service.GetAsync(ct)));
 
         group.MapPut("/", async (UpdateSettingsRequest request, SettingsService service, CancellationToken ct) =>
-            Results.Ok(await service.UpdateAsync(request, ct)));
+        {
+            if (!SettingsService.IsValidGroupColors(request.GroupColors))
+            {
+                return Results.Problem(type: ProblemTypes.Validation,
+                    title: "Group colors must map store:/category: keys to #rrggbb or \"none\".",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+            if (request.ChartScheme is not null && !SettingsService.ChartSchemes.Contains(request.ChartScheme))
+            {
+                return Results.Problem(type: ProblemTypes.Validation,
+                    title: $"Chart scheme must be one of: {string.Join(", ", SettingsService.ChartSchemes)}.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+            return Results.Ok(await service.UpdateAsync(request, ct));
+        });
     }
 }

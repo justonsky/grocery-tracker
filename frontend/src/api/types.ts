@@ -149,6 +149,17 @@ export interface DashboardSummary {
   trackedItems: TrackedItem[]
   // false while the grid follows recent purchases; true once items were added/removed.
   trackedItemsCustomized: boolean
+  // Sum of this month's trip budgets (null if none has one) and what those trips cost.
+  monthBudget: number | null
+  monthBudgetSpent: number
+  // The last 12 calendar months, oldest first; empty months are zero.
+  monthlySpend: MonthlySpend[]
+}
+
+export interface MonthlySpend {
+  month: string // yyyy-MM
+  total: number
+  count: number
 }
 
 export interface PurchasePoint {
@@ -246,7 +257,13 @@ export interface HouseholdTrip {
 
 export interface Settings {
   themeMode: 'system' | 'light' | 'dark'
+  // Share-card group backgrounds, keyed "store:aldi" / "category:produce";
+  // "#rrggbb" or "none". Household-wide. See trips/shareGroups.ts.
+  groupColors: Record<string, string>
+  chartScheme: ChartScheme
 }
+
+export type ChartScheme = 'fresh' | 'citrus' | 'berry'
 
 export interface Health {
   service: string

@@ -178,25 +178,54 @@ public class TripBudgetingTests : IDisposable
         trip = (await (await _client.GetAsync($"/api/v1/profiles/{profileId}/trips/{tripId}")).ReadAsAsync<TripDto>())!;
         trip.Items[0].PriceLocked.Should().BeTrue();
 
-        var changePrice = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}", ToInput(trip) with
-        {
-            Items = [new TripItemInput("Whole Milk", dairyId, "Aldi", true, 2.00m, Id: trip.Items[0].Id)],
-        });
-        changePrice.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        (await ProblemTypeAsync(changePrice)).Should().Be(ProblemTypes.PriceLocked);
-
-        var removeLine = await _client.PutJsonAsync($"/api/v1/profiles/{profileId}/trips/{tripId}", ToInput(trip) with { Items = [] });
-        removeLine.StatusCode.Should().Be(HttpStatusCode.Conflict);
-
-        // Everything else on the trip can still change, as long as the locked line comes back as-is.
-        var edited = await PutAsync(profileId, tripId, ToInput(trip) with
+        // A save that changes the locked line still succeeds — the line keeps its
+        // stored values while the rest of the save (a queued offline edit, say) applies.
+        var changed = await PutAsync(profileId, tripId, ToInput(trip) with
         {
             Name = "Renamed",
-            Items = [.. ToInput(trip).Items, TestTrips.Planned("Butter", dairyId)],
+            Date = "2026-09-01",
+            Items =
+            [
+                new TripItemInput("Skim Milk", dairyId, "Costco", false, 2.00m, Estimate: 9m, Id: trip.Items[0].Id),
+                TestTrips.Planned("Butter", dairyId),
+            ],
         });
-        edited.Name.Should().Be("Renamed");
-        edited.Items.Should().HaveCount(2);
-        edited.Items.Single(i => i.ItemName == "Whole Milk").Should().BeEquivalentTo(trip.Items[0]);
+        changed.Name.Should().Be("Renamed");
+        // Price history is dated by the trip, so a trip with locked lines keeps its date.
+        changed.Date.Should().Be("2026-08-05");
+        changed.Items.Should().HaveCount(2);
+        changed.Items.Single(i => i.Id == trip.Items[0].Id).Should().BeEquivalentTo(trip.Items[0]);
+
+        // Leaving it out of a save doesn't remove it either.
+        var dropped = await PutAsync(profileId, tripId, ToInput(changed) with { Items = [TestTrips.Planned("Butter", dairyId)] });
+        dropped.Items.Select(i => i.ItemName).Should().Equal("Butter", "Whole Milk");
+        dropped.Items.Single(i => i.ItemName == "Whole Milk").Should().BeEquivalentTo(trip.Items[0]);
+    }
+
+    [Fact]
+    public async Task TripWithoutLockedLines_CanChangeDate()
+    {
+        var profileId = await CreateProfileAsync();
+        var dairyId = await GetCategoryIdAsync("Dairy");
+        var tripId = Guid.NewGuid();
+        var trip = await PutAsync(profileId, tripId, new TripInput(null, "2026-08-05", null, [], [TestTrips.Planned("Milk", dairyId)]));
+
+        Clock.Advance(TimeSpan.FromDays(30));
+        (await PutAsync(profileId, tripId, ToInput(trip) with { Date = "2026-09-04" })).Date.Should().Be("2026-09-04");
+    }
+
+    [Fact]
+    public async Task LineStore_IsReportedInTheTripsOwnSpelling()
+    {
+        // The household already knows "Aldi"; this trip lists it as "aldi".
+        var profileId = await CreateProfileAsync();
+        var dairyId = await GetCategoryIdAsync("Dairy");
+        await PutAsync(profileId, Guid.NewGuid(), new TripInput(null, "2026-08-01", null, ["Aldi"], [TestTrips.Planned("Eggs", dairyId, "Aldi")]));
+
+        var trip = await PutAsync(profileId, Guid.NewGuid(), new TripInput(null, "2026-08-05", null, ["aldi"], [TestTrips.Planned("Milk", dairyId, "aldi")]));
+
+        trip.Stores.Should().Equal("aldi");
+        trip.Items.Single().StoreName.Should().Be("aldi");
     }
 
     [Fact]

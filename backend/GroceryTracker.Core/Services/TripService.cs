@@ -120,20 +120,20 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         else
         {
             matches = MatchExistingItems(trip!.Items, input.Items);
-            if (!LockedItemsUnchanged(trip.Items, input.Items, matches, now))
-            {
-                return (TripUpsertResult.PriceLocked, null);
-            }
+            var hasLockedLines = trip.Items.Any(i => IsLocked(i, now));
 
             trip.Name = Normalize(input.Name);
-            trip.Date = input.Date;
+            // Price history is dated by the trip, so once a line is locked the date
+            // is too — otherwise moving it would shift every locked price point.
+            if (!hasLockedLines) trip.Date = input.Date;
             trip.BudgetCents = ToCents(input.Budget);
             ApplyStatus(trip, ParseStatus(input.Status) ?? trip.Status, now);
 
             db.TripStores.RemoveRange(trip.Stores);
             trip.Stores.Clear();
-            // Lines carried over keep their row (and with it PricedAt); the rest go.
-            foreach (var removed in trip.Items.Except(matches.OfType<TripItem>()).ToList())
+            // Lines carried over keep their row (and with it PricedAt); the rest go —
+            // except locked lines, which stay whether or not the save mentions them.
+            foreach (var removed in trip.Items.Except(matches.OfType<TripItem>()).Where(i => !IsLocked(i, now)).ToList())
             {
                 db.TripItems.Remove(removed);
                 trip.Items.Remove(removed);
@@ -141,6 +141,12 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         }
 
         await ApplyStoresAndItemsAsync(profileId, trip, input, matches, now, ct);
+        // Locked lines the save left out keep their place after everything it sent.
+        var order = input.Items.Count;
+        foreach (var kept in trip.Items.Where(i => IsLocked(i, now) && Array.IndexOf(matches, i) < 0).OrderBy(i => i.SortOrder))
+        {
+            kept.SortOrder = order++;
+        }
         await db.SaveChangesAsync(ct);
 
         var dto = await GetAsync(profileId, trip.Id, ct);
@@ -208,31 +214,6 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         return matches;
     }
 
-    // A locked line must come back exactly as stored: not removed, and with the
-    // same item, category, store, picked-up state, price and estimate.
-    private static bool LockedItemsUnchanged(
-        List<TripItem> existing, List<TripItemInput> inputs, TripItem?[] matches, DateTimeOffset now)
-    {
-        foreach (var line in existing.Where(e => IsLocked(e, now)))
-        {
-            var index = Array.IndexOf(matches, line);
-            if (index < 0) return false;
-
-            var input = inputs[index];
-            var storeName = string.IsNullOrWhiteSpace(input.StoreName) ? null : NameNormalizer.Normalize(input.StoreName);
-            if (NameNormalizer.Normalize(input.ItemName) != line.Item!.NormalizedName
-                || input.CategoryId != line.CategoryId
-                || storeName != line.Store?.NormalizedName
-                || input.Checked != line.Checked
-                || ToCents(input.Price) != line.PriceCents
-                || ToCents(input.Estimate) != line.EstimateCents)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private IQueryable<Trip> LoadQuery(Guid profileId) => db.Trips
         .Where(t => t.ProfileId == profileId)
         .Include(t => t.Stores)
@@ -261,7 +242,9 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
             var itemInput = input.Items[i];
             var line = matches[i];
 
-            // Already verified unchanged by LockedItemsUnchanged; only its position moves.
+            // Locked: read-only. Whatever the save says about it is ignored (so a
+            // queued offline edit that crossed the lock still applies everything
+            // else); only its position follows the save.
             if (line is not null && IsLocked(line, now))
             {
                 line.SortOrder = i;
@@ -306,13 +289,22 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
 
     private static TripDto ToDto(Trip trip, DateTimeOffset now)
     {
+        // A line's store is the household Store row ("Aldi"), but the trip lists
+        // stores as typed ("aldi"). Report the line under the trip's spelling so the
+        // two always match and the editor never splits one store into two sections.
+        var tripStoreNames = trip.Stores
+            .GroupBy(s => NameNormalizer.Normalize(s.Name))
+            .ToDictionary(g => g.Key, g => g.OrderBy(s => s.SortOrder).First().Name);
+        string? StoreName(TripItem line) =>
+            line.Store is { } store ? tripStoreNames.GetValueOrDefault(store.NormalizedName, store.Name) : null;
+
         var compared = trip.Items.Where(i => i.EstimateCents is not null && i.PriceCents is not null).ToList();
         return new TripDto(
             trip.Id, trip.Name, trip.Date, trip.BudgetCents / 100m,
             trip.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).ToList(),
             trip.Items.OrderBy(i => i.SortOrder).Select(i => new TripItemDto(
                 i.Id, i.ItemId, i.Item!.Name, i.CategoryId, i.Category!.Name,
-                i.Store?.Name, i.Checked, i.PriceCents / 100m,
+                StoreName(i), i.Checked, i.PriceCents / 100m,
                 i.EstimateCents / 100m, i.PricedAt + PriceEditWindow, IsLocked(i, now))).ToList(),
             (trip.Items.Sum(i => i.PriceCents) ?? 0) / 100m,
             FormatStatus(trip.Status), trip.CompletedAt,
@@ -321,4 +313,4 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
     }
 }
 
-public enum TripUpsertResult { Created, Updated, ProfileNotFound, CrossProfile, PriceLocked }
+public enum TripUpsertResult { Created, Updated, ProfileNotFound, CrossProfile }

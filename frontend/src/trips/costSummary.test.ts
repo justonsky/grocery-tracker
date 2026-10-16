@@ -33,4 +33,10 @@ describe('summarizeByStore', () => {
     expect(subtotals.map((s) => s.storeName)).toEqual(['Aldi', 'Costco', 'HMart', null])
     expect(subtotals.find((s) => s.storeName === 'Costco')).toMatchObject({ estimated: 10, spent: 12, savings: -2 })
   })
+
+  it('treats store names that differ only in case as one store, using the trip spelling', () => {
+    const subtotals = summarizeByStore([line('Aldi', 1, 1), line('aldi', 2, 2)], ['aldi'])
+    expect(subtotals).toHaveLength(1)
+    expect(subtotals[0]).toMatchObject({ storeName: 'aldi', lineCount: 2, spent: 3 })
+  })
 })

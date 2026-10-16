@@ -178,7 +178,7 @@ namespace GroceryTracker.Core.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("TEXT")
-                        .HasDefaultValue("nocturne");
+                        .HasDefaultValue("fresh");
 
                     b.Property<bool>("TrackedItemsCustomized")
                         .HasColumnType("INTEGER");

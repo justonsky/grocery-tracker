@@ -75,8 +75,9 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             e.HasIndex(ti => ti.ItemId); // powers item price-history queries
             e.HasOne(ti => ti.Trip).WithMany(t => t.Items)
                 .HasForeignKey(ti => ti.TripId).OnDelete(DeleteBehavior.Cascade);
-            // Items are household-wide and nothing ever deletes one, so this cascade
-            // never fires in practice; deleting a profile removes its trips, not items.
+            // Deleting an item (Items portal) deliberately cascades to every trip line
+            // using it — ItemCatalogService.DeleteAsync relies on this. Keep Cascade.
+            // Deleting a profile removes its trips, never items.
             e.HasOne(ti => ti.Item).WithMany()
                 .HasForeignKey(ti => ti.ItemId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(ti => ti.Category).WithMany()

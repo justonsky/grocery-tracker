@@ -15,18 +15,24 @@ any device's browser on the same network connects to it — a self-hosted web ap
 
 ## Features
 
-- **Profiles** — one per household member, each with its own color theme (21 to
-  choose from, in Settings). Light/dark mode is a household setting.
+- **Profiles** — one per household member, each with its own color theme (22 to
+  choose from, in Settings; **Market Fresh** is the default). Light/dark mode is
+  a household setting.
 - **Shopping lists and trips are one thing.** A trip starts as a list
   (*Planned*), becomes *Shopping* once you tick something off or enter a price,
   and is *Done* when you finish it. "Shop again" starts a new list from any past
   trip. Long lists are grouped by store; while shopping, ticked items collapse
-  into "in the cart".
+  into "in the cart". The **Grocery Trips** tab lists them all.
+- **Share a list as an image** — *Preview & share* groups the list by
+  category, by store, or not at all, and each group can have its own background
+  color (BJ's, Rt-17 Farmer's Market, Aldi and HMart start as light green, gold,
+  orange and blue). Colors are saved for the household; export as PNG or JPG.
 - **Estimates and savings** — give each item an estimate (or fill them all from
   the household's average prices), enter what you actually paid, and see
   subtotals per store plus estimated savings against your estimate and budget.
 - **Price lock** — a price becomes read-only in the trip editor 7 days after it
-  was entered, so history and averages stop shifting. The Items page can still
+  was entered (and that trip's date is then fixed too), so history and averages
+  stop shifting. The Items page can still
   correct it, with an explicit confirmation.
 - **Shared item catalogue** — items and stores are household-wide; prices,
   averages and price history combine everyone's purchases. Spend totals stay
@@ -41,7 +47,8 @@ any device's browser on the same network connects to it — a self-hosted web ap
   fix their purchase records (price, store, which trip), and merge duplicates
   ("milk" into "whole milk"), optionally only the records from one store.
 - **Works offline** — see [Offline and sync](#offline-and-sync).
-- **Backup** — download everything as an .xlsx from Settings.
+- **Backup** — download everything as an .xlsx from Settings (see
+  [Backups](#backups)).
 
 ## Offline and sync
 
@@ -62,6 +69,24 @@ this server** adopts it and reloads the device's data.
 Known limitation: a trip is saved as a whole, so the last save wins. Editing the
 same trip on two devices (or in the trip editor while fixing its records on the
 Items page) keeps whichever is saved last.
+
+## Look and feel
+
+**Market Fresh** is the default design: fresh green for primary actions, coral
+for the one thing on a screen that needs attention (the next step, a saving, an
+over-budget warning), quiet white cards, Bricolage Grotesque for titles and
+numbers, Figtree for text, and 44px touch targets on phones. Price charts use
+colorblind-checked series colors (teal, coral-red, violet, gold), with each
+purchase dot colored by store. The app icon is a watercolor tote of produce;
+regenerate the PNGs with `tools/icon/build_icons.sh` (needs Chrome). The 21 other
+themes are listed in Settings and recolor the whole app, charts included.
+
+The dashboard shows today / this month / this year, a **Budget left** card
+(this month's trip budgets minus what those trips cost; it turns red as **Over
+budget**, and only appears when a trip this month has a budget) and a **Spending
+by month** chart of the last 12 months. In Settings, **Chart colors** switches the
+price charts and the monthly chart between Fresh, Citrus (blue-led) and Berry
+(violet-led) for the whole household.
 
 ## Project layout
 
@@ -108,8 +133,11 @@ migration and query-translation issues (not just logic bugs).
 
 A fresh, empty database is filled from
 `backend/GroceryTracker.Api/SeedData/seed-data.json` on first start (the
-household's spreadsheet history; regenerate it with `tools/seed/`). Seeding
-never runs once any profile exists. Turn it off with `SeedData:Enabled=false`,
+household's spreadsheet history; regenerate it with `tools/seed/`, see its
+README). The file (format v4) is one trip per week under the profile "Mom":
+the sheet's listed prices as estimates, what was paid per store, each week's
+budget and status, and informational totals and savings. Seeding never runs once any
+profile exists. Turn it off with `SeedData:Enabled=false`,
 or point `SeedData:Path` at another file.
 
 ## Production deployment
@@ -170,7 +198,13 @@ means **anyone who can reach port 5080 can read and modify the data.**
 
 The SQLite file *is* the data — there's no separate backup service. Two ways
 to get a copy:
-- **Settings → Download my data (.xlsx)** in the app itself.
+- **Settings → Download my data (.xlsx)** in the app itself. The workbook has a
+  **Profiles** sheet; **Trips**, one row per trip with its status, budget,
+  estimated and actual spend, savings, budget left and completion date; and
+  **Trip Items**, one row per item with its estimate, price, when the price was
+  entered and whether it's locked. Tick *Include the item catalogue* to add an
+  **Items** sheet: every item with its purchase count and average, last, lowest
+  and highest price. (`GET /api/v1/export/data.xlsx?includeItems=true`)
 - Copy the file directly from wherever `DataDirectory` points (the volume
   mount in Docker, or `/var/lib/grocery-tracker` in the systemd example).
   The app also copies it to `grocerytracker.db.bak` before applying any

@@ -9,6 +9,7 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
 {
     private const int TrackedItemCount = 8;
     private const int SparklinePoints = 8;
+    private const int MonthsShown = 12;
 
     public async Task<DashboardSummaryDto> GetSummaryAsync(Guid profileId, CancellationToken ct = default)
     {
@@ -25,6 +26,7 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
                 t.Name,
                 t.Date,
                 t.CreatedAt,
+                t.BudgetCents,
                 Stores = t.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).ToList(),
                 Items = t.Items.Select(i => new { i.PriceCents, ItemName = i.Item!.Name, CategoryName = i.Category!.Name }).ToList(),
             })
@@ -48,13 +50,28 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
                 SumCents(recentTripRaw.Items.Select(i => i.PriceCents)),
                 recentTripRaw.Items.Select(i => new TripLineDto(i.ItemName, i.CategoryName, i.PriceCents / 100m)).ToList());
 
+        var budgeted = monthTrips.Where(t => t.BudgetCents is > 0).ToList();
+        decimal? monthBudget = budgeted.Count > 0 ? budgeted.Sum(t => t.BudgetCents!.Value) / 100m : null;
+
+        var monthlySpend = Enumerable.Range(0, MonthsShown)
+            .Select(back => now.AddDays(1 - now.Day).AddMonths(back - (MonthsShown - 1)).ToString("yyyy-MM"))
+            .Select(month =>
+            {
+                var inMonth = trips.Where(t => t.Date.StartsWith(month, StringComparison.Ordinal)).ToList();
+                return new MonthlySpendDto(month, SumCents(inMonth.SelectMany(t => t.Items.Select(i => i.PriceCents))), inMonth.Count);
+            })
+            .ToList();
+
         return new DashboardSummaryDto(
             SumCents(todayTrips.SelectMany(t => t.Items.Select(i => i.PriceCents))), todayTrips.Count,
             SumCents(monthTrips.SelectMany(t => t.Items.Select(i => i.PriceCents))), monthTrips.Count,
             SumCents(yearTrips.SelectMany(t => t.Items.Select(i => i.PriceCents))), yearTrips.Count,
             recentTrip,
             await GetTrackedItemsAsync(profileId, null, ct),
-            await db.Profiles.Where(p => p.Id == profileId).Select(p => p.TrackedItemsCustomized).FirstOrDefaultAsync(ct));
+            await db.Profiles.Where(p => p.Id == profileId).Select(p => p.TrackedItemsCustomized).FirstOrDefaultAsync(ct),
+            monthBudget,
+            SumCents(budgeted.SelectMany(t => t.Items.Select(i => i.PriceCents))),
+            monthlySpend);
     }
 
     // Items still being planned have no price yet and simply do not count toward spend.
