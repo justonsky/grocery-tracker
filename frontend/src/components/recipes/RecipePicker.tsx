@@ -4,7 +4,7 @@ import type { Recipe } from '../../api/types'
 import { recipePhotoUrl } from '../../recipes'
 import { Dialog } from '../ui/Dialog'
 
-// "+ Add recipe" on a trip: choose a meal, and its items join the list (those already on
+// "+ Add items from recipe" on a trip: choose a meal, and its items join the list (those already on
 // it aren't added twice). A meal already planned can be topped up with any items missing.
 export function RecipePicker({
   recipes,
@@ -26,7 +26,7 @@ export function RecipePicker({
   }, [recipes, query])
 
   return (
-    <Dialog title="Add a recipe" onClose={onClose}>
+    <Dialog title="Add items from a recipe" onClose={onClose}>
       <p className="m-0 text-sm text-text/70">
         Its items are added{storeName ? ` at ${storeName}` : ''}; anything already on the list isn't added twice.
       </p>

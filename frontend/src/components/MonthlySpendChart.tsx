@@ -45,13 +45,15 @@ export function MonthlySpendChart({ months }: { months: MonthlySpend[] }) {
   const total = months.reduce((sum, m) => sum + m.total, 0)
 
   const { top, step } = niceMax(Math.max(...months.map((m) => m.total), 0))
-  const margin = narrow ? { ...MARGIN, left: 44 } : MARGIN
+  const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step)
+  // Room for the longest axis label ("$1,600.00"), about 6.5px a character at 11px.
+  const labelRoom = Math.ceil(Math.max(...ticks.map((t) => money(t).length)) * 6.5) + 10
+  const margin = { ...MARGIN, left: Math.max(narrow ? 44 : MARGIN.left, labelRoom) }
   const plotW = WIDTH - margin.left - margin.right
   const plotH = HEIGHT - margin.top - margin.bottom
   const slot = plotW / Math.max(months.length, 1)
   const barW = Math.min(34, slot * 0.64)
   const y = (v: number) => margin.top + plotH - (v / top) * plotH
-  const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step)
   const shown = active != null ? months[active] : null
 
   return (
@@ -76,7 +78,7 @@ export function MonthlySpendChart({ months }: { months: MonthlySpend[] }) {
           <g key={t}>
             <line x1={margin.left} x2={WIDTH - margin.right} y1={y(t)} y2={y(t)} stroke="var(--color-divider)" strokeWidth="1" />
             <text x={margin.left - 8} y={y(t) + 4} textAnchor="end" fontSize="11" fill="var(--color-text)" opacity="0.6" className="tabular-nums">
-              ${t.toLocaleString()}
+              {money(t)}
             </text>
           </g>
         ))}

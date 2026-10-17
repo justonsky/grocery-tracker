@@ -145,7 +145,7 @@ hover, the description. Opening a card shows the items with their household aver
 prices and an estimated cost, and offers edit, change photo, share (export a PNG or
 copy the text), delete and **Create shopping list**.
 
-On a trip, **+ Add recipe** (next to **+ Add item**) adds a recipe's items (never
+On a trip, **+ Add items from recipe** (next to **+ Add item**) adds a recipe's items (never
 twice) and lists the meal under **Planned meals**, its photo behind it. Taking a meal
 off removes its unbought items, except ones another planned meal still needs. Trends
 shows **Popular meals** and **Meals gone quiet**.

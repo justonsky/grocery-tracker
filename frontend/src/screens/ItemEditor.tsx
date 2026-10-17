@@ -10,6 +10,7 @@ import { Combobox, type ComboOption } from '../components/ui/Combobox'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
 import { parseQuantity, perUnit, validQuantity } from '../trips/quantity'
+import { amountText, tidyAmount } from '../trips/amount'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const normalize = (s: string) => s.trim().toLowerCase()
@@ -287,7 +288,7 @@ function LineRow({
   const confirm = useConfirm()
   const [tripId, setTripId] = useState(line.tripId)
   const [store, setStore] = useState(line.storeName ?? '')
-  const [price, setPrice] = useState(line.price != null ? String(line.price) : '')
+  const [price, setPrice] = useState(amountText(line.price))
   const [quantity, setQuantity] = useState(quantityText(line.quantity))
   const [unit, setUnit] = useState<QuantityUnit>(line.unit ?? 'each')
   const parsedQuantity = quantity.trim() ? parseQuantity(quantity) : 1
@@ -356,6 +357,7 @@ function LineRow({
         value={price}
         disabled={!online}
         onChange={(e) => setPrice(e.target.value)}
+        onBlur={(e) => setPrice(tidyAmount(e.target.value))}
       />
       <div className="col-span-2 flex items-center justify-end gap-1.5 sm:col-span-1">
         {line.priceLocked && (
@@ -448,6 +450,7 @@ function AddLine({
         placeholder="Price"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
+        onBlur={(e) => setPrice(tidyAmount(e.target.value))}
       />
       <div className="col-span-2 flex justify-end gap-1.5 sm:col-span-1">
         <button type="button" className="btn btn-secondary px-3.5" onClick={() => setOpen(false)}>

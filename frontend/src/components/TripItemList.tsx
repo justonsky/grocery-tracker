@@ -5,6 +5,7 @@ import { QuantityField } from './QuantityField'
 import { summarize } from '../trips/costSummary'
 import { STORE_DEFAULT_COLORS, slug } from '../trips/shareGroups'
 import { Combobox, type ComboOption } from './ui/Combobox'
+import { tidyAmount } from '../trips/amount'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 
@@ -253,7 +254,7 @@ export function TripItemList(props: ListProps) {
                       + Add item{storeName ? ` at ${storeName}` : ''}
                     </button>
                     <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAddRecipe(storeName)}>
-                      + Add recipe
+                      + Add items from recipe
                     </button>
                     {props.onImportReceipt && (
                       <button type="button" className="btn btn-ghost px-2" onClick={() => props.onImportReceipt!(storeName)}>
@@ -365,6 +366,7 @@ function ItemRow({
       value={item.estimate}
       disabled={item.locked}
       onChange={(e) => onUpdate(item.key, { estimate: e.target.value })}
+      onBlur={(e) => { const tidy = tidyAmount(e.target.value); if (tidy !== item.estimate) onUpdate(item.key, { estimate: tidy }) }}
     />
   )
   const paid = (
@@ -380,6 +382,7 @@ function ItemRow({
       value={item.price}
       disabled={item.locked}
       onChange={(e) => onPrice(item, e.target.value)}
+      onBlur={(e) => { const tidy = tidyAmount(e.target.value); if (tidy !== item.price) onPrice(item, tidy) }}
     />
   )
   const quantityInput = (

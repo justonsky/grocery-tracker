@@ -4,7 +4,6 @@ import type { CategorySpend, FadingItem, QuietRecipe, RisingItem, TrendItem, Tre
 import { recipePhotoUrl } from '../recipes'
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-const money0 = (n: number) => `$${Math.round(n).toLocaleString()}`
 const day = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })
 const dayYear = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
@@ -188,7 +187,7 @@ function Categories({ categories }: { categories: CategorySpend[] }) {
   if (total <= 0) return <Empty>No purchases in this period.</Empty>
   return (
     <div className="grid gap-3">
-      <div className="flex h-3.5 overflow-hidden rounded-full bg-chip" role="img" aria-label={`Spending by category: ${rows.map((r) => `${r.name} ${money0(r.spent)}`).join(', ')}`}>
+      <div className="flex h-3.5 overflow-hidden rounded-full bg-chip" role="img" aria-label={`Spending by category: ${rows.map((r) => `${r.name} ${money(r.spent)}`).join(', ')}`}>
         {rows.map((r) => (
           <div key={r.name} style={{ width: `${(r.spent / total) * 100}%`, background: r.color, opacity: r.name.endsWith('more') ? 0.3 : 1 }} />
         ))}
@@ -259,9 +258,9 @@ export const TrendsInfographic = forwardRef<HTMLDivElement, Props>(function Tren
 
       <div className={`grid gap-3 ${wide ? 'grid-cols-4' : 'grid-cols-2 sm:grid-cols-4'}`}>
         <Stat label="Trips" value={String(trends.tripCount)} note={trends.previousTripCount != null ? `${trends.previousTripCount} before` : undefined} />
-        <Stat label="Spent" value={money0(trends.spent)} note={spendNote} tone={spendTone} />
+        <Stat label="Spent" value={money(trends.spent)} note={spendNote} tone={spendTone} />
         <Stat label="Different items" value={String(trends.itemCount)} />
-        <Stat label="Per trip" value={money0(perTrip)} />
+        <Stat label="Per trip" value={money(perTrip)} />
       </div>
 
       {!trends.enoughData && (
@@ -282,7 +281,7 @@ export const TrendsInfographic = forwardRef<HTMLDivElement, Props>(function Tren
         </Section>
         <Section title="Biggest spend" hint="Total paid in the period">
           {trends.biggestSpend.length ? (
-            <BarList items={trends.biggestSpend} value={(i) => i.spent} label={(i) => money0(i.spent)} color="var(--chart-2)" />
+            <BarList items={trends.biggestSpend} value={(i) => i.spent} label={(i) => money(i.spent)} color="var(--chart-2)" />
           ) : (
             <Empty>Nothing bought yet.</Empty>
           )}

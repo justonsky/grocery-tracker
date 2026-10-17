@@ -18,6 +18,7 @@ import { RecipePicker } from '../components/recipes/RecipePicker'
 import { itemsToAdd, lineKeysToDrop, useRecipes } from '../recipes'
 import type { Recipe } from '../api/types'
 import { summarize, summarizeByStore } from '../trips/costSummary'
+import { amountText, tidyAmount } from '../trips/amount'
 
 const todayIso = () => new Date().toISOString().slice(0, 10)
 const money = (n: number) => `$${n.toFixed(2)}`
@@ -29,7 +30,6 @@ const parseAmount = (value: string) => {
   const n = Number.parseFloat(value)
   return value.trim() !== '' && Number.isFinite(n) && n >= 0 ? n : null
 }
-const amountText = (n: number | null) => (n != null ? String(n) : '')
 // Blank or unreadable quantity text counts as 1.
 const lineQuantity = (line: DraftItem) => {
   const q = parseQuantity(line.quantity)
@@ -599,6 +599,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
               placeholder="e.g. 120.00"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
+              onBlur={(e) => setBudget(tidyAmount(e.target.value))}
             />
           </div>
         </div>
