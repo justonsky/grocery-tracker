@@ -28,6 +28,22 @@ builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddSingleton(new RecipePhotoStore(dataDirectory));
 builder.Services.AddScoped<RecipeService>();
+
+// Receipt import: a cloud vision model by default (needs Receipts:ApiKey, or ANTHROPIC_API_KEY);
+// Receipts:Reader=fixture swaps in canned readings for tests and demos.
+var receiptOptions = builder.Configuration.GetSection("Receipts").Get<ReceiptOptions>() ?? new ReceiptOptions();
+receiptOptions.ApiKey ??= builder.Configuration["ANTHROPIC_API_KEY"];
+builder.Services.AddSingleton(receiptOptions);
+if (receiptOptions.Reader == "fixture")
+{
+    builder.Services.AddSingleton<IReceiptReader, FixtureReceiptReader>();
+}
+else
+{
+    builder.Services.AddHttpClient<IReceiptReader, AnthropicReceiptReader>(client => client.Timeout = TimeSpan.FromSeconds(90));
+}
+builder.Services.AddSingleton(new ReceiptImageStore(dataDirectory));
+builder.Services.AddScoped<ReceiptService>();
 builder.Services.AddScoped<TripService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<TrendsService>();
@@ -72,6 +88,7 @@ app.MapLookupEndpoints();
 app.MapItemEndpoints();
 app.MapTripEndpoints();
 app.MapRecipeEndpoints();
+app.MapReceiptEndpoints();
 app.MapSettingsEndpoints();
 app.MapDashboardEndpoints();
 app.MapTrendsEndpoints();

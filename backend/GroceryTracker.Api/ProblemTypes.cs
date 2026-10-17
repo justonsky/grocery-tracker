@@ -15,6 +15,12 @@ public static class ProblemTypes
     public const string CategoryBuiltIn = "/errors/category-built-in";
     public const string RecipeNotFound = "/errors/recipe-not-found";
     public const string PhotoTooLarge = "/errors/photo-too-large";
+    public const string AliasConflict = "/errors/alias-conflict";
+    public const string ReceiptNotFound = "/errors/receipt-not-found";
+    public const string ReceiptApplied = "/errors/receipt-applied";
+    public const string ReceiptsNotConfigured = "/errors/receipts-not-configured";
+    public const string ReceiptsDisabled = "/errors/receipts-disabled";
+    public const string ReceiptUnreadable = "/errors/receipt-unreadable";
     public const string CrossProfile = "/errors/cross-profile";
     public const string PriceLocked = "/errors/price-locked";
     public const string Validation = "/errors/validation";

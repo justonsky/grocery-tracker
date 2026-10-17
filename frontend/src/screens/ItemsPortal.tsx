@@ -1,4 +1,3 @@
-import { perUnit } from '../trips/quantity'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -8,6 +7,7 @@ import { useConnectivity } from '../app/ConnectivityProvider'
 import { useToast } from '../components/ui/ToastProvider'
 import { useDebounce } from '../hooks/useDebounce'
 import { ItemEditor, invalidateItemData } from './ItemEditor'
+import { perUnit } from '../trips/quantity'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const ITEMS_PER_PAGE = 40

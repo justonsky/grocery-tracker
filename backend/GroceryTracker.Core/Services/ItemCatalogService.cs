@@ -209,6 +209,15 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
                 if (recipesWithTarget.Contains(recipeItem.RecipeId)) db.RecipeItems.Remove(recipeItem);
                 else recipeItem.ItemId = target.Id;
             }
+            // Receipt names learned for the source now mean the target (unless the store already has that name).
+            var sourceAliases = await db.ItemAliases.Where(a => a.ItemId == sourceId).ToListAsync(ct);
+            var taken = (await db.ItemAliases.Where(a => a.ItemId == target.Id).Select(a => new { a.StoreId, a.Key }).ToListAsync(ct))
+                .Select(a => (a.StoreId, a.Key)).ToHashSet();
+            foreach (var alias in sourceAliases)
+            {
+                if (taken.Contains((alias.StoreId, alias.Key))) db.ItemAliases.Remove(alias);
+                else alias.ItemId = target.Id;
+            }
             db.Items.Remove(source);
             sourceDeleted = true;
         }

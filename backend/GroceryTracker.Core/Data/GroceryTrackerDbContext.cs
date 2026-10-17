@@ -17,6 +17,9 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<RecipeItem> RecipeItems => Set<RecipeItem>();
     public DbSet<TripRecipe> TripRecipes => Set<TripRecipe>();
+    public DbSet<Receipt> Receipts => Set<Receipt>();
+    public DbSet<ReceiptLine> ReceiptLines => Set<ReceiptLine>();
+    public DbSet<ItemAlias> ItemAliases => Set<ItemAlias>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -133,6 +136,44 @@ public class GroceryTrackerDbContext(DbContextOptions<GroceryTrackerDbContext> o
             // Deleting a recipe takes it off trips' planned meals; their item lines stay.
             e.HasOne(tr => tr.Recipe).WithMany()
                 .HasForeignKey(tr => tr.RecipeId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Receipt>(e =>
+        {
+            e.HasKey(r => r.Id);
+            e.Property(r => r.Id).ValueGeneratedNever();
+            e.Property(r => r.Status).HasConversion<string>().HasMaxLength(16);
+            e.Property(r => r.StoreRead).HasMaxLength(120);
+            e.Property(r => r.StoreName).HasMaxLength(120);
+            e.Property(r => r.Date).HasMaxLength(10);
+        });
+
+        modelBuilder.Entity<ReceiptLine>(e =>
+        {
+            e.HasKey(l => l.Id);
+            e.Property(l => l.Id).ValueGeneratedNever();
+            e.Property(l => l.Text).HasMaxLength(200);
+            e.Property(l => l.Code).HasMaxLength(40);
+            e.Property(l => l.Name).HasMaxLength(120);
+            e.Property(l => l.Unit).HasMaxLength(8);
+            e.Property(l => l.Kind).HasMaxLength(16);
+            e.Property(l => l.Category).HasMaxLength(60);
+            e.HasIndex(l => l.ReceiptId);
+            e.HasOne(l => l.Receipt).WithMany(r => r.Lines)
+                .HasForeignKey(l => l.ReceiptId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ItemAlias>(e =>
+        {
+            e.HasKey(a => a.Id);
+            e.Property(a => a.Id).ValueGeneratedNever();
+            e.Property(a => a.Key).HasMaxLength(200);
+            e.Property(a => a.Label).HasMaxLength(200);
+            e.HasIndex(a => new { a.StoreId, a.Key }).IsUnique();
+            e.HasIndex(a => a.ItemId);
+            e.HasOne(a => a.Store).WithMany().HasForeignKey(a => a.StoreId).OnDelete(DeleteBehavior.Cascade);
+            // Deleting an item forgets its receipt names; merging repoints them (ItemCatalogService).
+            e.HasOne(a => a.Item).WithMany().HasForeignKey(a => a.ItemId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<AppSetting>(e =>

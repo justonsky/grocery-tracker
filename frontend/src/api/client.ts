@@ -15,6 +15,11 @@ import type {
   ItemHistory,
   PriceUnit,
   Profile,
+  ApplyReceiptResult,
+  ItemAlias,
+  SaveItemAlias,
+  ReceiptDraft,
+  ReceiptStatus,
   Recipe,
   RecipeInput,
   Settings,
@@ -142,6 +147,28 @@ export const api = {
     setPhoto: (id: string, image: Blob) =>
       request<Recipe>(`/recipes/${id}/photo`, { method: 'PUT', body: image, headers: { 'Content-Type': image.type || 'image/jpeg' } }),
     removePhoto: (id: string) => request<Recipe>(`/recipes/${id}/photo`, { method: 'DELETE' }),
+  },
+
+  // Receipt import (online only). A photo goes up as-is (already shrunk by the app) and comes back
+  // as a draft to review; applying it records which item each line was.
+  receipts: {
+    status: () => get<ReceiptStatus>('/receipts/status'),
+    read: (photo: Blob, fixture?: string) =>
+      request<ReceiptDraft>('/receipts', {
+        method: 'POST',
+        body: photo,
+        headers: { 'Content-Type': photo.type || 'image/jpeg', ...(fixture ? { 'X-Receipt-Fixture': fixture } : {}) },
+      }),
+    readText: (text: string, fixture?: string) =>
+      request<ReceiptDraft>('/receipts/text', { method: 'POST', body: JSON.stringify({ text }), headers: fixture ? { 'X-Receipt-Fixture': fixture } : {} }),
+    get: (id: string, store?: string | null) => get<ReceiptDraft>(`/receipts/${id}${store ? `?store=${encodeURIComponent(store)}` : ''}`),
+    apply: (id: string, body: { storeName: string; lines: { lineId: string; itemName: string; categoryId: string | null }[] }) =>
+      post<ApplyReceiptResult>(`/receipts/${id}/apply`, body),
+    discard: (id: string) => del(`/receipts/${id}`),
+    aliases: (itemId: string) => get<ItemAlias[]>(`/items/${itemId}/aliases`),
+    addAlias: (itemId: string, body: SaveItemAlias) => post<ItemAlias>(`/items/${itemId}/aliases`, body),
+    updateAlias: (aliasId: string, body: SaveItemAlias) => put<ItemAlias>(`/item-aliases/${aliasId}`, body),
+    deleteAlias: (aliasId: string) => del(`/item-aliases/${aliasId}`),
   },
 
   dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),

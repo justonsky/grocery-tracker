@@ -1,0 +1,141 @@
+{
+ "store": "ALDI",
+ "date": null,
+ "subtotal": 21.23,
+ "tax": null,
+ "total": null,
+ "lines": [
+  {
+   "text": "Redcd Sodium Broth",
+   "code": "343190",
+   "name": "Reduced Sodium Broth",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 1.45,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Lemons",
+   "code": "356410",
+   "name": "Lemons",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.89,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Garlic",
+   "code": "356371",
+   "name": "Garlic",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 1.59,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Zucchini",
+   "code": "356691",
+   "name": "Zucchini",
+   "quantity": 1.55,
+   "unit": "lb",
+   "unitPrice": 1.45,
+   "amount": 2.25,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Limes",
+   "code": "356412",
+   "name": "Limes",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.35,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Roma Tomatoes LRW",
+   "code": "356615",
+   "name": "Roma Tomatoes",
+   "quantity": 0.81,
+   "unit": "lb",
+   "unitPrice": 0.89,
+   "amount": 0.72,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Strawberries",
+   "code": "356646",
+   "name": "Strawberries",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 1.69,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Bananas LRW",
+   "code": "262747",
+   "name": "Bananas",
+   "quantity": 2.42,
+   "unit": "lb",
+   "unitPrice": 0.53,
+   "amount": 1.28,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Green Peppers",
+   "code": "356387",
+   "name": "Green Peppers",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.15,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "Green Grapes LRW",
+   "code": "356384",
+   "name": "Green Grapes",
+   "quantity": 1.84,
+   "unit": "lb",
+   "unitPrice": 1.29,
+   "amount": 2.37,
+   "discount": null,
+   "kind": "item",
+   "category": "Produce"
+  },
+  {
+   "text": "3D Kite",
+   "code": "618962004",
+   "name": "3D Kite",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.49,
+   "discount": null,
+   "kind": "item",
+   "category": null
+  }
+ ]
+}

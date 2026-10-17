@@ -11,6 +11,8 @@ import { TripItemList, type DraftItem, type LineAverage } from '../components/Tr
 import { estimateFrom, parseQuantity, perUnit, quantityLabel, validQuantity } from '../trips/quantity'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
+import { ReceiptImport, type ReceiptMerged } from '../components/receipts/ReceiptImport'
+import { useReceiptImport } from '../receipts/useReceiptImport'
 import { PlannedMeals } from '../components/recipes/PlannedMeals'
 import { RecipePicker } from '../components/recipes/RecipePicker'
 import { itemsToAdd, lineKeysToDrop, useRecipes } from '../recipes'
@@ -118,6 +120,11 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   // The trip's planned meals (recipe ids), in order.
   const [recipeIds, setRecipeIds] = useState<string[]>([])
   const [pickerFor, setPickerFor] = useState<{ storeName: string | null } | null>(null)
+  // Receipt import into a store's section; "Import receipt" on the Trips page arrives as ?import=receipt.
+  const receipts = useReceiptImport()
+  const [receiptFor, setReceiptFor] = useState<{ storeName: string | null } | null>(() =>
+    !tripId && searchParams.get('import') === 'receipt' ? { storeName: null } : null,
+  )
   const { data: recipes } = useRecipes()
 
   // What the form held right after it last loaded a server copy, to tell
@@ -353,6 +360,21 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     })
     setRecipeIds((ids) => ids.filter((id) => id !== recipeId))
     toast('success', `Removed ${removed?.name ?? 'the meal'}${dropped.size > 0 ? ` and ${dropped.size} unbought ${dropped.size === 1 ? 'item' : 'items'}` : ''}.`)
+  }
+  // A reviewed receipt: its lines are already merged into the list (prices, quantities, ticks).
+  const applyReceipt = (merged: ReceiptMerged) => {
+    setItems(merged.items)
+    if (merged.storeName && !stores.some((s) => s.toLowerCase() === merged.storeName.toLowerCase())) setStores((s) => [...s, merged.storeName])
+    if (merged.date) setDate(merged.date)
+    if (status === 'planned') setStatus('shopping')
+    setReceiptFor(null)
+    const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+    toast(
+      'success',
+      `Receipt added: ${plural(merged.updated, 'list item')} priced and ticked, ${plural(merged.added, 'line')} added.` +
+        (merged.learned > 0 ? ` Learned ${plural(merged.learned, 'name')} for ${merged.storeName}.` : '') +
+        ' Review and save the trip.',
+    )
   }
   const removeItem = (key: string) => setItems((its) => its.filter((it) => it.key !== key))
   const addItem = (storeName: string | null = null) => setItems((its) => [...its, { ...newItem(defaultCategoryId), storeName }])
@@ -694,7 +716,21 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           onRemove={removeItem}
           onAdd={addItem}
           onAddRecipe={(storeName) => setPickerFor({ storeName })}
+          onImportReceipt={receipts.available ? (storeName) => setReceiptFor({ storeName }) : undefined}
         />
+        {receiptFor && (receipts.available || receipts.status === undefined) && (
+          <ReceiptImport
+            storeName={receiptFor.storeName}
+            stores={stores}
+            items={items}
+            catalogue={itemSuggestions}
+            categories={categories}
+            newKey={randomKey}
+            canSetDate={!persisted}
+            onMerged={applyReceipt}
+            onClose={() => setReceiptFor(null)}
+          />
+        )}
         {pickerFor && (
           <RecipePicker
             recipes={recipes}

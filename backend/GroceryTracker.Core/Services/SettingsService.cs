@@ -11,6 +11,7 @@ public partial class SettingsService(GroceryTrackerDbContext db)
 {
     private const string ThemeModeKey = "ThemeMode";
     private const string ChartSchemeKey = "ChartScheme";
+    private const string ReceiptImportKey = "ReceiptImport";
     public static readonly string[] ChartSchemes = ["fresh", "citrus", "berry"];
     private const string GroupColorsKey = "GroupColors";
     private const int MaxGroupColors = 500;
@@ -23,7 +24,8 @@ public partial class SettingsService(GroceryTrackerDbContext db)
             ? JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? []
             : [];
         var chartScheme = settings.GetValueOrDefault(ChartSchemeKey, ChartSchemes[0]);
-        return new SettingsDto(themeMode, groupColors, ChartSchemes.Contains(chartScheme) ? chartScheme : ChartSchemes[0]);
+        return new SettingsDto(themeMode, groupColors, ChartSchemes.Contains(chartScheme) ? chartScheme : ChartSchemes[0],
+            settings.GetValueOrDefault(ReceiptImportKey) == "on");
     }
 
     public async Task<SettingsDto> UpdateAsync(UpdateSettingsRequest request, CancellationToken ct = default)
@@ -31,6 +33,10 @@ public partial class SettingsService(GroceryTrackerDbContext db)
         if (request.ThemeMode is not null)
         {
             await UpsertAsync(ThemeModeKey, request.ThemeMode, ct);
+        }
+        if (request.ReceiptImport is { } receipts)
+        {
+            await UpsertAsync(ReceiptImportKey, receipts ? "on" : "off", ct);
         }
         if (request.ChartScheme is not null)
         {

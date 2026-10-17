@@ -303,6 +303,8 @@ export interface Settings {
   // "#rrggbb" or "none". Household-wide. See trips/shareGroups.ts.
   groupColors: Record<string, string>
   chartScheme: ChartScheme
+  // Opted in to reading receipts with the cloud vision model (see ReceiptStatus).
+  receiptImport?: boolean
 }
 
 export type ChartScheme = 'fresh' | 'citrus' | 'berry'
@@ -424,4 +426,86 @@ export interface QuietRecipe {
   earlierCount: number
   lastPlanned: string
   weeksSince: number
+}
+
+export interface ReceiptStatus {
+  // The server has a reader (an API key); the household has turned it on in Settings.
+  configured: boolean
+  enabled: boolean
+}
+
+export interface ReceiptCandidate {
+  itemId: string
+  itemName: string
+  categoryId: string | null
+  score: number
+}
+
+export interface ReceiptMatch {
+  itemId: string
+  itemName: string
+  categoryId: string | null
+  // alias: learned from an earlier receipt at this store (trusted); suggested: picked from close names.
+  source: 'alias' | 'suggested'
+}
+
+export type ReceiptLineKind = 'item' | 'tax' | 'fee' | 'tip' | 'deposit'
+
+export interface ReceiptLine {
+  id: string
+  text: string
+  code: string | null
+  name: string | null
+  quantity: number
+  unit: QuantityUnit
+  unitPrice: number | null
+  // What the line cost, after any coupon printed under it (discount).
+  amount: number
+  discount: number
+  kind: ReceiptLineKind
+  match: ReceiptMatch | null
+  candidates: ReceiptCandidate[]
+  // The household category the reader sorted the product into (used for a new item).
+  categoryId?: string | null
+}
+
+export interface ReceiptDraft {
+  id: string
+  status: 'draft' | 'applied'
+  storeRead: string | null
+  storeName: string | null
+  date: string | null
+  subtotal: number | null
+  tax: number
+  total: number | null
+  linesTotal: number
+  // total − linesTotal (0 when the total isn't printed)
+  difference: number
+  totalsMatch: boolean
+  lines: ReceiptLine[]
+}
+
+export interface ApplyReceiptResult {
+  aliasesLearned: number
+  lines: { lineId: string; itemId: string; itemName: string }[]
+}
+
+export interface ItemAlias {
+  id: string
+  storeName: string
+  // The text as printed, and the printed item number when the name is keyed by one.
+  label: string
+  code: string | null
+  itemId: string
+  itemName: string
+  timesUsed: number
+  lastUsed: string
+}
+
+export interface SaveItemAlias {
+  storeName: string
+  label: string
+  code?: string | null
+  // Correcting which item it means (defaults to the item it's on).
+  itemId?: string
 }

@@ -22,7 +22,9 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - Development: `cd frontend && npm run dev`
 - Build: `cd frontend && npm run build` (checks types + builds)
 - Lint: `cd frontend && npm run lint` (Oxlint)
-- Test: `cd frontend && npm test` (Vitest: offline outbox/drain, cost math, autocomplete ranking)
+- Test: `cd frontend && npm test` (Vitest: offline outbox/drain, cost math, autocomplete ranking, quantities, recipes)
+
+**Seed tools:** `cd tools/seed && python3 build_seed.py` regenerates the seed; `python3 -m unittest test_backfill_quantities` tests the backfill.
 
 **Backend:**
 - Run: `dotnet run --project backend/GroceryTracker.Api`
@@ -52,22 +54,25 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - Household settings (`AppSettings` key/value rows, `SettingsService`): `ThemeMode`, `ChartScheme` (`fresh|citrus|berry`; applied as `data-chart` on `<html>` by `useTheme`, so every chart follows it) and `GroupColors` — the share card's group backgrounds, a JSON map of `store:<slug>`/`category:<slug>` → `#rrggbb` or `none` (grouping and default store colors in `frontend/src/trips/shareGroups.ts`). Settings writes are online-only, not queued.
 - Dashboard (`DashboardService`): spend today/month/year, `MonthBudget`/`MonthBudgetSpent` (budgets of this month's trips and what those trips cost → the Budget-left card), and `MonthlySpend` (12 calendar months, zero-filled → `MonthlySpendChart`).
 - Recipes (`Recipe`, `RecipeItem`, `TripRecipe`; `RecipeService`, `/api/v1/recipes`): household-wide, items are the shared `Item`s (deleting an item drops it from recipes; merging repoints). Photos are files in `<DataDirectory>/recipe-photos/` (`RecipePhotoStore`, never the DB), limits in `RecipeLimits` (1600px, 5 MB) enforced by reading the image header; over the limit → 413 `/errors/photo-too-large`, and the frontend's `PhotoCropper` crops/shrinks first. A trip's planned meals are `TripInput.RecipeIds` (null = leave alone, unknown ids dropped); its item lines are ordinary lines, so deleting a recipe leaves them. Recipe edits/photos are online-only; the list is cached for offline use on trips. Removing a planned meal in the trip editor drops its unbought lines no other meal needs (`lineKeysToDrop`).
+- Receipt import (`ReceiptService`, `/api/v1/receipts`, entities `Receipt`/`ReceiptLine`/`ItemAlias`): `IReceiptReader` is `AnthropicReceiptReader` (Messages API, image + forced tool `record_receipt` → `ReceiptReading`; a second `record_choices` call picks among ~20 fuzzy candidates from `ItemNameMatcher`) or `FixtureReceiptReader` (`Receipts:Reader=fixture`, JSON in `backend/GroceryTracker.Api.Tests/ReceiptFixtures/`, chosen by the `X-Receipt-Fixture` header / `?receiptFixture=` in the app — tests and demos only). Opt-in: household setting `ReceiptImport` + a configured key (`Receipts:ApiKey`/`ANTHROPIC_API_KEY`). The photo is a file in `<DataDirectory>/receipts/` only while the receipt is a draft (deleted on apply/discard; drafts expire after 7 days). The server never edits trips: the review (`components/receipts/ReceiptImport.tsx`) pairs lines with the editor's unbought lines (`receipts/merge.ts` `pairWithPlanned`) and merges into the draft (`mergeReceipt`), and `apply` only records `ItemAlias` rows (store + `ReceiptKeys.KeyFor`: item code, else normalized text) so the next receipt matches. Item merge repoints aliases; item delete cascades. Aliases are editable on the item page (`POST /items/{id}/aliases`, `PUT /item-aliases/{id}` — store, label, code, or move to another item; same store + key → 409 `/errors/alias-conflict`).
 - Trends (`TrendsService`, `GET /profiles/{id}/trends?range=30d|90d|180d|365d|all`): computed per request, nothing stored. One narrow read of priced lines (index `Trip(ProfileId, Date)`), names looked up once per item, grouping in memory. "Recent" = last third of the period (min 14 days); rising/gone-quiet compare it with the rest; `NotGroceries` (tax, tips, unlisted purchases) are excluded from item rankings only. UI: `screens/Trends.tsx` + `components/TrendsInfographic.tsx` (the export is a fixed-width copy rendered only while saving).
-- Backup (`ExportService`): sheets Profiles, Trips (per-trip totals, same math as `TripService`), Trip Items (per line), and Items (catalogue) when `?includeItems=true`. Keep it in step when trip/line fields change.
+- Backup (`ExportService`): sheets Profiles, Trips (per-trip totals, same math as `TripService`), Trip Items (per line, with quantity/unit/unit price), Recipes (when any), and Items (catalogue, per-unit prices) when `?includeItems=true`. Keep it in step when trip/line fields change. A file backup must include `<DataDirectory>/recipe-photos/`.
+- Navigation (`app/AppShell.tsx`): desktop top nav Home · History · Grocery Trips · Items · Recipes; phone bottom tabs use short labels (Trips), and Settings / light-dark / Switch profile live in the phone header's profile menu.
 
 **Offline/sync (frontend `src/offline/`, `app/ConnectivityProvider.tsx`, `app/SyncProvider.tsx`):**
 - Writes go through `performOrQueue`: send now, or queue in IndexedDB on a network-class failure (and always queue while the server is unrecognised, or while a known server's first check is pending). Every queued op is an idempotent PUT/DELETE keyed by a client-generated id. Entities: trip, profile, category, tracked-items.
 - The drain runs when the server becomes reachable and on every successful probe (~30s) while anything is queued.
 - Each server has an instance id (stored in its DB). A device that sees a different one pauses all reads and holds writes until the user picks "Use this server" (`WrongServerBanner`).
 - Unsaved edits: `app/useUnsavedChangesGuard.ts` (needs the data router in `main.tsx`; `useBlocker`) raises a "Leave this page?" confirm on tab switches, Back and links, plus the browser's own prompt on close/reload. The trip editor (dirty = form differs from the last loaded/saved copy) and the Items portal's item details use it; Settings is a dialog over the page (`app/settingsLink.ts`), so opening it never prompts.
-- The Items portal (`/items`) is online-only — direct API calls, not queued.
+- The Items portal (`/items`), recipe edits/photos, Trends and the backup are online-only — direct API calls, not queued.
 - Trip saves replace the whole trip (last writer wins); lines carry ids so edits keep their `PricedAt`.
 
 **Layout:**
 - `backend/GroceryTracker.Core/` — EF Core DbContext, migrations, entities, services
 - `backend/GroceryTracker.Api/` — ASP.NET Minimal API endpoints, serves built frontend from `wwwroot`
 - `backend/GroceryTracker.Api.Tests/` — WebApplicationFactory integration tests (hit real DB)
-- `frontend/src/` — React app (main layout in `main.tsx`, routes in `app/`, screens in `screens/`, API client in `api/`, components in `components/`, offline queue in `offline/`, trip cost math in `trips/`)
+- `frontend/src/` — React app (main layout in `main.tsx`, routes in `app/`, screens in `screens/`, API client in `api/`, components in `components/`, offline queue in `offline/`, trip cost math and quantities in `trips/`, recipe helpers in `recipes.ts`)
+- `tools/seed/` — workbook → seed generator and quantity backfill (Python, stdlib); `tools/icon/` — app icon generator
 - Autocomplete fields use `components/ui/Combobox.tsx` (capped, ranked suggestions) — not native `<datalist>`, which can't limit a 1,000+ item catalogue
 
 **Design system (`frontend/src/index.css` — keep screens on these, no hard-coded hex):**

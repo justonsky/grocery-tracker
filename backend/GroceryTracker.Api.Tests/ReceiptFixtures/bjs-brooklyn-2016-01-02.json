@@ -1,0 +1,129 @@
+{
+ "store": "BJ's",
+ "date": "2016-01-02",
+ "subtotal": 119.69,
+ "tax": 0.0,
+ "total": 119.69,
+ "lines": [
+  {
+   "text": "SAVANE PANT",
+   "code": "76092520530",
+   "name": "Savane Pants",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 19.99,
+   "discount": null,
+   "kind": "item",
+   "category": null
+  },
+  {
+   "text": "SAVANE PANT",
+   "code": "76092520552",
+   "name": "Savane Pants",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 19.99,
+   "discount": null,
+   "kind": "item",
+   "category": null
+  },
+  {
+   "text": "PIRATE 36CT",
+   "code": "1566560132",
+   "name": "Pirate's Booty 36 ct",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 8.99,
+   "discount": 1.0,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "KFTEZMAC 12C",
+   "code": "2100002587",
+   "name": "Kraft Easy Mac 12 ct",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 9.39,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "FIBER 220CT",
+   "code": "2791701960",
+   "name": "Fiber Supplement 220 ct",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 17.99,
+   "discount": null,
+   "kind": "item",
+   "category": "Household"
+  },
+  {
+   "text": "VEGT OIL 5QT",
+   "code": "2700061565",
+   "name": "Vegetable Oil 5 qt",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 7.79,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "MB CRB CAKE",
+   "code": null,
+   "name": "Crab Cakes",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 9.99,
+   "discount": null,
+   "kind": "item",
+   "category": "Frozen"
+  },
+  {
+   "text": "SMOKED CHOP",
+   "code": null,
+   "name": "Smoked Pork Chops",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 10.08,
+   "discount": null,
+   "kind": "item",
+   "category": "Meat & Seafood"
+  },
+  {
+   "text": "WF6Z CFCK MF",
+   "code": null,
+   "name": "Wellsley Farms Coffee Cake Muffins 6 ct",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 4.49,
+   "discount": null,
+   "kind": "item",
+   "category": "Bakery"
+  },
+  {
+   "text": "GLD YEL CKE",
+   "code": null,
+   "name": "Golden Yellow Cake",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 10.99,
+   "discount": null,
+   "kind": "item",
+   "category": "Bakery"
+  }
+ ]
+}

@@ -18,6 +18,8 @@ RestartSec=5
 User=grocerytracker
 Environment=ASPNETCORE_ENVIRONMENT=Production
 Environment=DataDirectory=/var/lib/grocery-tracker
+# Optional, for receipt import: a root-only file containing Receipts__ApiKey=sk-ant-...
+# EnvironmentFile=/etc/grocery-tracker.env
 
 [Install]
 WantedBy=multi-user.target

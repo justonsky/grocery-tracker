@@ -20,6 +20,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- The sample receipts, as the reader would return them (used with Receipts:Reader=fixture). -->
+  <ItemGroup>
+    <None Include="ReceiptFixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\GroceryTracker.Api\GroceryTracker.Api.csproj" />
   </ItemGroup>

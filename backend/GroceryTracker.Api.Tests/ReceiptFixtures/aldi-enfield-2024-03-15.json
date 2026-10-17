@@ -1,0 +1,105 @@
+{
+ "store": "ALDI",
+ "date": "2024-03-15",
+ "subtotal": 23.5,
+ "tax": 0.0,
+ "total": 23.5,
+ "lines": [
+  {
+   "text": "Peanut Butter SWC",
+   "code": null,
+   "name": "Smooth Peanut Butter",
+   "quantity": 2,
+   "unit": "each",
+   "unitPrice": 2.75,
+   "amount": 5.5,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Large Eggs",
+   "code": null,
+   "name": "Large Eggs",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.64,
+   "discount": null,
+   "kind": "item",
+   "category": "Dairy"
+  },
+  {
+   "text": "CC Fudge Cookies",
+   "code": null,
+   "name": "Chocolate Chip Fudge Cookies",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.29,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Mayonnaise",
+   "code": null,
+   "name": "Mayonnaise",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 3.29,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Restaurant Drssing",
+   "code": null,
+   "name": "Restaurant Dressing",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.29,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Organic Dressings",
+   "code": null,
+   "name": "Organic Dressing",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.55,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Itln/Zst Itln Dres",
+   "code": null,
+   "name": "Italian / Zesty Italian Dressing",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 1.95,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  },
+  {
+   "text": "Popcorn",
+   "code": null,
+   "name": "Popcorn",
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 2.99,
+   "discount": null,
+   "kind": "item",
+   "category": "Pantry"
+  }
+ ]
+}

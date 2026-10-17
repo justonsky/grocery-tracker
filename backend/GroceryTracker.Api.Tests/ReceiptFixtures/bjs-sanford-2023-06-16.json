@@ -1,0 +1,33 @@
+{
+ "store": "BJ's",
+ "date": "2023-06-16",
+ "subtotal": 31.98,
+ "tax": 0.38,
+ "total": 32.36,
+ "lines": [
+  {
+   "text": "SCOOP AWAY",
+   "code": "9668902077",
+   "name": "Scoop Away Cat Litter",
+   "quantity": 2,
+   "unit": "each",
+   "unitPrice": 15.99,
+   "amount": 31.98,
+   "discount": null,
+   "kind": "item",
+   "category": "Household"
+  },
+  {
+   "text": "FL 7% Tax",
+   "code": null,
+   "name": null,
+   "quantity": 1,
+   "unit": "each",
+   "unitPrice": null,
+   "amount": 0.38,
+   "discount": null,
+   "kind": "tax",
+   "category": null
+  }
+ ]
+}

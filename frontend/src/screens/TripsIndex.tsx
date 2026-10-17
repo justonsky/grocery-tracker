@@ -7,6 +7,7 @@ import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
 import { performOrQueue } from '../offline/performOrQueue'
 import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
+import { useReceiptImport } from '../receipts/useReceiptImport'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const PAGE = 12
@@ -38,6 +39,7 @@ function describe(trip: TripSummary): string {
 
 export function TripsIndex({ profileId }: { profileId: string }) {
   const navigate = useNavigate()
+  const receipts = useReceiptImport()
   const queryClient = useQueryClient()
   const confirm = useConfirm()
   const toast = useToast()
@@ -168,9 +170,16 @@ export function TripsIndex({ profileId }: { profileId: string }) {
     <div className="mx-auto max-w-[900px] px-4 pt-5 pb-15 sm:px-5 sm:pt-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <h3 className="m-0">Grocery Trips</h3>
-        <button type="button" className="btn btn-primary" onClick={() => navigate('/trips/new')}>
-          + New list
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {receipts.available && (
+            <button type="button" className="btn btn-secondary" onClick={() => navigate('/trips/new?import=receipt')}>
+              Import receipt
+            </button>
+          )}
+          <button type="button" className="btn btn-primary" onClick={() => navigate('/trips/new')}>
+            + New list
+          </button>
+        </div>
       </div>
 
       {trips?.length === 0 && (

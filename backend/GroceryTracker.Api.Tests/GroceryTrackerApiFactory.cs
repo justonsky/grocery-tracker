@@ -12,6 +12,8 @@ public class GroceryTrackerApiFactory(DateTimeOffset? fixedNow = null) : WebAppl
     private readonly string _dataDirectory =
         Path.Combine(Path.GetTempPath(), "grocery-tracker-tests", Guid.NewGuid().ToString("N"));
 
+    public string DataDirectory => _dataDirectory;
+
     // Only set when constructed with fixedNow; tests move it forward with Advance.
     public FakeClock? Clock { get; } = fixedNow is { } start ? new FakeClock(start) : null;
 
@@ -21,6 +23,9 @@ public class GroceryTrackerApiFactory(DateTimeOffset? fixedNow = null) : WebAppl
         builder.UseSetting("DataDirectory", _dataDirectory);
         // Tests build their own fixtures; the shipped seed data would skew every assertion.
         builder.UseSetting("SeedData:Enabled", "false");
+        // Receipts are "read" from the sample fixtures, never by calling the real model.
+        builder.UseSetting("Receipts:Reader", "fixture");
+        builder.UseSetting("Receipts:FixtureDir", Path.Combine(AppContext.BaseDirectory, "ReceiptFixtures"));
 
         if (Clock is { } clock)
         {

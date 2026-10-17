@@ -161,6 +161,43 @@ namespace GroceryTracker.Core.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("GroceryTracker.Core.Entities.ItemAlias", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("LastUsedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("StoreId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TimesUsed")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("StoreId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("ItemAliases");
+                });
+
             modelBuilder.Entity("GroceryTracker.Core.Entities.Profile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -186,6 +223,108 @@ namespace GroceryTracker.Core.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Profiles");
+                });
+
+            modelBuilder.Entity("GroceryTracker.Core.Entities.Receipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("AppliedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Date")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("HasImage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StoreName")
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StoreRead")
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SubtotalCents")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TaxCents")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("TotalCents")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Receipts");
+                });
+
+            modelBuilder.Entity("GroceryTracker.Core.Entities.ReceiptLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(60)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DiscountCents")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PriceCents")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("QuantityMilli")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ReceiptId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UnitPriceCents")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiptId");
+
+                    b.ToTable("ReceiptLines");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Recipe", b =>
@@ -432,6 +571,36 @@ namespace GroceryTracker.Core.Migrations
                     b.Navigation("DefaultCategory");
                 });
 
+            modelBuilder.Entity("GroceryTracker.Core.Entities.ItemAlias", b =>
+                {
+                    b.HasOne("GroceryTracker.Core.Entities.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GroceryTracker.Core.Entities.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("GroceryTracker.Core.Entities.ReceiptLine", b =>
+                {
+                    b.HasOne("GroceryTracker.Core.Entities.Receipt", "Receipt")
+                        .WithMany("Lines")
+                        .HasForeignKey("ReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Receipt");
+                });
+
             modelBuilder.Entity("GroceryTracker.Core.Entities.RecipeItem", b =>
                 {
                     b.HasOne("GroceryTracker.Core.Entities.Item", "Item")
@@ -550,6 +719,11 @@ namespace GroceryTracker.Core.Migrations
                     b.Navigation("TrackedItems");
 
                     b.Navigation("Trips");
+                });
+
+            modelBuilder.Entity("GroceryTracker.Core.Entities.Receipt", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("GroceryTracker.Core.Entities.Recipe", b =>

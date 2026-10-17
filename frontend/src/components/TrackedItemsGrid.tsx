@@ -1,4 +1,3 @@
-import { perUnit } from '../trips/quantity'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -8,6 +7,7 @@ import { useDebounce } from '../hooks/useDebounce'
 import { performOrQueue } from '../offline/performOrQueue'
 import { useToast } from './ui/ToastProvider'
 import { Combobox } from './ui/Combobox'
+import { perUnit } from '../trips/quantity'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const normalize = (s: string) => s.trim().toLowerCase()

@@ -58,6 +58,8 @@ interface ListProps {
   onRemove: (key: string) => void
   onAdd: (storeName: string | null) => void
   onAddRecipe: (storeName: string | null) => void
+  // Offered when receipt import is set up and turned on (and the server is reachable).
+  onImportReceipt?: (storeName: string | null) => void
 }
 
 function useIsWide() {
@@ -253,6 +255,11 @@ export function TripItemList(props: ListProps) {
                     <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAddRecipe(storeName)}>
                       + Add recipe
                     </button>
+                    {props.onImportReceipt && (
+                      <button type="button" className="btn btn-ghost px-2" onClick={() => props.onImportReceipt!(storeName)}>
+                        Import receipt
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

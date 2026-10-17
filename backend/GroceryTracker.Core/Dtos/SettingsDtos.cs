@@ -11,7 +11,9 @@ namespace GroceryTracker.Core.Dtos;
 // from every device.
 //
 // ChartScheme: which chart palette to use ("fresh", "citrus" or "berry"; frontend index.css).
-public record SettingsDto(string ThemeMode, Dictionary<string, string> GroupColors, string ChartScheme);
+//
+// ReceiptImport: the household has opted in to reading receipts with the cloud vision model.
+public record SettingsDto(string ThemeMode, Dictionary<string, string> GroupColors, string ChartScheme, bool ReceiptImport = false);
 
 // Null fields are left unchanged. GroupColors replaces the whole map.
-public record UpdateSettingsRequest(string? ThemeMode, Dictionary<string, string>? GroupColors = null, string? ChartScheme = null);
+public record UpdateSettingsRequest(string? ThemeMode, Dictionary<string, string>? GroupColors = null, string? ChartScheme = null, bool? ReceiptImport = null);

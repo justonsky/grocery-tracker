@@ -74,6 +74,17 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
     onError: () => toast('error', "Couldn't change the chart colors."),
   })
 
+  // Receipt import is household-wide and online-only, like the other settings here.
+  const { data: receiptStatus } = useQuery({ queryKey: ['receipt-status'], queryFn: api.receipts.status })
+  const setReceiptImport = useMutation({
+    mutationFn: (receiptImport: boolean) => api.settings.update({ receiptImport }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['settings'] })
+      void queryClient.invalidateQueries({ queryKey: ['receipt-status'] })
+    },
+    onError: () => toast('error', "Couldn't change receipt import."),
+  })
+
   // Unlike light/dark, the color theme belongs to the profile, so it goes
   // through the outbox like any other profile edit and applies immediately.
   const setProfileTheme = useMutation({
@@ -193,6 +204,25 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
           ))}
         </div>
         <p className="m-0 mt-2 text-xs text-text/70">Used by the price charts and the monthly spending chart.</p>
+      </section>
+
+      <section className="field rounded-[14px] border border-divider bg-bg p-3.5">
+        <label>Receipt import</label>
+        <label className="mb-0 flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-normal text-text">
+          <input
+            type="checkbox"
+            className="h-5 w-5 accent-accent"
+            checked={!!receiptStatus?.enabled}
+            disabled={!receiptStatus?.configured || setReceiptImport.isPending || status !== 'online'}
+            onChange={(e) => setReceiptImport.mutate(e.target.checked)}
+          />
+          Read receipt photos with Claude
+        </label>
+        <p className="m-0 text-xs leading-relaxed text-text/70">
+          {receiptStatus && !receiptStatus.configured
+            ? 'Not set up on this server yet: it needs an Anthropic API key (the Receipts__ApiKey setting) and a restart.'
+            : "Adds “Import receipt” to the trip editor. Each photo is sent to Anthropic's Claude to be read and deleted from this server once the receipt is applied; card and membership numbers are never saved."}
+        </p>
       </section>
 
       {profile && (

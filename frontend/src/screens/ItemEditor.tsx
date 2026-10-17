@@ -1,15 +1,15 @@
-import { parseQuantity, perUnit, validQuantity } from '../trips/quantity'
 import { useMemo, useState } from 'react'
 import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { api, ApiError } from '../api/client'
 import { ProblemTypes } from '../api/problemTypes'
-import type { HouseholdTrip, ItemLine, QuantityUnit, SaveItemLineRequest } from '../api/types'
+import type { HouseholdTrip, ItemAlias, ItemLine, QuantityUnit, SaveItemLineRequest } from '../api/types'
 import { QuantityField, quantityText } from '../components/QuantityField'
 import { Combobox, type ComboOption } from '../components/ui/Combobox'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
+import { parseQuantity, perUnit, validQuantity } from '../trips/quantity'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const normalize = (s: string) => s.trim().toLowerCase()
@@ -189,6 +189,8 @@ export function ItemEditor({
         )}
         <AddLine itemId={itemId} trips={trips ?? []} storeOptions={storeOptions} online={online} />
       </section>
+
+      <ReceiptNames itemId={itemId} online={online} />
 
       <MergeSection
         itemId={itemId}
@@ -571,5 +573,151 @@ function MergeSection({
         </button>
       </div>
     </section>
+  )
+}
+
+// The names stores print for this item on receipts, learned from receipts the household applied (or
+// added here). Any can be corrected — the printed text, the item code, the store, or which item it
+// really is — or removed, so the next receipt asks again for that line.
+function ReceiptNames({ itemId, online }: { itemId: string; online: boolean }) {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+  const { data: aliases } = useQuery({ queryKey: ['item-aliases', itemId], queryFn: () => api.receipts.aliases(itemId) })
+  const [editing, setEditing] = useState<string | 'new' | null>(null)
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['item-aliases'] })
+  const remove = useMutation({
+    mutationFn: (aliasId: string) => api.receipts.deleteAlias(aliasId),
+    onSuccess: refresh,
+    onError: () => toast('error', "Couldn't remove that receipt name."),
+  })
+
+  return (
+    <section aria-labelledby="receipt-names" className="card elev-md gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h4 id="receipt-names" className="m-0 text-lg">
+            Receipt names
+          </h4>
+          <p className="m-0 mt-0.5 text-xs text-text/60">How stores print this item. Receipts with these lines match it without asking.</p>
+        </div>
+        {editing !== 'new' && (
+          <button type="button" className="btn btn-ghost btn-sm" disabled={!online} onClick={() => setEditing('new')}>
+            + Add receipt name
+          </button>
+        )}
+      </div>
+      {editing === 'new' && <AliasForm itemId={itemId} onDone={() => setEditing(null)} />}
+      {aliases && aliases.length === 0 && editing !== 'new' && (
+        <p className="m-0 text-sm text-text/70">None yet. They're learned from receipts you import, or add one here.</p>
+      )}
+      <ul className="m-0 grid list-none gap-1.5 p-0">
+        {aliases?.map((a) =>
+          editing === a.id ? (
+            <li key={a.id}>
+              <AliasForm itemId={itemId} alias={a} onDone={() => setEditing(null)} />
+            </li>
+          ) : (
+            <li key={a.id} className="flex items-center gap-2.5 rounded-[12px] border border-divider bg-bg py-1 pr-1 pl-3.5 text-sm">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-mono text-[13px]">{a.label}</span>
+                <span className="block text-xs text-text/70">
+                  {[a.storeName, a.code ? `#${a.code}` : null, `${a.timesUsed}×`, a.lastUsed].filter(Boolean).join(' · ')}
+                </span>
+              </span>
+              <button type="button" className="btn btn-ghost btn-sm" aria-label={`Edit "${a.label}" at ${a.storeName}`} disabled={!online} onClick={() => setEditing(a.id)}>
+                Edit
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon text-text/60 hover:bg-danger-bg hover:text-danger"
+                aria-label={`Forget "${a.label}" at ${a.storeName}`}
+                disabled={!online || remove.isPending}
+                onClick={() => remove.mutate(a.id)}
+              >
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </li>
+          ),
+        )}
+      </ul>
+    </section>
+  )
+}
+
+function AliasForm({ itemId, alias, onDone }: { itemId: string; alias?: ItemAlias; onDone: () => void }) {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+  const { data: stores } = useQuery({ queryKey: ['stores'], queryFn: () => api.stores.search() })
+  const { data: catalogue } = useQuery({ queryKey: ['items'], queryFn: () => api.items.search() })
+  const [label, setLabel] = useState(alias?.label ?? '')
+  const [code, setCode] = useState(alias?.code ?? '')
+  const [store, setStore] = useState(alias?.storeName ?? '')
+  const [itemName, setItemName] = useState(alias?.itemName ?? '')
+  const [error, setError] = useState<string | null>(null)
+  const storeOptions: ComboOption[] = useMemo(() => (stores ?? []).map((s) => ({ value: s.name, label: s.name })), [stores])
+  const itemOptions: ComboOption[] = useMemo(() => (catalogue ?? []).map((i) => ({ value: i.name, label: i.name })), [catalogue])
+  const target = alias ? (catalogue ?? []).find((i) => normalize(i.name) === normalize(itemName)) : undefined
+
+  const save = useMutation({
+    mutationFn: () => {
+      const body = { storeName: store.trim(), label: label.trim(), code: code.trim() || null, ...(alias && target ? { itemId: target.id } : {}) }
+      return alias ? api.receipts.updateAlias(alias.id, body) : api.receipts.addAlias(itemId, body)
+    },
+    onSuccess: (saved) => {
+      void queryClient.invalidateQueries({ queryKey: ['item-aliases'] })
+      toast('success', saved.itemId === itemId ? 'Receipt name saved.' : `Receipt name moved to ${saved.itemName}.`)
+      onDone()
+    },
+    onError: (e) => setError(errorMessage(e, "Couldn't save this receipt name.")),
+  })
+
+  const missingItem = !!alias && !!itemName.trim() && !target
+  return (
+    <form
+      className="grid gap-2 rounded-[14px] border border-dashed border-control p-3 sm:grid-cols-2"
+      aria-label={alias ? `Edit receipt name ${alias.label}` : 'Add a receipt name'}
+      onSubmit={(e) => {
+        e.preventDefault()
+        setError(null)
+        save.mutate()
+      }}
+    >
+      <div className="field">
+        <label htmlFor={`alias-label-${alias?.id ?? 'new'}`}>As printed</label>
+        <input id={`alias-label-${alias?.id ?? 'new'}`} className="input font-mono text-[13px]" maxLength={200} value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. REDCD SODIUM BROTH" />
+      </div>
+      <div className="field">
+        <label htmlFor={`alias-code-${alias?.id ?? 'new'}`}>Item code (optional)</label>
+        <input id={`alias-code-${alias?.id ?? 'new'}`} className="input font-mono text-[13px]" inputMode="numeric" maxLength={40} value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. 343190" />
+      </div>
+      <div className="field">
+        <label>Store</label>
+        <Combobox className="input" aria-label="Store for this receipt name" value={store} options={storeOptions} minChars={0} onChange={setStore} />
+      </div>
+      {alias && (
+        <div className="field">
+          <label>Item</label>
+          <Combobox className="input" aria-label="Item this receipt name means" value={itemName} options={itemOptions} onChange={setItemName} />
+        </div>
+      )}
+      <p className="m-0 text-xs text-text/60 sm:col-span-2">
+        With an item code, receipts match on the code (stores reword descriptions); without one, on the printed text.
+      </p>
+      {(error || missingItem) && (
+        <p role="alert" className="m-0 text-sm text-danger sm:col-span-2">
+          {missingItem ? `“${itemName}” isn't an item yet — pick one from the list.` : error}
+        </p>
+      )}
+      <div className="flex justify-end gap-2 sm:col-span-2">
+        <button type="button" className="btn btn-ghost" onClick={onDone}>
+          Cancel
+        </button>
+        <button type="submit" className="btn btn-primary" disabled={!label.trim() || !store.trim() || missingItem || save.isPending}>
+          {save.isPending ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </form>
   )
 }
