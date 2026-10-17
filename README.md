@@ -127,8 +127,12 @@ average × quantity. An item bought both ways (by the pack and by the pound) use
 whichever way most of its purchases were; the others are listed on its page as not
 comparable.
 
-`tools/seed/backfill_quantities.py --db <path>` fills in the workbook's quantities for a
-database seeded before this existed (dry run by default; `--apply` writes, after a backup).
+For a database seeded before this existed, two steps: stop the server and run
+`tools/seed/backfill_quantities.py --db <path>` (fills in the workbook's quantities; dry
+run by default, `--apply` writes after a backup), then start it and run
+`tools/seed/merge_named_items.py --server http://<host>:5080` (merges items still named with
+an amount, such as "Strawberries (2 pks)", into "Strawberries"; `--apply` to do it). Back up
+the data folder first.
 
 ## Recipes
 
@@ -218,7 +222,7 @@ location with the `DataDirectory` environment variable.
 cd backend && dotnet test                                  # API integration tests
 cd frontend && npm test && npm run lint                    # unit tests (offline queue, cost math, autocomplete,
                                                            # quantities, recipes) + lint
-cd tools/seed && python3 -m unittest test_backfill_quantities  # the quantity backfill script
+cd tools/seed && python3 -m unittest test_backfill_quantities test_merge_named_items  # the seed tools
 ```
 
 Run the backend tests after every backend change — they spin up the real

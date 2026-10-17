@@ -24,7 +24,7 @@ The app creates a SQLite database automatically in `~/.local/share/GroceryTracke
 - Lint: `cd frontend && npm run lint` (Oxlint)
 - Test: `cd frontend && npm test` (Vitest: offline outbox/drain, cost math, autocomplete ranking, quantities, recipes)
 
-**Seed tools:** `cd tools/seed && python3 build_seed.py` regenerates the seed; `python3 -m unittest test_backfill_quantities` tests the backfill.
+**Seed tools:** `cd tools/seed && python3 build_seed.py` regenerates the seed; for an old live database, `backfill_quantities.py --db …` (server stopped) then `merge_named_items.py --server …` (server running); tests: `python3 -m unittest test_backfill_quantities test_merge_named_items`.
 
 **Backend:**
 - Run: `dotnet run --project backend/GroceryTracker.Api`

@@ -106,6 +106,13 @@ still at 1 each, and with `--apply` writes a timestamped backup first (none when
 to change). Stop the server first; the database must already have been migrated by the new
 server. Tests: `python3 -m unittest test_backfill_quantities`.
 
+The backfill moves the amount onto each line but leaves items whose names still carry it
+("Premium Fuji Apples (2 pks)", "1 lb Dietz & Watson Roast Beef"). Then, with the server running,
+`merge_named_items.py --server http://<host>:5080` (dry run; `--apply` to do it) merges each into
+the item with the clean name, or renames it when there is none — through the server's own merge
+and rename, so recipes, dashboard pins and receipt names follow. It only touches items whose
+records all carry the amount already. Tests: `python3 -m unittest test_merge_named_items`.
+
 ### Other rules
 
 - **Stores** come from the legend colours (including lighter/darker shades) and

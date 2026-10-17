@@ -94,7 +94,8 @@ def main(argv=None):
     if repeated:
         print(f'{len(repeated)} trips list the same item more than once; those lines were paired in the order the trip lists them.')
     if renamed:
-        print('\nThese items have the amount in their name. After applying, you can merge them on the Items page:')
+        print('\nThese items still have the amount in their name. After applying, start the server and run\n'
+              'merge_named_items.py --server http://<host>:5080 to merge or rename them:')
         for (old, new), n in renamed.most_common():
             print(f'   "{old}" -> could be merged into "{new}" ({n} lines)')
 

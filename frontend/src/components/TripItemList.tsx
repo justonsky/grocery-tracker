@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import type { Category, PriceUnit, QuantityUnit, TripStatus } from '../api/types'
 import { parseQuantity, perUnit, quantityLabel } from '../trips/quantity'
 import { QuantityField } from './QuantityField'
@@ -357,7 +357,9 @@ function ItemRow({
       step="0.01"
       min="0"
       inputMode="decimal"
-      placeholder={average?.lineEstimate != null ? `avg ${average.lineEstimate.toFixed(2)}` : 'Estimate'}
+      // Desktop: the column header says Estimate, so the average can sit in the empty field. On a
+      // phone the field has a label and the average is shown beside it instead (it looked like a value).
+      placeholder={wide && average?.lineEstimate != null ? `avg ${average.lineEstimate.toFixed(2)}` : 'Expected cost'}
       aria-label="Estimate"
       title={average != null ? `Household average: ${money(average.average)}${perUnit(average.priceUnit)}` : 'No price history for this item yet'}
       value={item.estimate}
@@ -372,8 +374,7 @@ function ItemRow({
       step="0.01"
       min="0"
       inputMode="decimal"
-      // On a phone the estimate field is tucked away, so its value shows here.
-      placeholder={!wide && estimate != null ? `est ${estimate.toFixed(2)}` : 'Paid'}
+      placeholder="Paid"
       aria-label="Price paid"
       title={item.locked ? 'Locked' : item.priceLocksAt ? `Editable until ${shortDate(item.priceLocksAt)}` : 'Becomes read-only 7 days after you enter it'}
       value={item.price}
@@ -429,10 +430,11 @@ function ItemRow({
 
   // Phone: one line (tick, name, paid); everything else behind ⋯.
   const categoryName = categories?.find((c) => c.id === item.categoryId)?.name
+  // The estimate lives behind ⋯ on a phone, so the summary line says what it is (or the average).
   const meta = [
     amountLabel || null,
     categoryName,
-    estimate == null && average != null ? `avg ${money(average.average)}${perUnit(average.priceUnit)}` : null,
+    estimate != null ? `est ${money(estimate)}` : average != null ? `avg ${money(average.average)}${perUnit(average.priceUnit)}` : null,
   ]
     .filter(Boolean)
     .join(' · ')
@@ -456,22 +458,53 @@ function ItemRow({
       </button>
       {!open && meta && <div className="col-start-2 col-end-5 -mt-1 truncate px-1 pb-0.5 text-xs text-text/60">{meta}</div>}
       {open && (
-        <div className="col-start-2 col-end-5 grid grid-cols-2 gap-2 pr-1 pb-1.5">
-          <div className="col-span-2">{quantityInput}</div>
-          {category}
-          {store}
-          {estimateInput}
+        <div className="col-start-2 col-end-5 grid grid-cols-2 gap-x-2 gap-y-2.5 pr-1 pb-1.5">
+          <PhoneField label="Quantity" className="col-span-2">
+            {quantityInput}
+          </PhoneField>
+          <PhoneField label="Category">{category}</PhoneField>
+          <PhoneField label="Store">{store}</PhoneField>
+          <PhoneField label="Estimate" className="col-span-2">
+            {estimateInput}
+            {average != null && (
+              <span className="flex flex-wrap items-center gap-x-2 text-xs text-text/70">
+                Household average {money(average.average)}
+                {perUnit(average.priceUnit)}
+                {average.lineEstimate != null && !item.locked && item.estimate !== average.lineEstimate.toFixed(2) && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm min-h-9 px-2 text-accent-200"
+                    onClick={() => onUpdate(item.key, { estimate: average.lineEstimate!.toFixed(2) })}
+                  >
+                    Use {money(average.lineEstimate)}
+                  </button>
+                )}
+              </span>
+            )}
+          </PhoneField>
           {item.locked ? (
-            <span className="flex items-center gap-1.5 text-xs text-text/60">
+            <span className="col-span-2 flex items-center gap-1.5 text-xs text-text/60">
               <LockIcon /> Locked
             </span>
           ) : (
-            <button type="button" className="btn btn-danger" onClick={() => onRemove(item.key)}>
-              Remove
+            <button type="button" className="btn btn-danger col-span-2" onClick={() => onRemove(item.key)}>
+              Remove item
             </button>
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// A labelled field in a phone row's details (the row itself is too narrow for labels).
+function PhoneField({ label, className = '', children }: { label: string; className?: string; children: ReactNode }) {
+  return (
+    <div className={`grid min-w-0 content-start gap-1 ${className}`}>
+      <span className="text-xs font-semibold text-text/65" aria-hidden="true">
+        {label}
+      </span>
+      {children}
     </div>
   )
 }
