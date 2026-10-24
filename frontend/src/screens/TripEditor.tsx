@@ -130,7 +130,8 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const [items, setItems] = useState<DraftItem[]>([])
   // The trip's planned meals (recipe ids), in order.
   const [recipeIds, setRecipeIds] = useState<string[]>([])
-  const [pickerFor, setPickerFor] = useState<{ storeName: string | null } | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [lastRecipeStore, setLastRecipeStore] = useState<string | null | undefined>(undefined)
   // Receipt import into a store's section; "Import receipt" on the Trips page arrives as ?import=receipt.
   const receipts = useReceiptImport()
   const [receiptFor, setReceiptFor] = useState<{ storeName: string | null } | null>(() =>
@@ -564,6 +565,67 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
     save.mutate({ status: nextStatus, leave, edits })
   }
 
+  const totalsBlock = (
+    <div className="grid gap-2.5">
+      <div className={`grid gap-2 ${parsedBudget != null ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <div className="min-w-0 rounded-md border border-divider bg-surface px-3 py-2">
+          <div className="text-[11px] font-semibold text-text/70">Estimated</div>
+          <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">{estimatedCostLabel ?? '—'}</div>
+        </div>
+        <div className="min-w-0 rounded-md border border-divider bg-surface px-3 py-2">
+          <div className="text-[11px] font-semibold text-text/70">Spent</div>
+          <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">{money(totals.spent)}</div>
+        </div>
+        {parsedBudget != null && (
+          <div className={`min-w-0 rounded-md border px-3 py-2 ${overBudget ? 'border-danger/30 bg-danger-bg text-danger' : 'border-divider bg-surface'}`}>
+            <div className={`text-[11px] font-semibold ${overBudget ? '' : 'text-text/70'}`}>Budget</div>
+            <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">
+              {overBudget ? `${money(projected - parsedBudget)} over` : `${money(parsedBudget - projected)} left`}
+            </div>
+          </div>
+        )}
+      </div>
+      {pickedCount != null && (
+        <div className="flex items-center gap-3">
+          <div
+            className="h-1.5 flex-1 overflow-hidden rounded-full bg-chip"
+            role="progressbar"
+            aria-label="Trip progress"
+            aria-valuemin={0}
+            aria-valuemax={totals.lineCount}
+            aria-valuenow={pickedCount}
+          >
+            <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${(pickedCount / totals.lineCount) * 100}%` }} />
+          </div>
+          <span className="shrink-0 text-xs text-text/70 tabular-nums">
+            {pickedCount}/{totals.lineCount} picked up
+          </span>
+          {totals.savings != null && totals.savings > 0 && (
+            <span className={`tag shrink-0 py-0.5 text-[11px] tabular-nums ${status === 'done' ? 'tag-highlight' : 'tag-accent'}`}>
+              Saved {money(totals.savings)}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+  const toolbar = (
+    <div className="flex flex-wrap justify-end gap-2">
+      <button type="button" className="btn btn-secondary btn-sm max-sm:min-h-11" onClick={() => setPickerOpen(true)}>
+        + Add recipe
+      </button>
+      <button
+        type="button"
+        className="btn btn-secondary btn-sm max-sm:min-h-11"
+        disabled={namedItems.length === 0}
+        title="Set each item's estimate to the average price you've paid for it. Items with no price history are left as they are."
+        onClick={fillEstimates}
+      >
+        Fill estimates from averages
+      </button>
+    </div>
+  )
+
   return (
     <div className="mx-auto max-w-[960px] px-4 pt-5 pb-25 sm:px-5 sm:pt-6">
       <div className="mb-4 flex flex-wrap items-center gap-x-2.5 gap-y-2">
@@ -705,66 +767,23 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       )}
 
       <div className="mt-4 grid gap-3.5">
-        {/* Running totals. Pinned to the top of the screen while shopping, so the
-            numbers stay in view as you work down a long list. */}
+        {/* Running totals. Pinned to the top of the screen while shopping, so the numbers stay in
+            view as you work down a long list; on a phone the toolbar is pinned with them (and on
+            its own while planning), so adding a recipe never means scrolling back up. On a wider
+            screen the toolbar stays out of the pinned block: it's for planning, and the pinned
+            block should stay short while shopping. */}
+        {status !== 'shopping' && totalsBlock}
         <div
           className={`grid gap-2.5 ${
-            status === 'shopping' ? 'sticky top-0 z-10 -mx-4 border-b border-divider bg-bg px-4 py-2.5 sm:-mx-5 sm:px-5' : ''
+            status === 'shopping'
+              ? 'sticky top-0 z-10 -mx-4 border-b border-divider bg-bg px-4 py-2.5 sm:-mx-5 sm:px-5'
+              : 'max-lg:sticky max-lg:top-0 max-lg:z-10 max-lg:-mx-4 max-lg:border-b max-lg:border-divider max-lg:bg-bg max-lg:px-4 max-lg:py-2.5 sm:max-lg:-mx-5 sm:max-lg:px-5'
           }`}
         >
-          <div className={`grid gap-2 ${parsedBudget != null ? 'grid-cols-3' : 'grid-cols-2'}`}>
-            <div className="min-w-0 rounded-md border border-divider bg-surface px-3 py-2">
-              <div className="text-[11px] font-semibold text-text/70">Estimated</div>
-              <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">{estimatedCostLabel ?? '—'}</div>
-            </div>
-            <div className="min-w-0 rounded-md border border-divider bg-surface px-3 py-2">
-              <div className="text-[11px] font-semibold text-text/70">Spent</div>
-              <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">{money(totals.spent)}</div>
-            </div>
-            {parsedBudget != null && (
-              <div className={`min-w-0 rounded-md border px-3 py-2 ${overBudget ? 'border-danger/30 bg-danger-bg text-danger' : 'border-divider bg-surface'}`}>
-                <div className={`text-[11px] font-semibold ${overBudget ? '' : 'text-text/70'}`}>Budget</div>
-                <div className="truncate font-heading text-base font-bold tabular-nums sm:text-lg">
-                  {overBudget ? `${money(projected - parsedBudget)} over` : `${money(parsedBudget - projected)} left`}
-                </div>
-              </div>
-            )}
-          </div>
-          {pickedCount != null && (
-            <div className="flex items-center gap-3">
-              <div
-                className="h-1.5 flex-1 overflow-hidden rounded-full bg-chip"
-                role="progressbar"
-                aria-label="Trip progress"
-                aria-valuemin={0}
-                aria-valuemax={totals.lineCount}
-                aria-valuenow={pickedCount}
-              >
-                <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${(pickedCount / totals.lineCount) * 100}%` }} />
-              </div>
-              <span className="shrink-0 text-xs text-text/70 tabular-nums">
-                {pickedCount}/{totals.lineCount} picked up
-              </span>
-              {totals.savings != null && totals.savings > 0 && (
-                <span className={`tag shrink-0 py-0.5 text-[11px] tabular-nums ${status === 'done' ? 'tag-highlight' : 'tag-accent'}`}>
-                  Saved {money(totals.savings)}
-                </span>
-              )}
-            </div>
-          )}
+          {status === 'shopping' && totalsBlock}
+          <div className={status === 'shopping' ? 'lg:hidden' : ''}>{toolbar}</div>
         </div>
-        {/* Outside the pinned totals: it's a planning tool, and the pinned block should stay short while shopping. */}
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm max-sm:min-h-11"
-            disabled={namedItems.length === 0}
-            title="Set each item's estimate to the average price you've paid for it. Items with no price history are left as they are."
-            onClick={fillEstimates}
-          >
-            Fill estimates from averages
-          </button>
-        </div>
+        {status === 'shopping' && <div className="max-lg:hidden">{toolbar}</div>}
 
         <PlannedMeals meals={plannedMeals} onRemove={unplanRecipe} />
 
@@ -781,7 +800,6 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           onPrice={setItemPrice}
           onRemove={removeItem}
           onAdd={addItem}
-          onAddRecipe={(storeName) => setPickerFor({ storeName })}
           onImportReceipt={receipts.available ? (storeName) => setReceiptFor({ storeName }) : undefined}
         />
         {receiptFor && (receipts.available || receipts.status === undefined) && (
@@ -797,13 +815,18 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
             onClose={() => setReceiptFor(null)}
           />
         )}
-        {pickerFor && (
+        {pickerOpen && (
           <RecipePicker
             recipes={recipes}
             planned={new Set(recipeIds)}
-            storeName={pickerFor.storeName}
-            onPick={(recipe) => planRecipe(recipe, pickerFor.storeName)}
-            onClose={() => setPickerFor(null)}
+            stores={stores}
+            lastStore={lastRecipeStore}
+            onPick={(recipe, storeName) => {
+              // Only a choice made in the picker's store list counts; with no stores there was none.
+              if (stores.length > 0) setLastRecipeStore(storeName)
+              planRecipe(recipe, storeName)
+            }}
+            onClose={() => setPickerOpen(false)}
           />
         )}
         {hasLockedItems && (

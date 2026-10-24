@@ -14,13 +14,13 @@ import { Recipes } from '../screens/Recipes'
 import { SettingsDialog } from '../screens/SettingsDialog'
 import { AppShell } from './AppShell'
 import { WrongServerBanner } from './WrongServerBanner'
+import { UpdateBanner } from './UpdateBanner'
 import { useCurrentProfileId } from './useCurrentProfileId'
 import { useConnectivity } from './ConnectivityProvider'
 import type { SettingsState } from './settingsLink'
 
-function AppContent() {
+function AppContent({ currentProfileId, setCurrentProfileId }: { currentProfileId: string | null; setCurrentProfileId: (id: string | null) => void }) {
   const location = useLocation()
-  const [currentProfileId, setCurrentProfileId] = useCurrentProfileId()
   const { status } = useConnectivity()
   const { data: profiles } = useQuery({
     queryKey: ['profiles'],
@@ -86,10 +86,12 @@ function AppContent() {
 }
 
 export default function App() {
+  const [currentProfileId, setCurrentProfileId] = useCurrentProfileId()
   return (
     <ConfirmProvider>
       <WrongServerBanner />
-      <AppContent />
+      <UpdateBanner profileId={currentProfileId} />
+      <AppContent currentProfileId={currentProfileId} setCurrentProfileId={setCurrentProfileId} />
     </ConfirmProvider>
   )
 }

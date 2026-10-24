@@ -9,7 +9,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt', not 'autoUpdate': a new build waits until this tab agrees to reload
+      // (app/useAppUpdate.ts), instead of taking over a page still running the old code.
+      registerType: 'prompt',
+      // Registered by useAppUpdate, which also checks for new builds while the app stays open.
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Grocery Tracker',

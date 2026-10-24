@@ -59,7 +59,6 @@ interface ListProps {
   onPrice: (item: DraftItem, text: string) => void
   onRemove: (key: string) => void
   onAdd: (storeName: string | null) => void
-  onAddRecipe: (storeName: string | null) => void
   // Offered when receipt import is set up and turned on (and the server is reachable).
   onImportReceipt?: (storeName: string | null) => void
 }
@@ -250,9 +249,6 @@ export function TripItemList(props: ListProps) {
                   <div className="flex flex-wrap gap-1">
                     <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAdd(storeName)}>
                       + Add item{storeName ? ` at ${storeName}` : ''}
-                    </button>
-                    <button type="button" className="btn btn-ghost px-2" onClick={() => props.onAddRecipe(storeName)}>
-                      + Add items from recipe
                     </button>
                     {props.onImportReceipt && (
                       <button type="button" className="btn btn-ghost px-2" onClick={() => props.onImportReceipt!(storeName)}>
