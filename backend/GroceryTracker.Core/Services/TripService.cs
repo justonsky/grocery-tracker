@@ -86,8 +86,12 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
     // (client-generated GUIDs) safely re-send the same PUT if a reply is lost,
     // and lets an offline-created trip "just work" once it reaches the server,
     // with no separate reconciliation step.
-    public async Task<(TripUpsertResult Result, TripDto? Trip)> UpsertAsync(
-        Guid profileId, Guid tripId, TripInput input, CancellationToken ct = default)
+    public Task<(TripUpsertResult Result, TripDto? Trip)> UpsertAsync(
+        Guid profileId, Guid tripId, TripInput input, CancellationToken ct = default) =>
+        InsertRace.RetryOnceAsync(db, () => UpsertOnceAsync(profileId, tripId, input, ct));
+
+    private async Task<(TripUpsertResult Result, TripDto? Trip)> UpsertOnceAsync(
+        Guid profileId, Guid tripId, TripInput input, CancellationToken ct)
     {
         var profileExists = await db.Profiles.AnyAsync(p => p.Id == profileId, ct);
         if (!profileExists) return (TripUpsertResult.ProfileNotFound, null);
@@ -121,7 +125,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         }
         else
         {
-            matches = MatchExistingItems(trip!.Items, input.Items);
+            matches = MatchExistingItems(trip!.Items, input.Items, now);
             var hasLockedLines = trip.Items.Any(i => IsLocked(i, now));
 
             trip.Name = Normalize(input.Name);
@@ -166,7 +170,23 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
     }
 
     public static bool IsValidItems(TripInput input) =>
-        input.Items.All(i => Quantities.IsValidQuantity(i.Quantity) && Quantities.IsValidUnit(i.Unit));
+        input.Items is null || input.Items.All(i => Quantities.IsValidQuantity(i.Quantity) && Quantities.IsValidUnit(i.Unit));
+
+    // Everything about a save that would otherwise fail in the database or be stored as junk;
+    // null when it's fine, else the problem title.
+    public async Task<string?> ValidateAsync(TripInput input, CancellationToken ct = default)
+    {
+        if (!Amounts.IsValidDate(input.Date)) return "Date must be a calendar date, yyyy-MM-dd.";
+        if (!Amounts.IsValidOptionalName(input.Name)) return $"Names must be at most {Amounts.NameLength} characters.";
+        if (input.Stores is null || input.Items is null) return "Stores and items are required (they can be empty).";
+        if (input.Stores.Any(s => !Amounts.IsValidOptionalName(s))) return $"Names must be at most {Amounts.NameLength} characters.";
+        if (input.Items.Any(i => !Amounts.IsValidName(i.ItemName))) return $"Every item needs a name of at most {Amounts.NameLength} characters.";
+        if (input.Items.Any(i => !Amounts.IsValidOptionalName(i.StoreName))) return $"Names must be at most {Amounts.NameLength} characters.";
+        if (!Amounts.IsValid(input.Budget) || input.Items.Any(i => !Amounts.IsValid(i.Price) || !Amounts.IsValid(i.Estimate))) return Amounts.Invalid;
+        var categoryIds = input.Items.Select(i => i.CategoryId).Distinct().ToList();
+        var known = await db.Categories.CountAsync(c => categoryIds.Contains(c.Id), ct);
+        return known == categoryIds.Count ? null : "Unknown category.";
+    }
 
     public static bool IsValidStatus(string? status) => status is null || ParseStatus(status) is not null;
 
@@ -193,7 +213,10 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
     // Pairs each incoming line with the existing row it edits (or null for a new
     // line). Ids are claimed first so a name match can never take a row that
     // another input names explicitly; lines without an id fall back to item name.
-    private static TripItem?[] MatchExistingItems(List<TripItem> existing, List<TripItemInput> inputs)
+    // A locked row is only claimed by a name match carrying its exact price (the same
+    // purchase re-sent by an older client); anything else is a new line, which a
+    // locked row would otherwise silently swallow.
+    private static TripItem?[] MatchExistingItems(List<TripItem> existing, List<TripItemInput> inputs, DateTimeOffset now)
     {
         var unmatched = existing.ToList();
         var matches = new TripItem?[inputs.Count];
@@ -211,7 +234,8 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
         {
             if (inputs[i].Id is not null) continue;
             var normalized = NameNormalizer.Normalize(inputs[i].ItemName);
-            var row = unmatched.FirstOrDefault(e => e.Item!.NormalizedName == normalized);
+            var cents = ToCents(inputs[i].Price);
+            var row = unmatched.FirstOrDefault(e => e.Item!.NormalizedName == normalized && (!IsLocked(e, now) || e.PriceCents == cents));
             if (row is null) continue;
             matches[i] = row;
             unmatched.Remove(row);
@@ -310,9 +334,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
     private static string? Normalize(string? name) =>
         string.IsNullOrWhiteSpace(name) ? null : name.Trim();
 
-    // A blank or negative amount means "not known yet", not zero.
-    private static int? ToCents(decimal? amount) =>
-        amount is null or < 0 ? null : (int)Math.Round(amount.Value * 100m, MidpointRounding.AwayFromZero);
+    private static int? ToCents(decimal? amount) => Amounts.ToCents(amount);
 
     private static TripDto ToDto(Trip trip, DateTimeOffset now)
     {
@@ -339,7 +361,7 @@ public class TripService(GroceryTrackerDbContext db, LookupService lookup, ICloc
             (trip.Items.Sum(i => i.EstimateCents) ?? 0) / 100m,
             compared.Count == 0 ? null : compared.Sum(i => i.EstimateCents!.Value - i.PriceCents!.Value) / 100m,
             trip.Recipes.OrderBy(r => r.SortOrder)
-                .Select(r => new TripRecipeDto(r.RecipeId, r.Recipe!.Name, r.Recipe.PhotoVersion, r.Recipe.Items.Count)).ToList());
+                .Select(r => new TripRecipeDto(r.RecipeId, r.Recipe!.Name, RecipeService.ShownPhotoVersion(r.Recipe.PhotoVersion, r.Recipe.PhotoContentType), r.Recipe.Items.Count)).ToList());
     }
 }
 

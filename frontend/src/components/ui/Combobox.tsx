@@ -72,6 +72,15 @@ export function Combobox({
   const inputRef = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(-1)
+  // Opens upward when the field sits low on the screen, where the phone's docked action bar
+  // and tab bar would cover a list that drops down.
+  const [dropUp, setDropUp] = useState(false)
+  const placeList = () => {
+    const rect = inputRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const below = window.innerHeight - rect.bottom - (window.innerWidth < 1024 ? 160 : 16)
+    setDropUp(below < 220 && rect.top > below)
+  }
 
   const ranked = useMemo(() => rankOptions(options, value), [options, value])
   const shown = ranked.slice(0, maxResults)
@@ -116,17 +125,19 @@ export function Combobox({
         className={`input ${className}`}
         role="combobox"
         aria-expanded={expanded}
-        aria-controls={listId}
+        aria-controls={expanded ? listId : undefined}
         aria-autocomplete="list"
         aria-activedescendant={expanded && active >= 0 ? `${listId}-${active}` : undefined}
         autoComplete="off"
         value={value}
         onChange={(e) => {
           onChange(e.target.value)
+          placeList()
           setOpen(true)
           setActive(-1)
         }}
         onFocus={(e) => {
+          placeList()
           setOpen(true)
           onFocus?.(e)
         }}
@@ -141,7 +152,11 @@ export function Combobox({
         <ul
           id={listId}
           role="listbox"
-          className="absolute top-full right-0 left-0 z-30 m-0 mt-1.5 max-h-[min(22rem,50dvh)] min-w-[12rem] list-none overflow-y-auto rounded-[14px] bg-surface p-1.5"
+          // z-45: above the phone's docked action bar and tab bar (z-40), below dialogs (z-50).
+          // At least as wide as the field, and wider than a narrow one (the phone's name column).
+          className={`absolute left-0 z-[45] m-0 max-h-[min(22rem,45dvh)] w-[min(20rem,calc(100vw-5rem))] min-w-full list-none overflow-y-auto rounded-[14px] bg-surface p-1.5 ${
+            dropUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          }`}
           style={{ boxShadow: 'var(--shadow-lg)' }}
         >
           {shown.map((option, i) => (

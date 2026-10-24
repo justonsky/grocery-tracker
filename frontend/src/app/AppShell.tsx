@@ -89,7 +89,17 @@ function ProfileMenu({
   useEffect(() => {
     if (!open) return
     const away = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false)
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    // A menu answers the arrow keys (and Home/End) as well as Escape.
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') return setOpen(false)
+      const items = [...(ref.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
+      if (items.length === 0 || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
+      e.preventDefault()
+      const at = items.indexOf(document.activeElement as HTMLElement)
+      const next =
+        e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : e.key === 'ArrowDown' ? (at + 1) % items.length : (at <= 0 ? items.length : at) - 1
+      items[next].focus()
+    }
     document.addEventListener('pointerdown', away)
     document.addEventListener('keydown', esc)
     return () => {
@@ -264,9 +274,11 @@ export function AppShell({
 }
 
 export function Avatar({ name, size = 28 }: { name: string; size?: number }) {
+  // First character of the first two words — a whole character, so an emoji isn't split in half.
   const initials = name
+    .trim()
     .split(/\s+/)
-    .map((w) => w[0])
+    .map((w) => Array.from(w)[0] ?? '')
     .slice(0, 2)
     .join('')
     .toUpperCase()

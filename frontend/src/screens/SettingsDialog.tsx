@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import type { Category, ChartScheme, Profile } from '../api/types'
 import { Dialog } from '../components/ui/Dialog'
 import { useToast } from '../components/ui/ToastProvider'
+import { useConfirm } from '../components/ui/ConfirmProvider'
 import { performOrQueue, newClientId } from '../offline/performOrQueue'
 import { timeAgo } from '../offline/timeAgo'
 import { useConnectivity } from '../app/ConnectivityProvider'
@@ -65,6 +66,7 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
   const setTheme = useMutation({
     mutationFn: (themeMode: 'system' | 'light' | 'dark') => api.settings.update({ themeMode }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings'] }),
+    onError: () => toast('error', "Couldn't change the appearance. It needs your home server — check you're connected."),
   })
 
   // Chart colors are household-wide too, and online-only for the same reason.
@@ -170,14 +172,25 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
     onError: () => toast('error', "Couldn't remove that category."),
   })
 
+  // A custom category can be in use on trips and items; removing it is one tap, so ask first.
+  const confirm = useConfirm()
+  const askRemoveCategory = async (category: Category) => {
+    const ok = await confirm({
+      title: `Remove “${category.name}”?`,
+      body: 'Items and trip lines in it move to Other.',
+      confirmLabel: 'Remove category',
+    })
+    if (ok) removeCategory.mutate(category.id)
+  }
+
   const themeMode = settings?.themeMode ?? 'system'
   const chartScheme = settings?.chartScheme ?? 'fresh'
 
   return (
     <Dialog title="Settings" onClose={close}>
       <section className="field rounded-[14px] border border-divider bg-bg p-3.5">
-        <label>Appearance</label>
-        <div className="seg max-w-full" role="radiogroup">
+        <label>Appearance · everyone in the house</label>
+        <div className="seg max-w-full" role="radiogroup" aria-label="Appearance">
           {(['system', 'light', 'dark'] as const).map((mode) => (
             <label key={mode} className="seg-opt min-h-11">
               <input type="radio" name="theme" checked={themeMode === mode} onChange={() => setTheme.mutate(mode)} />
@@ -188,7 +201,7 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
       </section>
 
       <section className="field rounded-[14px] border border-divider bg-bg p-3.5">
-        <label>Chart colors</label>
+        <label>Chart colors · everyone in the house</label>
         <div className="seg flex w-full" role="radiogroup" aria-label="Chart colors">
           {CHART_SCHEMES.map((c) => (
             <label key={c.id} className="seg-opt min-h-11 flex-1 flex-col justify-center gap-1 px-2 py-1.5">
@@ -228,7 +241,7 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
       {profile && (
         <section className="field rounded-[14px] border border-divider bg-bg p-3.5">
           <label>Color theme for {profile.name}</label>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2" role="radiogroup" aria-label="Color theme">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2" role="radiogroup" aria-label="Color theme">
             {THEMES.map((t) => {
               const selected = themeOf(profile.theme) === t.id
               return (
@@ -246,7 +259,7 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
                   <span className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-accent">
                     <span className="absolute inset-y-0 right-0 w-1/2 bg-accent-2" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate">{t.name}</span>
+                  <span className="min-w-0 flex-1 leading-tight break-words">{t.name}</span>
                   {selected && (
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-accent">
                       <path d="M20 6 9 17l-5-5" />
@@ -269,8 +282,8 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
                 <button
                   type="button"
                   aria-label={`Remove ${c.name}`}
-                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-text/60 hover:bg-danger-bg hover:text-danger"
-                  onClick={() => removeCategory.mutate(c.id)}
+                  className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-text/60 after:absolute after:-inset-1 hover:bg-danger-bg hover:text-danger"
+                  onClick={() => void askRemoveCategory(c)}
                 >
                   <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 6 6 18M6 6l12 12" />
@@ -314,7 +327,10 @@ export function SettingsDialog({ profileId }: { profileId: string }) {
           <input type="checkbox" className="h-5 w-5 accent-accent" checked={includeItems} onChange={(e) => setIncludeItems(e.target.checked)} />
           Include the item catalogue (separate sheet)
         </label>
-        <p className="m-0 text-xs text-text/60">Profiles, trips with their totals and savings, and every trip item.</p>
+        <p className="m-0 text-xs text-text/60">
+          Profiles, trips with their totals and savings, every trip item, and your recipes. Recipe photos aren't in the file: they stay in the
+          server's data folder (recipe-photos), so back that folder up to keep them.
+        </p>
         {!canExport && <p className="mt-1 mb-0 text-xs text-danger">Can't reach your home server — try again once you're back online.</p>}
       </section>
 

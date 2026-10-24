@@ -90,8 +90,8 @@ public class ItemHistoryService(GroceryTrackerDbContext db)
             Quantities.Dollars(current.Cents),
             Quantities.Dollars(lowest.Cents), $"{lowest.Point.StoreName} · {lowest.Point.Date}",
             Quantities.Dollars(highest.Cents), $"{highest.Point.StoreName} · {highest.Point.Date}",
-            avgCents / 100m,
-            variance, variancePct,
+            Quantities.Dollars(avgCents),
+            Math.Round(variance, 2, MidpointRounding.AwayFromZero), Math.Round(variancePct, 1, MidpointRounding.AwayFromZero),
             Enumerable.Reverse(inRange).Select(p => p.Point).ToList(), // most recent purchase first
             inRange.Count, from, to, firstDate, lastDate, priceUnit, otherUnits, available);
     }

@@ -26,18 +26,19 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
     // week's spend adds up. They count toward spend and categories, but not the item rankings.
     private static readonly HashSet<string> NotGroceries = new(["Unlisted purchases", "Tax", "Tip", "Driver Tip"], StringComparer.OrdinalIgnoreCase);
 
-    private sealed record ItemStats(Guid Key, string Name, string Category, int All, int Recent, int Cents, int Lines, string Last)
+    private sealed record ItemStats(Guid Key, string Name, string Category, int All, int Recent, int Cents, decimal AverageUnitCents, string PriceUnit, string Last)
     {
         public int Earlier => All - Recent;
     }
 
-    private sealed record Line(Guid TripId, string Date, Guid ItemId, Guid CategoryId, int Cents);
+    private sealed record Line(Guid TripId, string Date, DateTimeOffset CreatedAt, Guid ItemId, Guid CategoryId, int Cents, int QuantityMilli, string Unit);
 
-    public async Task<TrendsDto?> GetAsync(Guid profileId, string range, CancellationToken ct = default)
+    // today: the shopper's local date (see LocalDate), so a trip dated today is inside the period.
+    public async Task<TrendsDto?> GetAsync(Guid profileId, string range, string? today = null, CancellationToken ct = default)
     {
         if (!await db.Profiles.AnyAsync(p => p.Id == profileId, ct)) return null;
 
-        var to = DateOnly.FromDateTime(clock.UtcNow.UtcDateTime);
+        var to = LocalDate.Resolve(today, clock);
         DateOnly from;
         if (range == "all")
         {
@@ -57,7 +58,7 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
         var lines = (await db.TripItems
                 .Where(ti => ti.Trip!.ProfileId == profileId && ti.PriceCents > 0
                     && string.Compare(ti.Trip.Date, Iso(readFrom)) >= 0 && string.Compare(ti.Trip.Date, Iso(to)) <= 0)
-                .Select(ti => new Line(ti.TripId, ti.Trip!.Date, ti.ItemId, ti.CategoryId, ti.PriceCents!.Value))
+                .Select(ti => new Line(ti.TripId, ti.Trip!.Date, ti.Trip.CreatedAt, ti.ItemId, ti.CategoryId, ti.PriceCents!.Value, ti.QuantityMilli, ti.Unit))
                 .ToListAsync(ct))
             .ToList();
 
@@ -86,11 +87,14 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
                 var all = g.Select(l => l.TripId).Distinct().Count();
                 var last = g.Max(l => l.Date)!;
                 var cents = g.Sum(l => l.Cents);
-                return new ItemStats(g.Key, itemNames[g.Key], categoryNames[g.First().CategoryId], all, recent, cents, g.Count(), last);
+                // Per item, or per pound for things bought by weight — the same average as everywhere else.
+                var (priceUnit, points, _) = Quantities.Summarize(g.Select(l => new Quantities.Purchase(l.Cents, l.QuantityMilli, l.Unit, l.Date, l.CreatedAt)));
+                var average = points.Count == 0 ? 0 : points.Average(p => p.UnitCents);
+                return new ItemStats(g.Key, itemNames[g.Key], categoryNames[g.First().CategoryId], all, recent, cents, average, priceUnit, last);
             })
             .ToList();
 
-        static TrendItemDto ToItem(ItemStats x) => new(x.Key, x.Name, x.Category, x.All, x.Cents / 100m, Math.Round(x.Cents / (decimal)x.Lines / 100m, 2), x.Last);
+        static TrendItemDto ToItem(ItemStats x) => new(x.Key, x.Name, x.Category, x.All, x.Cents / 100m, Quantities.Dollars(x.AverageUnitCents), x.Last, x.PriceUnit);
 
         var mostBought = byItem.OrderByDescending(x => x.All).ThenByDescending(x => x.Cents).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .Take(ListSize).Select(x => ToItem(x)).ToList();
@@ -134,7 +138,7 @@ public class TrendsService(GroceryTrackerDbContext db, IClock clock)
         var plans = await db.TripRecipes
             .Where(tr => tr.Trip!.ProfileId == profileId
                 && string.Compare(tr.Trip.Date, fromIso) >= 0 && string.Compare(tr.Trip.Date, Iso(to)) <= 0)
-            .Select(tr => new { tr.RecipeId, tr.Trip!.Date, tr.Recipe!.Name, tr.Recipe.PhotoVersion })
+            .Select(tr => new { tr.RecipeId, tr.Trip!.Date, tr.Recipe!.Name, PhotoVersion = RecipeService.ShownPhotoVersion(tr.Recipe.PhotoVersion, tr.Recipe.PhotoContentType) })
             .ToListAsync(ct);
         var byRecipe = plans.GroupBy(p => p.RecipeId).Select(g =>
         {

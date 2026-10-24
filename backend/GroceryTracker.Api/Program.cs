@@ -2,6 +2,9 @@ using GroceryTracker.Api;
 using GroceryTracker.Api.Endpoints;
 using GroceryTracker.Core.Data;
 using GroceryTracker.Core.Services;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +46,20 @@ else
     builder.Services.AddHttpClient<IReceiptReader, AnthropicReceiptReader>(client => client.Timeout = TimeSpan.FromSeconds(90));
 }
 builder.Services.AddSingleton(new ReceiptImageStore(dataDirectory));
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(ReceiptEndpoints.ReadPolicy, _ => RateLimitPartition.GetFixedWindowLimiter("receipt-reads", _ =>
+        new FixedWindowRateLimiterOptions { PermitLimit = Math.Max(receiptOptions.ReadsPerHour, 1), Window = TimeSpan.FromHours(1) }));
+    options.OnRejected = async (context, ct) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsJsonAsync(new Microsoft.AspNetCore.Mvc.ProblemDetails
+        {
+            Type = ProblemTypes.TooManyReceipts, Status = StatusCodes.Status429TooManyRequests,
+            Title = "Too many receipts read in the last hour. Try again later.",
+        }, (System.Text.Json.JsonSerializerOptions?)null, "application/problem+json", ct);
+    };
+});
 builder.Services.AddScoped<ReceiptService>();
 builder.Services.AddScoped<TripService>();
 builder.Services.AddScoped<DashboardService>();
@@ -69,12 +86,21 @@ using (var scope = app.Services.CreateScope())
     {
         var seedPath = builder.Configuration["SeedData:Path"]
             ?? Path.Combine(app.Environment.ContentRootPath, "SeedData", "seed-data.json");
-        await scope.ServiceProvider.GetRequiredService<SeedDataService>().SeedIfEmptyAsync(seedPath);
+        try
+        {
+            await scope.ServiceProvider.GetRequiredService<SeedDataService>().SeedIfEmptyAsync(seedPath);
+        }
+        catch (Exception ex)
+        {
+            // A bad seed must never keep the server from starting.
+            app.Logger.LogError(ex, "Loading the seed data failed; starting without it.");
+        }
     }
 }
 
 // Must wrap everything below it, so it's registered before any endpoint mapping.
 app.UseExceptionHandler();
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
@@ -111,10 +137,17 @@ app.Run();
 static void ApplyMigrations(GroceryTrackerDbContext db, string dbPath)
 {
     // The on-device SQLite file is the user's only copy of their data — back it
-    // up before applying any pending schema migration.
+    // up before applying any pending schema migration. SQLite's online backup
+    // includes pages still in the WAL file, which a plain file copy would miss.
     if (File.Exists(dbPath) && db.Database.GetPendingMigrations().Any())
     {
-        File.Copy(dbPath, dbPath + ".bak", overwrite: true);
+        var backupPath = dbPath + ".bak";
+        File.Delete(backupPath);
+        using var source = new SqliteConnection($"Data Source={dbPath}");
+        using var target = new SqliteConnection($"Data Source={backupPath};Pooling=False");
+        source.Open();
+        target.Open();
+        source.BackupDatabase(target);
     }
 
     db.Database.Migrate();

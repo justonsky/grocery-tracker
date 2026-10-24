@@ -23,7 +23,9 @@ export function QuantityField({
     <div className="flex min-w-0 gap-1">
       <input
         className={`input w-14 shrink-0 px-2 text-center tabular-nums ${ok ? '' : 'border-danger'}`}
-        inputMode="decimal"
+        // Text, not decimal: phone decimal keypads have no "/" for amounts like 3/4.
+        inputMode="text"
+        enterKeyHint="next"
         placeholder="1"
         aria-label={label}
         aria-invalid={!ok}

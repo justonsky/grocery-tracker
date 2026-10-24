@@ -18,6 +18,7 @@ public static class ProblemTypes
     public const string AliasConflict = "/errors/alias-conflict";
     public const string ReceiptNotFound = "/errors/receipt-not-found";
     public const string ReceiptApplied = "/errors/receipt-applied";
+    public const string TooManyReceipts = "/errors/too-many-receipts";
     public const string ReceiptsNotConfigured = "/errors/receipts-not-configured";
     public const string ReceiptsDisabled = "/errors/receipts-disabled";
     public const string ReceiptUnreadable = "/errors/receipt-unreadable";

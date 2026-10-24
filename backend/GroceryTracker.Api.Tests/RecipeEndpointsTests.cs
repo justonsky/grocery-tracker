@@ -103,11 +103,11 @@ public class RecipeEndpointsTests : IDisposable
         var bytes = Jpeg(1200, 900);
 
         var first = await (await UploadAsync(recipe.Id, bytes)).ReadAsAsync<RecipeDto>();
-        first!.PhotoVersion.Should().Be(1);
+        first!.PhotoVersion.Should().BePositive();
         var second = await (await UploadAsync(recipe.Id, Png(800, 800))).ReadAsAsync<RecipeDto>();
-        second!.PhotoVersion.Should().Be(2);
+        second!.PhotoVersion.Should().BeGreaterThan(first.PhotoVersion);
 
-        var served = await _client.GetAsync($"/api/v1/recipes/{recipe.Id}/photo?v=2");
+        var served = await _client.GetAsync($"/api/v1/recipes/{recipe.Id}/photo?v={second.PhotoVersion}");
         served.StatusCode.Should().Be(HttpStatusCode.OK);
         served.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
         served.Headers.CacheControl!.ToString().Should().Contain("immutable");
@@ -116,6 +116,10 @@ public class RecipeEndpointsTests : IDisposable
         var removed = await (await _client.DeleteAsync($"/api/v1/recipes/{recipe.Id}/photo")).ReadAsAsync<RecipeDto>();
         removed!.PhotoVersion.Should().Be(0);
         (await _client.GetAsync($"/api/v1/recipes/{recipe.Id}/photo")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // The photo URL is cached as immutable, so a new photo after a removal never reuses a version.
+        var third = await (await UploadAsync(recipe.Id, Jpeg(640, 480))).ReadAsAsync<RecipeDto>();
+        third!.PhotoVersion.Should().BeGreaterThan(second.PhotoVersion);
     }
 
     [Theory]
@@ -151,7 +155,7 @@ public class RecipeEndpointsTests : IDisposable
         var input = TestTrips.At("2026-08-20", "Aldi", TestTrips.Planned("Eggs", produce)) with { RecipeIds = [b.Id, a.Id, Guid.NewGuid()] };
 
         var saved = await (await _client.PutJsonAsync($"/api/v1/profiles/{profile.Id}/trips/{tripId}", input)).ReadAsAsync<TripDto>();
-        saved!.Recipes!.Select(r => (r.Name, r.PhotoVersion, r.ItemCount)).Should().Equal(("Oats", 1, 1), ("Shakshuka", 0, 1)); // unknown id ignored
+        saved!.Recipes!.Select(r => (r.Name, r.PhotoVersion > 0, r.ItemCount)).Should().Equal(("Oats", true, 1), ("Shakshuka", false, 1)); // unknown id ignored
 
         // A save that doesn't mention meals (an older queued payload) leaves them; an empty list clears them.
         var kept = await (await _client.PutJsonAsync($"/api/v1/profiles/{profile.Id}/trips/{tripId}", input with { RecipeIds = null })).ReadAsAsync<TripDto>();

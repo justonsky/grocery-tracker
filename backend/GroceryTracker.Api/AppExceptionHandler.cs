@@ -33,7 +33,7 @@ public class AppExceptionHandler(IProblemDetailsService problemDetailsService, I
                 Status = StatusCodes.Status500InternalServerError,
                 Type = type,
                 Title = title,
-                Detail = exception.Message,
+                // No Detail: the exception text can carry SQL or file paths. It's in the server log above.
             },
         });
     }

@@ -22,6 +22,7 @@ public static class TripEndpoints
         {
             if (!TripService.IsValidStatus(input.Status)) return InvalidStatus();
             if (!TripService.IsValidItems(input)) return InvalidQuantity();
+            if (await service.ValidateAsync(input, ct) is { } problem) return Invalid(problem);
             var trip = await service.CreateAsync(profileId, input, ct);
             return Results.Created($"/api/v1/profiles/{profileId}/trips/{trip.Id}", trip);
         });
@@ -37,6 +38,7 @@ public static class TripEndpoints
             }
             if (!TripService.IsValidStatus(input.Status)) return InvalidStatus();
             if (!TripService.IsValidItems(input)) return InvalidQuantity();
+            if (await service.ValidateAsync(input, ct) is { } problem) return Invalid(problem);
 
             var (result, trip) = await service.UpsertAsync(profileId, tripId, input, ct);
             return result switch
@@ -53,6 +55,9 @@ public static class TripEndpoints
         group.MapDelete("/{tripId:guid}", async (Guid profileId, Guid tripId, TripService service, CancellationToken ct) =>
             await service.DeleteAsync(profileId, tripId, ct) ? Results.NoContent() : TripNotFound());
     }
+
+    private static IResult Invalid(string title) =>
+        Results.Problem(type: ProblemTypes.Validation, title: title, statusCode: StatusCodes.Status400BadRequest);
 
     private static IResult InvalidStatus() =>
         Results.Problem(type: ProblemTypes.Validation, title: "Status must be planned, shopping or done.", statusCode: StatusCodes.Status400BadRequest);

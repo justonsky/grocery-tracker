@@ -11,12 +11,14 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
     private const int SparklinePoints = 8;
     private const int MonthsShown = 12;
 
-    public async Task<DashboardSummaryDto> GetSummaryAsync(Guid profileId, CancellationToken ct = default)
+    // today: the shopper's local date (trip dates are local), so "today" and "this month" don't
+    // jump ahead in the evening; without one, the server's own local date.
+    public async Task<DashboardSummaryDto> GetSummaryAsync(Guid profileId, string? today = null, CancellationToken ct = default)
     {
-        var now = clock.UtcNow;
-        var todayIso = now.ToString("yyyy-MM-dd");
-        var monthPrefix = now.ToString("yyyy-MM");
-        var yearPrefix = now.ToString("yyyy");
+        var date = LocalDate.Resolve(today, clock);
+        var todayIso = date.ToString("yyyy-MM-dd");
+        var monthPrefix = date.ToString("yyyy-MM");
+        var yearPrefix = date.ToString("yyyy");
 
         var trips = await db.Trips
             .Where(t => t.ProfileId == profileId)
@@ -27,14 +29,20 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
                 t.Date,
                 t.CreatedAt,
                 t.BudgetCents,
+                t.Status,
                 Stores = t.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).ToList(),
                 Items = t.Items.Select(i => new { i.PriceCents, ItemName = i.Item!.Name, CategoryName = i.Category!.Name }).ToList(),
             })
             .ToListAsync(ct);
 
-        var todayTrips = trips.Where(t => t.Date == todayIso).ToList();
-        var monthTrips = trips.Where(t => t.Date.StartsWith(monthPrefix, StringComparison.Ordinal)).ToList();
-        var yearTrips = trips.Where(t => t.Date.StartsWith(yearPrefix, StringComparison.Ordinal)).ToList();
+        // A trip is counted once it's been shopped — finished, or with something bought on it. A
+        // list still being planned has spent nothing and isn't a trip yet. (Its budget still
+        // counts toward this month's: it's money set aside.)
+        bool Shopped(TripStatus status, IEnumerable<int?> prices) => status == TripStatus.Done || prices.Any(p => p is not null);
+        var shopped = trips.Where(t => Shopped(t.Status, t.Items.Select(i => i.PriceCents))).ToList();
+        var todayTrips = shopped.Where(t => t.Date == todayIso).ToList();
+        var monthTrips = shopped.Where(t => t.Date.StartsWith(monthPrefix, StringComparison.Ordinal)).ToList();
+        var yearTrips = shopped.Where(t => t.Date.StartsWith(yearPrefix, StringComparison.Ordinal)).ToList();
 
         var recentTripRaw = trips
             .OrderByDescending(t => t.Date, StringComparer.Ordinal)
@@ -50,14 +58,14 @@ public class DashboardService(GroceryTrackerDbContext db, IClock clock)
                 SumCents(recentTripRaw.Items.Select(i => i.PriceCents)),
                 recentTripRaw.Items.Select(i => new TripLineDto(i.ItemName, i.CategoryName, i.PriceCents / 100m)).ToList());
 
-        var budgeted = monthTrips.Where(t => t.BudgetCents is > 0).ToList();
+        var budgeted = trips.Where(t => t.Date.StartsWith(monthPrefix, StringComparison.Ordinal) && t.BudgetCents is > 0).ToList();
         decimal? monthBudget = budgeted.Count > 0 ? budgeted.Sum(t => t.BudgetCents!.Value) / 100m : null;
 
         var monthlySpend = Enumerable.Range(0, MonthsShown)
-            .Select(back => now.AddDays(1 - now.Day).AddMonths(back - (MonthsShown - 1)).ToString("yyyy-MM"))
+            .Select(back => date.AddDays(1 - date.Day).AddMonths(back - (MonthsShown - 1)).ToString("yyyy-MM"))
             .Select(month =>
             {
-                var inMonth = trips.Where(t => t.Date.StartsWith(month, StringComparison.Ordinal)).ToList();
+                var inMonth = shopped.Where(t => t.Date.StartsWith(month, StringComparison.Ordinal)).ToList();
                 return new MonthlySpendDto(month, SumCents(inMonth.SelectMany(t => t.Items.Select(i => i.PriceCents))), inMonth.Count);
             })
             .ToList();

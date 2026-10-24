@@ -32,12 +32,17 @@ public class RecipeService(GroceryTrackerDbContext db, LookupService lookup, Rec
         !string.IsNullOrWhiteSpace(input.Name) && input.Name.Trim().Length <= RecipeLimits.NameLength
         && (input.Description is null || input.Description.Length <= RecipeLimits.DescriptionLength)
         && input.Items is { Count: > 0 and <= RecipeLimits.MaxItems }
-        && input.Items.All(i => !string.IsNullOrWhiteSpace(i.ItemName) && (i.Amount is null || i.Amount.Length <= RecipeLimits.AmountLength));
+        && input.Items.All(i => Amounts.IsValidName(i.ItemName) && (i.Amount is null || i.Amount.Length <= RecipeLimits.AmountLength));
 
     // Idempotent create-or-replace by the caller's id, like trips, so a retried save is safe.
-    public async Task<(RecipeResult Result, RecipeDto? Recipe)> UpsertAsync(Guid id, RecipeInput input, CancellationToken ct = default)
+    public Task<(RecipeResult Result, RecipeDto? Recipe)> UpsertAsync(Guid id, RecipeInput input, CancellationToken ct = default) =>
+        InsertRace.RetryOnceAsync(db, () => UpsertOnceAsync(id, input, ct));
+
+    private async Task<(RecipeResult Result, RecipeDto? Recipe)> UpsertOnceAsync(Guid id, RecipeInput input, CancellationToken ct)
     {
         if (!IsValid(input)) return (RecipeResult.Invalid, null);
+        var categoryIds = input.Items.Where(i => i.CategoryId is not null).Select(i => i.CategoryId!.Value).Distinct().ToList();
+        if (await db.Categories.CountAsync(c => categoryIds.Contains(c.Id), ct) != categoryIds.Count) return (RecipeResult.Invalid, null);
         var now = clock.UtcNow;
         var recipe = await db.Recipes.Include(r => r.Items).FirstOrDefaultAsync(r => r.Id == id, ct);
         var created = recipe is null;
@@ -92,9 +97,13 @@ public class RecipeService(GroceryTrackerDbContext db, LookupService lookup, Rec
         if (check != PhotoCheck.Ok) return (RecipeResult.Invalid, check, null);
 
         await photos.SaveAsync(id, bytes, ct);
-        recipe.PhotoVersion++;
+        // The photo URL carries the version and is cached as immutable, so a version is never
+        // reused: it only grows, and starts from the clock so a recipe deleted and re-created
+        // with the same id can't land on an old photo's URL either.
+        var now = clock.UtcNow;
+        recipe.PhotoVersion = Math.Max(recipe.PhotoVersion + 1, (int)(now.ToUnixTimeSeconds() - PhotoVersionEpoch));
         recipe.PhotoContentType = contentType;
-        recipe.UpdatedAt = clock.UtcNow;
+        recipe.UpdatedAt = now;
         await db.SaveChangesAsync(ct);
         return (RecipeResult.Ok, PhotoCheck.Ok, await GetAsync(id, ct));
     }
@@ -104,16 +113,22 @@ public class RecipeService(GroceryTrackerDbContext db, LookupService lookup, Rec
         var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id, ct);
         if (recipe is null) return null;
         photos.Delete(id);
-        recipe.PhotoVersion = 0;
+        // PhotoVersion stays (see SetPhotoAsync); no content type is what "no photo" means.
         recipe.PhotoContentType = null;
         recipe.UpdatedAt = clock.UtcNow;
         await db.SaveChangesAsync(ct);
         return await GetAsync(id, ct);
     }
 
+    // 2023-11-14: keeps clock-based versions comfortably inside an int.
+    private const long PhotoVersionEpoch = 1_700_000_000;
+
+    // What clients see: 0 = no photo (the DTO contract), else the version for the photo URL.
+    public static int ShownPhotoVersion(int version, string? contentType) => contentType is null ? 0 : Math.Max(version, 1);
+
     public async Task<(Stream Stream, string ContentType)?> OpenPhotoAsync(Guid id, CancellationToken ct = default)
     {
-        var type = await db.Recipes.Where(r => r.Id == id && r.PhotoVersion > 0).Select(r => r.PhotoContentType).FirstOrDefaultAsync(ct);
+        var type = await db.Recipes.Where(r => r.Id == id).Select(r => r.PhotoContentType).FirstOrDefaultAsync(ct);
         if (type is null) return null;
         var stream = photos.Open(id);
         return stream is null ? null : (stream, type);
@@ -149,7 +164,7 @@ public class RecipeService(GroceryTrackerDbContext db, LookupService lookup, Rec
                 averages.TryGetValue(i.ItemId, out var unit) ? unit.PriceUnit : Quantities.Each)).ToList();
             var known = items.Where(i => i.AveragePrice is not null).ToList();
             usage.TryGetValue(r.Id, out var u);
-            return new RecipeDto(r.Id, r.Name, r.Description, r.PhotoVersion, items,
+            return new RecipeDto(r.Id, r.Name, r.Description, ShownPhotoVersion(r.PhotoVersion, r.PhotoContentType), items,
                 known.Count == 0 ? null : known.Sum(i => i.AveragePrice!.Value), u.Count, u.Count == 0 ? null : u.Last);
         }).ToList();
     }

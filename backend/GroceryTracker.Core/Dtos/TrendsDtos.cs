@@ -1,8 +1,11 @@
+using GroceryTracker.Core.Services;
+
 namespace GroceryTracker.Core.Dtos;
 
 // An item's standing in the period. TimesBought counts trips it was bought on (twice on
-// one trip is once); Spent and AveragePrice use every priced line.
-public record TrendItemDto(Guid ItemId, string Name, string Category, int TimesBought, decimal Spent, decimal AveragePrice, string LastBought);
+// one trip is once); Spent is every priced line. AveragePrice is per PriceUnit ("each", or "lb"
+// for things bought by weight), through Quantities.Summarize like every other average.
+public record TrendItemDto(Guid ItemId, string Name, string Category, int TimesBought, decimal Spent, decimal AveragePrice, string LastBought, string PriceUnit = Quantities.Each);
 
 // Bought more often lately than earlier in the period. Factor is how many times as often
 // (recent rate / earlier rate), or null when it wasn't bought at all earlier ("new").

@@ -10,9 +10,12 @@ namespace GroceryTracker.Core.Services;
 // locked price — but only when the caller says so explicitly.
 public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup, IClock clock)
 {
-    public async Task<List<CatalogItemDto>> ListAsync(string? search, CancellationToken ct = default)
+    public Task<List<CatalogItemDto>> ListAsync(string? search, CancellationToken ct = default) => ListAsync(search, null, ct);
+
+    private async Task<List<CatalogItemDto>> ListAsync(string? search, Guid? onlyId, CancellationToken ct)
     {
         IQueryable<Item> query = db.Items;
+        if (onlyId is { } id) query = query.Where(i => i.Id == id);
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalized = NameNormalizer.Normalize(search);
@@ -77,14 +80,22 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
     }
 
     // Removes the item and every trip line that uses it (FK cascade), price
-    // history included, and unpins it from every dashboard.
-    public async Task<bool> DeleteAsync(Guid itemId, CancellationToken ct = default)
+    // history included, and unpins it from every dashboard. Locked purchases go
+    // too, so — like correcting one — that needs the caller to confirm it.
+    public async Task<CatalogResult> DeleteAsync(Guid itemId, bool confirmLocked, CancellationToken ct = default)
     {
         var item = await db.Items.FindAsync([itemId], ct);
-        if (item is null) return false;
+        if (item is null) return CatalogResult.ItemNotFound;
+        if (!confirmLocked)
+        {
+            // SQLite can't compare DateTimeOffsets in a query, so the lock check runs here.
+            var pricedAt = await db.TripItems.Where(ti => ti.ItemId == itemId && ti.PricedAt != null).Select(ti => ti.PricedAt!.Value).ToListAsync(ct);
+            var now = clock.UtcNow;
+            if (pricedAt.Any(p => now - p > TripService.PriceEditWindow)) return CatalogResult.PriceLocked;
+        }
         db.Items.Remove(item);
         await db.SaveChangesAsync(ct);
-        return true;
+        return CatalogResult.Ok;
     }
 
     public async Task<List<ItemLineDto>?> GetLinesAsync(Guid itemId, CancellationToken ct = default)
@@ -101,7 +112,8 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
 
     public async Task<(CatalogResult Result, ItemLineDto? Line)> AddLineAsync(Guid itemId, SaveItemLineRequest request, CancellationToken ct = default)
     {
-        if (!Quantities.IsValidQuantity(request.Quantity) || !Quantities.IsValidUnit(request.Unit)) return (CatalogResult.Invalid, null);
+        if (!Quantities.IsValidQuantity(request.Quantity) || !Quantities.IsValidUnit(request.Unit) || !Amounts.IsValid(request.Price)
+            || !Amounts.IsValidOptionalName(request.StoreName)) return (CatalogResult.Invalid, null);
         var item = await db.Items.FindAsync([itemId], ct);
         if (item is null) return (CatalogResult.ItemNotFound, null);
         var trip = await db.Trips.Include(t => t.Stores).Include(t => t.Items).FirstOrDefaultAsync(t => t.Id == request.TripId, ct);
@@ -131,7 +143,8 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
     public async Task<(CatalogResult Result, ItemLineDto? Line)> UpdateLineAsync(
         Guid itemId, Guid lineId, SaveItemLineRequest request, CancellationToken ct = default)
     {
-        if (!Quantities.IsValidQuantity(request.Quantity) || !Quantities.IsValidUnit(request.Unit)) return (CatalogResult.Invalid, null);
+        if (!Quantities.IsValidQuantity(request.Quantity) || !Quantities.IsValidUnit(request.Unit) || !Amounts.IsValid(request.Price)
+            || !Amounts.IsValidOptionalName(request.StoreName)) return (CatalogResult.Invalid, null);
         var line = await db.TripItems.FirstOrDefaultAsync(ti => ti.Id == lineId && ti.ItemId == itemId, ct);
         if (line is null) return (CatalogResult.LineNotFound, null);
         var now = clock.UtcNow;
@@ -160,13 +173,15 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
         return (CatalogResult.Ok, await GetLineAsync(line.Id, ct));
     }
 
-    public async Task<bool> DeleteLineAsync(Guid itemId, Guid lineId, CancellationToken ct = default)
+    // A locked purchase is part of the price history; removing it needs the same confirmation as correcting it.
+    public async Task<CatalogResult> DeleteLineAsync(Guid itemId, Guid lineId, bool confirmLocked, CancellationToken ct = default)
     {
         var line = await db.TripItems.FirstOrDefaultAsync(ti => ti.Id == lineId && ti.ItemId == itemId, ct);
-        if (line is null) return false;
+        if (line is null) return CatalogResult.LineNotFound;
+        if (IsLocked(line, clock.UtcNow) && !confirmLocked) return CatalogResult.PriceLocked;
         db.TripItems.Remove(line);
         await db.SaveChangesAsync(ct);
-        return true;
+        return CatalogResult.Ok;
     }
 
     // E.g. "milk" into "whole milk". Moving lines is idempotent — replaying the
@@ -243,7 +258,7 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
 
     private async Task<CatalogResult?> ValidateAsync(Guid? itemId, SaveItemRequest request, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Name)) return CatalogResult.Invalid;
+        if (!Amounts.IsValidName(request.Name)) return CatalogResult.Invalid;
         if (request.DefaultCategoryId is { } categoryId && !await db.Categories.AnyAsync(c => c.Id == categoryId, ct))
         {
             return CatalogResult.Invalid;
@@ -295,7 +310,7 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
     }
 
     private async Task<CatalogItemDto?> GetCatalogItemAsync(Guid itemId, CancellationToken ct) =>
-        (await ListAsync(null, ct)).FirstOrDefault(i => i.Id == itemId);
+        (await ListAsync(null, itemId, ct)).FirstOrDefault();
 
     private static string? EffectiveStoreName(TripItem line) =>
         line.Store?.Name ?? line.Trip?.Stores.OrderBy(s => s.SortOrder).Select(s => s.Name).FirstOrDefault();
@@ -311,8 +326,7 @@ public class ItemCatalogService(GroceryTrackerDbContext db, LookupService lookup
         IsLocked(l, now), l.PricedAt + TripService.PriceEditWindow,
         Quantities.FromMilli(l.QuantityMilli), l.Unit);
 
-    private static int? ToCents(decimal? amount) =>
-        amount is null or < 0 ? null : (int)Math.Round(amount.Value * 100m, MidpointRounding.AwayFromZero);
+    private static int? ToCents(decimal? amount) => Amounts.ToCents(amount);
 }
 
 public enum CatalogResult { Ok, ItemNotFound, TripNotFound, LineNotFound, NameConflict, PriceLocked, Invalid }

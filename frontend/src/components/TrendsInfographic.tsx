@@ -63,7 +63,7 @@ function HideButton({ name, onHide }: { name: string; onHide?: () => void }) {
   return (
     <button
       type="button"
-      className="btn btn-ghost btn-sm -my-1 -mr-2 min-h-9 shrink-0 px-2 text-text/50 hover:text-text"
+      className="btn btn-ghost btn-sm -my-1.5 -mr-2 min-h-11 shrink-0 px-2 text-text/50 hover:text-text"
       aria-label={`Hide ${name} from this list`}
       title="Hide from this list"
       onClick={onHide}

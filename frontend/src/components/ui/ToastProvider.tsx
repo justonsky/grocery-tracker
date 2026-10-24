@@ -27,9 +27,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={addToast}>
       {children}
-      {/* Cleared above the mobile bottom tab nav (see AppShell), flush to the
-          corner on desktop where that nav doesn't exist. */}
-      <div className="pointer-events-none fixed right-4 bottom-24 left-4 z-50 flex flex-col items-end gap-2 sm:left-auto sm:max-w-96 lg:bottom-4">
+      {/* Phone: under the header, so a toast never covers the bottom tabs or a screen's docked
+          action bar (the trip editor's Save / Finish trip). Desktop: the bottom corner. */}
+      <div className="pointer-events-none fixed top-[calc(env(safe-area-inset-top)+4.25rem)] right-4 left-4 z-50 flex flex-col items-end gap-2 sm:left-auto sm:max-w-96 lg:top-auto lg:bottom-4">
         {toasts.map((toast) => (
           <div
             key={toast.id}

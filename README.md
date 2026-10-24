@@ -219,7 +219,7 @@ location with the `DataDirectory` environment variable.
 ### Tests
 
 ```bash
-cd backend && dotnet test                                  # API integration tests
+dotnet test                                                # API integration tests (from the repo root)
 cd frontend && npm test && npm run lint                    # unit tests (offline queue, cost math, autocomplete,
                                                            # quantities, recipes) + lint
 cd tools/seed && python3 -m unittest test_backfill_quantities test_merge_named_items  # the seed tools
@@ -293,7 +293,9 @@ Receipt import uses Anthropic's Claude to read photos, so the server needs outbo
 internet and an API key: set `Receipts__ApiKey` (or `ANTHROPIC_API_KEY`) in the
 environment and restart, then turn it on in Settings. `Receipts__Model` picks the
 model (default `claude-sonnet-5-5`). Each photo is sent to Anthropic to be read; the
-key never reaches the browser. Without a key the feature simply stays off.
+key never reaches the browser. Without a key the feature simply stays off. Reads are
+capped at `Receipts__ReadsPerHour` (default 30) so nobody on the network can run up
+the API bill.
 
 ### Security note
 

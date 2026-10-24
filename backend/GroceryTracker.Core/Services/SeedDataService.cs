@@ -8,15 +8,16 @@ namespace GroceryTracker.Core.Services;
 
 // Loads the shipped seed-data.json (real grocery history exported from the
 // household's spreadsheet) into an empty database. Deliberately no-ops the
-// moment the database already has a profile, so it can never overwrite or
-// duplicate a user's own data on a later start.
+// moment the database holds anything of the user's — a profile, or the
+// household-wide items, stores and recipes that outlive deleted profiles — so it
+// can never overwrite or duplicate a user's own data on a later start.
 public class SeedDataService(GroceryTrackerDbContext db, ILogger<SeedDataService>? logger = null)
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public async Task<SeedOutcome> SeedIfEmptyAsync(string filePath, CancellationToken ct = default)
     {
-        if (await db.Profiles.AnyAsync(ct))
+        if (await db.Profiles.AnyAsync(ct) || await db.Items.AnyAsync(ct) || await db.Stores.AnyAsync(ct) || await db.Recipes.AnyAsync(ct))
         {
             return SeedOutcome.SkippedNotEmpty;
         }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
-import type { Trip, TripInput, TripItemInput, TripStatus } from '../api/types'
+import type { Category, Trip, TripInput, TripItemInput, TripStatus, TripSummary } from '../api/types'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { SharePreview } from '../components/SharePreview'
@@ -19,8 +19,11 @@ import { itemsToAdd, lineKeysToDrop, useRecipes } from '../recipes'
 import type { Recipe } from '../api/types'
 import { summarize, summarizeByStore } from '../trips/costSummary'
 import { amountText, tidyAmount } from '../trips/amount'
+import { localIsoDate, tripDateLabel } from '../dates'
+import { useIsWide } from '../hooks/useIsWide'
+import { isPendingLineId, loadTrip, summaryOf, tripFromInput } from '../trips/pendingTrips'
 
-const todayIso = () => new Date().toISOString().slice(0, 10)
+const todayIso = () => localIsoDate()
 const money = (n: number) => `$${n.toFixed(2)}`
 const normalize = (name: string) => name.trim().toLowerCase()
 
@@ -95,12 +98,17 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const { data: categories } = useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
   const { data: existingTrip } = useQuery({
     queryKey: ['trip', profileId, tripId],
-    queryFn: () => api.trips(profileId).get(tripId!),
+    // A save still queued offline is what the trip is now (see pendingTrips).
+    queryFn: () =>
+      loadTrip(profileId, tripId!, () => api.trips(profileId).get(tripId!), queryClient.getQueryData<Category[]>(['categories']),
+        queryClient.getQueryData<Trip>(['trip', profileId, tripId])),
     enabled: isEditing,
   })
   const { data: sourceTrip, isError: sourceFailed } = useQuery({
     queryKey: ['trip', profileId, copyFromId],
-    queryFn: () => api.trips(profileId).get(copyFromId!),
+    queryFn: () =>
+      loadTrip(profileId, copyFromId!, () => api.trips(profileId).get(copyFromId!), queryClient.getQueryData<Category[]>(['categories']),
+        queryClient.getQueryData<Trip>(['trip', profileId, copyFromId])),
     enabled: Boolean(copyFromId),
   })
   // Full item/store lists back the autocomplete fields below — small
@@ -111,6 +119,9 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   const { data: storeSuggestions } = useQuery({ queryKey: ['stores'], queryFn: () => api.stores.search() })
 
   const [name, setName] = useState('')
+  // Phone only: the name / date / budget / stores card starts folded into one row.
+  const wide = useIsWide()
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const [date, setDate] = useState(todayIso())
   const [budget, setBudget] = useState('')
   const [status, setStatus] = useState<TripStatus>('planned')
@@ -225,7 +236,9 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       const cleanItems: TripItemInput[] = items
         .filter((r) => r.itemName.trim())
         .map((r) => ({
-          id: r.id,
+          // A line added offline has a placeholder id until its save syncs (see pendingTrips);
+          // without an id the server pairs it with its synced copy by name.
+          id: isPendingLineId(r.id) ? null : r.id,
           itemName: r.itemName,
           categoryId: r.categoryId,
           storeName: r.storeName,
@@ -245,7 +258,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         recipeIds,
       }
 
-      return performOrQueue(() => api.trips(profileId).upsert(id, input), {
+      const outcome = await performOrQueue(() => api.trips(profileId).upsert(id, input), {
         entity: 'trip',
         action: 'put',
         entityId: id,
@@ -257,6 +270,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         dependsOn: Array.from(new Set(cleanItems.map((i) => i.categoryId))),
         label: `Trip "${input.name || input.date}"`,
       })
+      return { ...outcome, input }
     },
     onSuccess: (outcome, { status: nextStatus, leave, edits }) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard', profileId] })
@@ -264,12 +278,29 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
       queryClient.invalidateQueries({ queryKey: ['items'] })
       queryClient.invalidateQueries({ queryKey: ['stores'] })
       queryClient.invalidateQueries({ queryKey: ['item-history'] })
+      // Everything else a saved trip feeds: trends, dashboard grids, the Items portal.
+      queryClient.invalidateQueries({ queryKey: ['trends'] })
+      queryClient.invalidateQueries({ queryKey: ['tracked-items'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['item-lines'] })
+      queryClient.invalidateQueries({ queryKey: ['household-trips'] })
       setPersisted(true)
       setStatus(nextStatus)
       // What was just sent (or queued) is saved: leaving now loses nothing.
       if (editsRef.current === edits) baselineRef.current = edits
 
       const queuedMessage = "Saved on this device — will sync when you're back online."
+      if (!outcome.sent) {
+        // Show the trip as saved until the queued save lands (see pendingTrips): in the
+        // lists, and in this editor if it's opened again.
+        const previous = queryClient.getQueryData<Trip>(['trip', profileId, id])
+        const queued = tripFromInput(id, outcome.input, previous, categories)
+        queryClient.setQueryData(['trip', profileId, id], queued)
+        queryClient.setQueryData<TripSummary[]>(['trips', profileId], (list) =>
+          // No list cached yet (Trips never opened on this device): start one, so the trip is findable offline.
+          list ? (list.some((t) => t.id === id) ? list.map((t) => (t.id === id ? summaryOf(queued) : t)) : [summaryOf(queued), ...list]) : [summaryOf(queued)],
+        )
+      }
       if (leave) {
         toast('success', outcome.sent ? SAVED[nextStatus] : queuedMessage)
         navigate('/trips')
@@ -285,6 +316,9 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         queryClient.setQueryData(['trip', profileId, id], outcome.result)
         if (editsRef.current === edits) {
           hydrate(outcome.result)
+          // The form now is the server copy (lines have ids). The guard reads editsRef, which
+          // only catches up on the next render — after this navigation — so catch it up now.
+          editsRef.current = baselineRef.current!
           if (!isEditing) navigate(`/trips/${id}`, { replace: true })
         }
       }
@@ -531,7 +565,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
   }
 
   return (
-    <div className="mx-auto max-w-[860px] px-4 pt-5 pb-25 sm:px-5 sm:pt-6">
+    <div className="mx-auto max-w-[960px] px-4 pt-5 pb-25 sm:px-5 sm:pt-6">
       <div className="mb-4 flex flex-wrap items-center gap-x-2.5 gap-y-2">
         <button
           type="button"
@@ -545,11 +579,6 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         </button>
         <div className="min-w-0 flex-1 basis-40">
           <h3 className="m-0 truncate">{persisted ? TITLE[status] : copyFromId ? 'Shop again' : 'New shopping list'}</h3>
-          {pickedCount != null && (
-            <div className="text-xs text-text/70 tabular-nums">
-              {pickedCount} of {totals.lineCount} picked up
-            </div>
-          )}
         </div>
         <span className={`tag text-[11px] ${STATUS_TAG_CLASS[status]}`}>{STATUS_TAG[status]}</span>
         {isEditing && (
@@ -564,7 +593,31 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         )}
       </div>
 
+      {!wide && !detailsOpen ? (
+        // Phone: the trip's details fold into one row, so the list starts near the top of the screen.
+        <button
+          type="button"
+          className="card flex min-h-14 w-full cursor-pointer flex-row items-center gap-3 border border-divider p-3.5 text-left elev-sm"
+          aria-expanded={false}
+          onClick={() => setDetailsOpen(true)}
+        >
+          <span className="grid min-w-0 flex-1 gap-0.5">
+            <span className="truncate text-[15px] font-semibold">{name.trim() || tripDateLabel(date)}</span>
+            <span className="truncate text-xs text-text/65">
+              {[name.trim() ? tripDateLabel(date) : null, stores.length > 0 ? stores.join(', ') : 'No stores yet', parsedBudget != null ? `budget ${money(parsedBudget)}` : null]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          </span>
+          <span className="shrink-0 text-sm font-semibold text-accent">Edit details</span>
+        </button>
+      ) : (
       <div className="card gap-4 border border-divider p-4 elev-sm sm:p-5">
+        {!wide && (
+          <button type="button" className="btn btn-ghost btn-sm -mt-1 -mb-2 self-end" aria-expanded={true} onClick={() => setDetailsOpen(false)}>
+            Done
+          </button>
+        )}
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-[2fr_1fr_1fr]">
           <div className="field">
             <label htmlFor="trip-name">Name</label>
@@ -584,9 +637,14 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
               type="date"
               value={date}
               disabled={hasLockedItems}
-              title={hasLockedItems ? 'Fixed once prices on this trip are locked — price history is dated by the trip' : undefined}
+              aria-describedby={hasLockedItems ? 'trip-date-locked' : undefined}
               onChange={(e) => setDate(e.target.value)}
             />
+            {hasLockedItems && (
+              <p id="trip-date-locked" className="m-0 mt-1 text-xs text-text/65">
+                Fixed: prices on this trip are locked, and price history is dated by the trip.
+              </p>
+            )}
           </div>
           <div className="field">
             <label htmlFor="trip-budget">Budget (optional)</label>
@@ -605,24 +663,29 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
         </div>
 
         <div className="field">
-          <label>Stores</label>
+          <label htmlFor="trip-store-to-add">Stores</label>
           <div className="mb-2 flex flex-wrap gap-1.5">
             {stores.map((s) => (
               <span key={s} className="tag tag-neutral flex items-center gap-1 py-0.5 pr-0.5 pl-3 text-[13px]">
                 {s}
                 <button
                   type="button"
+                  aria-label={`Remove ${s}`}
                   title={`Remove ${s}`}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-base leading-none text-text/70 hover:bg-text/10 hover:text-text"
+                  // 32px to look at, 44px to tap (the ::after reaches past the chip).
+                  className="relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-transparent p-0 text-text/70 after:absolute after:-inset-1.5 hover:bg-text/10 hover:text-text"
                   onClick={() => removeStore(s)}
                 >
-                  ×
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                  </svg>
                 </button>
               </span>
             ))}
           </div>
           <div className="flex gap-2">
             <Combobox
+              id="trip-store-to-add"
               wrapperClassName="flex-1"
               aria-label="Store to add"
               placeholder="e.g. Costco"
@@ -639,6 +702,7 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
           </div>
         </div>
       </div>
+      )}
 
       <div className="mt-4 grid gap-3.5">
         {/* Running totals. Pinned to the top of the screen while shopping, so the
@@ -688,17 +752,18 @@ function TripEditorScreen({ profileId }: { profileId: string }) {
               )}
             </div>
           )}
-          <div className="flex justify-end">
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm max-sm:min-h-11"
-              disabled={namedItems.length === 0}
-              title="Set each item's estimate to the average price you've paid for it. Items with no price history are left as they are."
-              onClick={fillEstimates}
-            >
-              Fill estimates from averages
-            </button>
-          </div>
+        </div>
+        {/* Outside the pinned totals: it's a planning tool, and the pinned block should stay short while shopping. */}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm max-sm:min-h-11"
+            disabled={namedItems.length === 0}
+            title="Set each item's estimate to the average price you've paid for it. Items with no price history are left as they are."
+            onClick={fillEstimates}
+          >
+            Fill estimates from averages
+          </button>
         </div>
 
         <PlannedMeals meals={plannedMeals} onRemove={unplanRecipe} />

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useUnsavedChangesGuard } from '../app/useUnsavedChangesGuard'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
 import { parseQuantity, perUnit, validQuantity } from '../trips/quantity'
 import { amountText, tidyAmount } from '../trips/amount'
+import { tripDateLabel } from '../dates'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const normalize = (s: string) => s.trim().toLowerCase()
@@ -19,7 +20,8 @@ const parseAmount = (value: string) => {
   return value.trim() !== '' && Number.isFinite(n) && n >= 0 ? n : null
 }
 const tripLabel = (t: { date: string; name: string | null; stores?: string[]; profileName: string }) =>
-  `${t.date} · ${t.name || t.stores?.join(', ') || 'Trip'} · ${t.profileName}`
+  `${tripDateLabel(t.date)} · ${t.name || t.stores?.join(', ') || 'Trip'} · ${t.profileName}`
+const TRIP_STATUS: Record<string, string> = { planned: 'Planned list', shopping: 'Shopping', done: 'Finished trip' }
 
 // Anything an Items-portal edit can change: the catalogue, price history and
 // averages, trips (lines move between them), and every dashboard grid.
@@ -68,7 +70,18 @@ export function ItemEditor({
   const categoryValue = categoryId ?? item?.defaultCategoryId ?? ''
   const detailsDirty = !!item && (nameValue.trim() !== item.name || categoryValue !== (item.defaultCategoryId ?? ''))
 
-  useUnsavedChangesGuard(detailsDirty)
+  // Purchase records being edited (or added) count too: switching items would drop them.
+  const [dirtyLines, setDirtyLines] = useState<ReadonlySet<string>>(() => new Set())
+  const markLine = useCallback((key: string, dirty: boolean) => {
+    setDirtyLines((current) => {
+      if (current.has(key) === dirty) return current
+      const next = new Set(current)
+      if (dirty) next.add(key)
+      else next.delete(key)
+      return next
+    })
+  }, [])
+  useUnsavedChangesGuard(detailsDirty || dirtyLines.size > 0, { searchParam: 'item' })
 
   const saveDetails = useMutation({
     mutationFn: () => api.catalog.update(itemId, { name: nameValue.trim(), defaultCategoryId: categoryValue || null }),
@@ -82,7 +95,8 @@ export function ItemEditor({
   })
 
   const deleteItem = useMutation({
-    mutationFn: () => api.catalog.delete(itemId),
+    // The confirm below says the price history goes too, locked purchases included.
+    mutationFn: () => api.catalog.delete(itemId, true),
     onSuccess: () => {
       invalidateItemData(queryClient)
       toast('success', 'Item deleted.')
@@ -180,7 +194,7 @@ export function ItemEditor({
         {lines?.length === 0 && <p className="m-0 text-sm text-text/60">Not on any trip yet.</p>}
         <div className="grid gap-2">
           {lines?.slice(0, linesShown).map((line) => (
-            <LineRow key={line.id} itemId={itemId} line={line} trips={trips ?? []} storeOptions={storeOptions} online={online} />
+            <LineRow key={line.id} itemId={itemId} line={line} trips={trips ?? []} storeOptions={storeOptions} online={online} onDirty={markLine} />
           ))}
         </div>
         {lines && lines.length > linesShown && (
@@ -188,7 +202,7 @@ export function ItemEditor({
             Show {Math.min(10, lines.length - linesShown)} more of {lines.length - linesShown}
           </button>
         )}
-        <AddLine itemId={itemId} trips={trips ?? []} storeOptions={storeOptions} online={online} />
+        <AddLine itemId={itemId} trips={trips ?? []} storeOptions={storeOptions} online={online} onDirty={markLine} />
       </section>
 
       <ReceiptNames itemId={itemId} online={online} />
@@ -276,12 +290,14 @@ function LineRow({
   trips,
   storeOptions,
   online,
+  onDirty,
 }: {
   itemId: string
   line: ItemLine
   trips: HouseholdTrip[]
   storeOptions: ComboOption[]
   online: boolean
+  onDirty: (key: string, dirty: boolean) => void
 }) {
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -296,6 +312,10 @@ function LineRow({
   const dirty =
     tripId !== line.tripId || store.trim() !== (line.storeName ?? '') || parseAmount(price) !== line.price ||
     parsedQuantity !== (line.quantity ?? 1) || unit !== (line.unit ?? 'each')
+  useEffect(() => {
+    onDirty(line.id, dirty)
+    return () => onDirty(line.id, false)
+  }, [dirty, line.id, onDirty])
 
   const save = useMutation({
     mutationFn: (body: SaveItemLineRequest) => api.catalog.updateLine(itemId, line.id, body),
@@ -306,7 +326,7 @@ function LineRow({
     onError: (error) => toast('error', errorMessage(error, "Couldn't save this record.")),
   })
   const remove = useMutation({
-    mutationFn: () => api.catalog.deleteLine(itemId, line.id),
+    mutationFn: () => api.catalog.deleteLine(itemId, line.id, line.priceLocked),
     onSuccess: () => invalidateItemData(queryClient),
     onError: () => toast('error', "Couldn't remove this record."),
   })
@@ -325,8 +345,9 @@ function LineRow({
   }
   const onRemove = async () => {
     const ok = await confirm({
-      title: 'Remove this purchase record?',
-      body: `Takes it off the ${line.tripDate} trip${line.price != null ? ` and out of the price history (${money(line.price)})` : ''}.`,
+      title: line.priceLocked ? 'Remove a locked purchase record?' : 'Remove this purchase record?',
+      body: `Takes it off the ${tripDateLabel(line.tripDate)} trip${line.price != null ? ` and out of the price history (${money(line.price)})` : ''}.` +
+        (line.priceLocked ? ' Its price was entered more than 7 days ago, so it is read-only in the trip editor.' : ''),
       confirmLabel: 'Remove',
     })
     if (ok) remove.mutate()
@@ -353,7 +374,7 @@ function LineRow({
         min="0"
         inputMode="decimal"
         aria-label="Price paid"
-        placeholder="Planned"
+        placeholder="Not bought"
         value={price}
         disabled={!online}
         onChange={(e) => setPrice(e.target.value)}
@@ -383,7 +404,7 @@ function LineRow({
         </button>
       </div>
       <div className="col-span-2 text-xs text-text/60 sm:col-span-5">
-        {line.profileName} · {line.tripStatus}
+        {line.profileName} · {TRIP_STATUS[line.tripStatus] ?? line.tripStatus}
         {line.estimate != null && ` · estimated ${money(line.estimate)}`}
       </div>
     </div>
@@ -395,11 +416,13 @@ function AddLine({
   trips,
   storeOptions,
   online,
+  onDirty,
 }: {
   itemId: string
   trips: HouseholdTrip[]
   storeOptions: ComboOption[]
   online: boolean
+  onDirty: (key: string, dirty: boolean) => void
 }) {
   const queryClient = useQueryClient()
   const toast = useToast()
@@ -410,6 +433,11 @@ function AddLine({
   const [quantity, setQuantity] = useState('')
   const [unit, setUnit] = useState<QuantityUnit>('each')
   const parsedQuantity = quantity.trim() ? parseQuantity(quantity) : 1
+  const dirty = open && (!!tripId || !!store.trim() || !!price.trim() || !!quantity.trim())
+  useEffect(() => {
+    onDirty('new', dirty)
+    return () => onDirty('new', false)
+  }, [dirty, onDirty])
 
   const add = useMutation({
     mutationFn: () => api.catalog.addLine(itemId, { tripId, storeName: store.trim() || null, price: parseAmount(price), quantity: parsedQuantity ?? 1, unit }),

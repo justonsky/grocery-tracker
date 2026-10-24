@@ -9,6 +9,7 @@ import type { DraftItem } from '../TripItemList'
 import { Combobox, type ComboOption } from '../ui/Combobox'
 import { Dialog } from '../ui/Dialog'
 import { useToast } from '../ui/ToastProvider'
+import { useConfirm } from '../ui/ConfirmProvider'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const MAX_SIDE = 2000
@@ -99,9 +100,13 @@ export function ReceiptImport({
 
   // A line's item: a name learned from an earlier receipt first, then the trip's own unbought line,
   // then the model's suggestion, else a new item named after the line.
+  // Lines the user has changed keep their changes when the rows are rebuilt for another store.
+  const touchedRef = useRef(new Set<string>())
   const buildRows = (d: ReceiptDraft, forStore: string) => {
     const planned = pairWithPlanned(d.lines, items, forStore || null)
-    setRows(
+    const keep = (built: Row[]) => (previous: Row[]) =>
+      built.map((row) => (touchedRef.current.has(row.lineId) ? (previous.find((p) => p.lineId === row.lineId) ?? row) : row))
+    setRows(keep(
       d.lines
         .filter((l) => l.kind === 'item')
         .map((l): Row => {
@@ -115,7 +120,7 @@ export function ReceiptImport({
           if (l.match) return { lineId: l.id, include: true, itemName: l.match.itemName, categoryId: l.match.categoryId ?? l.categoryId ?? otherCategory, source: 'suggested', plannedKey: null }
           return { lineId: l.id, include: true, itemName: l.name ?? titleCase(l.text), categoryId: l.categoryId ?? otherCategory, source: 'new', plannedKey: null }
         }),
-    )
+    ))
   }
 
   const startReview = (d: ReceiptDraft) => {
@@ -206,7 +211,25 @@ export function ReceiptImport({
     onError: () => toast('error', "Couldn't apply the receipt. Check you're connected and try again."),
   })
 
-  const update = (lineId: string, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.lineId === lineId ? { ...r, ...patch } : r)))
+  const update = (lineId: string, patch: Partial<Row>) => {
+    touchedRef.current.add(lineId)
+    setRows((rs) => rs.map((r) => (r.lineId === lineId ? { ...r, ...patch } : r)))
+  }
+
+  // Leaving the review throws the read receipt away (see discardRef), so ask first.
+  const confirm = useConfirm()
+  const requestClose = async () => {
+    if (stage === 'review') {
+      const discard = await confirm({
+        title: 'Discard this receipt?',
+        body: 'Nothing has been added to the trip yet. Reading it again means taking the photo again.',
+        confirmLabel: 'Discard receipt',
+        cancelLabel: 'Keep reviewing',
+      })
+      if (!discard) return
+    }
+    onClose()
+  }
   const sourceTag: Record<Row['source'], { label: string; cls: string }> = {
     alias: { label: 'Saved match', cls: 'tag-accent' },
     planned: { label: 'On your list', cls: 'tag-accent' },
@@ -281,7 +304,7 @@ export function ReceiptImport({
   const storeChoices = [...new Set([...stores, ...(draft.storeName ? [draft.storeName] : []), ...(store ? [store] : [])])]
 
   return (
-    <Dialog title="Check the receipt" onClose={onClose} wide>
+    <Dialog title="Check the receipt" onClose={() => void requestClose()} wide>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
         <div className="field">
           <label htmlFor="receipt-store">Store</label>
@@ -350,7 +373,7 @@ export function ReceiptImport({
                   <span className={`tag ${tag.cls} text-[11px]`}>{tag.label}</span>
                   {!known && row.include && (
                     <select
-                      className="input !min-h-9 !w-auto !py-1 text-xs"
+                      className="input !w-auto !py-1 text-xs"
                       aria-label={`Category for ${row.itemName || line.text}`}
                       value={row.categoryId}
                       onChange={(e) => update(row.lineId, { categoryId: e.target.value })}
@@ -388,11 +411,12 @@ export function ReceiptImport({
         </label>
       )}
 
-      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-divider pt-3">
+      {/* Docked to the bottom of the dialog: a long receipt shouldn't mean scrolling to the end to finish. */}
+      <div className="sticky -bottom-5 -mx-5 -mb-5 flex flex-wrap items-center justify-end gap-2 border-t border-divider bg-surface px-5 py-3">
         <span className="mr-auto text-sm text-text/70">
           {included.length} of {rows.length} lines kept · matched lines are ticked off as bought
         </span>
-        <button type="button" className="btn btn-ghost" onClick={onClose}>
+        <button type="button" className="btn btn-ghost" onClick={() => void requestClose()}>
           Cancel
         </button>
         <button type="button" className="btn btn-primary" disabled={!store.trim() || missingName || apply.isPending} onClick={() => apply.mutate()}>

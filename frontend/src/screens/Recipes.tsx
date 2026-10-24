@@ -107,8 +107,11 @@ export function Recipes() {
             <div key={i} className="skel aspect-[4/3]" />
           ))}
         </div>
-      ) : isError && !recipes ? (
-        <div className="card elev-sm items-center gap-2 px-6 py-8 text-center text-text/70">Couldn't load the recipes. They need your home server — check you're connected.</div>
+      ) : !recipes ? (
+        // Failed, or paused while offline before they ever loaded.
+        <div className="card elev-sm items-center gap-2 px-6 py-8 text-center text-text/70">
+          {isError ? "Couldn't load the recipes." : 'Recipes load from your home server.'} Reconnect to see them — after that they're kept for offline use.
+        </div>
       ) : recipes && recipes.length === 0 ? (
         <section className="card elev-sm items-center gap-3 px-8 py-10 text-center">
           <span className="grid h-12 w-12 place-items-center rounded-[14px] bg-accent-800 text-accent-200">

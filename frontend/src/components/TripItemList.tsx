@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import type { Category, PriceUnit, QuantityUnit, TripStatus } from '../api/types'
 import { parseQuantity, perUnit, quantityLabel } from '../trips/quantity'
 import { QuantityField } from './QuantityField'
@@ -6,6 +6,7 @@ import { summarize } from '../trips/costSummary'
 import { STORE_DEFAULT_COLORS, slug } from '../trips/shareGroups'
 import { Combobox, type ComboOption } from './ui/Combobox'
 import { tidyAmount } from '../trips/amount'
+import { useIsWide } from '../hooks/useIsWide'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 
@@ -63,21 +64,9 @@ interface ListProps {
   onImportReceipt?: (storeName: string | null) => void
 }
 
-function useIsWide() {
-  const query = '(min-width: 640px)'
-  const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
-  useEffect(() => {
-    const media = window.matchMedia(query)
-    const listener = (e: MediaQueryListEvent) => setWide(e.matches)
-    media.addEventListener('change', listener)
-    return () => media.removeEventListener('change', listener)
-  }, [])
-  return wide
-}
-
 // Wide rows: tick, item, quantity, category, store, estimate, paid, remove/lock.
 const WIDE_COLS =
-  'grid grid-cols-[auto_minmax(0,1.5fr)_8.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto]'
+  'grid grid-cols-[auto_minmax(0,2fr)_8rem_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,0.75fr)_minmax(0,0.75fr)_auto]'
 
 const LockIcon = ({ size = 14 }: { size?: number }) => (
   <svg
@@ -115,7 +104,13 @@ export function TripItemList(props: ListProps) {
   const { items, stores, status } = props
   const wide = useIsWide()
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
-  const [cartOpen, setCartOpen] = useState<Set<string>>(() => new Set())
+  // A store's "in the cart" group opens by itself once nothing is left to find there (after a
+  // receipt import ticks everything, say); tapping it is the user's choice from then on.
+  const [cartChoice, setCartChoice] = useState<Map<string, boolean>>(() => new Map())
+  // Which rows have their details open, kept here so ticking a row (which moves it between
+  // "to find" and "in the cart", remounting it) doesn't close them.
+  const [detailsOpen, setDetailsOpen] = useState<Set<string>>(() => new Set())
+  const toggleDetails = (key: string) => setDetailsOpen((s) => toggle(s, key))
   const toggle = (set: Set<string>, key: string) => {
     const next = new Set(set)
     if (next.has(key)) next.delete(key)
@@ -164,7 +159,7 @@ export function TripItemList(props: ListProps) {
         const totals = summarize(named.map((i) => ({ storeName, estimate: parseAmount(i.estimate), price: parseAmount(i.price) })))
         const picked = named.filter((i) => i.checked).length
         const isCollapsed = collapsed.has(key)
-        const cartIsOpen = cartOpen.has(key)
+        const cartIsOpen = cartChoice.get(key) ?? toFind.length === 0
         const tint = storeName ? STORE_DEFAULT_COLORS[slug(storeName)] : undefined
 
         return (
@@ -214,7 +209,7 @@ export function TripItemList(props: ListProps) {
             {!isCollapsed && (
               <div className="flex flex-col">
                 {toFind.map((item, i) => (
-                  <ItemRow key={item.key} item={item} wide={wide} first={!showHeaders && i === 0} {...props} />
+                  <ItemRow key={item.key} item={item} wide={wide} first={!showHeaders && i === 0} open={detailsOpen.has(item.key)} onToggle={toggleDetails} {...props} />
                 ))}
                 {shopping && toFind.length === 0 && named.length > 0 && (
                   <p className={`m-0 px-4 py-3 text-xs text-text/60 ${showHeaders ? 'border-t border-divider' : ''}`}>
@@ -226,7 +221,7 @@ export function TripItemList(props: ListProps) {
                     <button
                       type="button"
                       aria-expanded={cartIsOpen}
-                      onClick={() => setCartOpen((s) => toggle(s, key))}
+                      onClick={() => setCartChoice((m) => new Map(m).set(key, !cartIsOpen))}
                       className="flex min-h-12 w-full cursor-pointer items-center gap-2 border-0 border-t border-divider bg-bg px-4 text-left text-[13px] font-semibold text-accent-200 hover:bg-chip"
                     >
                       <svg
@@ -245,7 +240,10 @@ export function TripItemList(props: ListProps) {
                       </svg>
                       {cartIsOpen ? 'Hide' : 'Show'} {inCart.length} in the cart
                     </button>
-                    {cartIsOpen && inCart.map((item) => <ItemRow key={item.key} item={item} wide={wide} first={false} {...props} />)}
+                    {cartIsOpen &&
+                      inCart.map((item) => (
+                        <ItemRow key={item.key} item={item} wide={wide} first={false} open={detailsOpen.has(item.key)} onToggle={toggleDetails} {...props} />
+                      ))}
                   </>
                 )}
                 <div className={`px-2 py-1 sm:px-2.5 ${showHeaders || sectionItems.length > 0 ? 'border-t border-divider' : ''}`}>
@@ -286,8 +284,10 @@ function ItemRow({
   onPick,
   onPrice,
   onRemove,
-}: ListProps & { item: DraftItem; wide: boolean; first: boolean }) {
-  const [open, setOpen] = useState(false)
+  open,
+  onToggle,
+}: ListProps & { item: DraftItem; wide: boolean; first: boolean; open: boolean; onToggle: (key: string) => void }) {
+  const setOpen = (next: boolean) => next !== open && onToggle(item.key)
   const average = averageFor(item)
   const estimate = parseAmount(item.estimate)
   const amountLabel = quantityLabel(parseQuantity(item.quantity) ?? 1, item.unit)
@@ -312,6 +312,8 @@ function ItemRow({
       className={`font-semibold ${struck ? 'text-text/60 line-through' : ''}`}
       placeholder="Item name"
       aria-label="Item name"
+      // Long names are cut off in the narrow column; the full name shows on hover / long-press.
+      title={item.itemName || undefined}
       value={item.itemName}
       disabled={item.locked}
       options={itemOptions}
@@ -323,6 +325,7 @@ function ItemRow({
     <select
       className="input"
       aria-label="Category"
+      title={categories?.find((c) => c.id === item.categoryId)?.name}
       value={item.categoryId}
       disabled={item.locked}
       onChange={(e) => onUpdate(item.key, { categoryId: e.target.value })}
@@ -338,6 +341,7 @@ function ItemRow({
     <select
       className="input"
       aria-label="Store"
+      title={item.storeName ?? 'Any store'}
       value={item.storeName ?? ''}
       disabled={item.locked}
       onChange={(e) => onUpdate(item.key, { storeName: e.target.value || null })}
@@ -455,7 +459,7 @@ function ItemRow({
         className="btn btn-ghost btn-icon text-text/70"
         aria-expanded={open}
         aria-label={`${open ? 'Hide' : 'Show'} details for ${item.itemName || 'item'}`}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(!open)}
       >
         {item.locked ? <LockIcon size={16} /> : <MoreIcon />}
       </button>
@@ -476,7 +480,7 @@ function ItemRow({
                 {average.lineEstimate != null && !item.locked && item.estimate !== average.lineEstimate.toFixed(2) && (
                   <button
                     type="button"
-                    className="btn btn-ghost btn-sm min-h-9 px-2 text-accent-200"
+                    className="btn btn-ghost btn-sm min-h-11 px-2 text-accent-200"
                     onClick={() => onUpdate(item.key, { estimate: average.lineEstimate!.toFixed(2) })}
                   >
                     Use {money(average.lineEstimate)}

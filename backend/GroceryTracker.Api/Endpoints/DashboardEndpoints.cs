@@ -9,8 +9,9 @@ public static class DashboardEndpoints
     {
         var group = app.MapGroup("/api/v1/profiles/{profileId:guid}/dashboard").WithTags("Dashboard");
 
-        group.MapGet("/", async (Guid profileId, DashboardService service, CancellationToken ct) =>
-            Results.Ok(await service.GetSummaryAsync(profileId, ct)));
+        // ?today=yyyy-MM-dd: the device's local date, which "today" and "this month" are counted by.
+        group.MapGet("/", async (Guid profileId, string? today, DashboardService service, CancellationToken ct) =>
+            Results.Ok(await service.GetSummaryAsync(profileId, today, ct)));
 
         group.MapGet("/tracked-items", async (Guid profileId, string? search, DashboardService service, CancellationToken ct) =>
             Results.Ok(await service.GetTrackedItemsAsync(profileId, search, ct)));

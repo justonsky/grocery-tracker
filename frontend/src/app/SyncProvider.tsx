@@ -129,9 +129,14 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     [runDrain],
   )
 
-  const discardFailedOp = useCallback(async (op: OutboxOp) => {
-    await discardOp(op)
-  }, [])
+  // Ops that waited on the discarded one can go now.
+  const discardFailedOp = useCallback(
+    async (op: OutboxOp) => {
+      await discardOp(op)
+      void runDrain()
+    },
+    [runDrain],
+  )
 
   const retryAllFailed = useCallback(async () => {
     for (const op of failedOps) {

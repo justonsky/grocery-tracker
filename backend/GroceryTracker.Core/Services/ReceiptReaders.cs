@@ -27,6 +27,8 @@ public class ReceiptOptions
     public string Model { get; set; } = "claude-sonnet-5-5";
     public string Endpoint { get; set; } = "https://api.anthropic.com/v1/messages";
     public string? FixtureDir { get; set; }
+    // Each read is a paid API call and anyone on the network can send one, so they're capped.
+    public int ReadsPerHour { get; set; } = 30;
 }
 
 public class ReceiptReadException(string message, Exception? inner = null) : Exception(message, inner);

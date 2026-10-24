@@ -29,8 +29,9 @@ public static class ItemEndpoints
             return result == CatalogResult.Ok ? Results.Ok(item) : Problem(result);
         });
 
-        api.MapDelete("/items/{itemId:guid}", async (Guid itemId, ItemCatalogService service, CancellationToken ct) =>
-            await service.DeleteAsync(itemId, ct) ? Results.NoContent() : Problem(CatalogResult.ItemNotFound));
+        // ?confirmLocked=true also removes purchases whose price is locked (else 409 price-locked).
+        api.MapDelete("/items/{itemId:guid}", async (Guid itemId, bool? confirmLocked, ItemCatalogService service, CancellationToken ct) =>
+            await service.DeleteAsync(itemId, confirmLocked == true, ct) is var result && result == CatalogResult.Ok ? Results.NoContent() : Problem(result));
 
         api.MapGet("/items/{itemId:guid}/lines", async (Guid itemId, ItemCatalogService service, CancellationToken ct) =>
             await service.GetLinesAsync(itemId, ct) is { } lines ? Results.Ok(lines) : Problem(CatalogResult.ItemNotFound));
@@ -48,8 +49,10 @@ public static class ItemEndpoints
             return result == CatalogResult.Ok ? Results.Ok(line) : Problem(result);
         });
 
-        api.MapDelete("/items/{itemId:guid}/lines/{lineId:guid}", async (Guid itemId, Guid lineId, ItemCatalogService service, CancellationToken ct) =>
-            await service.DeleteLineAsync(itemId, lineId, ct) ? Results.NoContent() : Problem(CatalogResult.LineNotFound));
+        api.MapDelete("/items/{itemId:guid}/lines/{lineId:guid}", async (
+            Guid itemId, Guid lineId, bool? confirmLocked, ItemCatalogService service, CancellationToken ct) =>
+            await service.DeleteLineAsync(itemId, lineId, confirmLocked == true, ct) is var result && result == CatalogResult.Ok
+                ? Results.NoContent() : Problem(result));
 
         api.MapPost("/items/{itemId:guid}/merge", async (Guid itemId, MergeItemRequest request, ItemCatalogService service, CancellationToken ct) =>
         {
@@ -66,7 +69,7 @@ public static class ItemEndpoints
         CatalogResult.NameConflict => Results.Problem(type: ProblemTypes.ItemNameConflict,
             title: "Another item already has that name — merge the two instead.", statusCode: StatusCodes.Status409Conflict),
         CatalogResult.PriceLocked => Results.Problem(type: ProblemTypes.PriceLocked,
-            title: "This price is locked. Confirm to correct it anyway.", statusCode: StatusCodes.Status409Conflict),
+            title: "This price is locked. Confirm to change it anyway.", statusCode: StatusCodes.Status409Conflict),
         _ => Results.Problem(type: ProblemTypes.Validation, title: "That request wasn't valid.", statusCode: StatusCodes.Status400BadRequest),
     };
 }

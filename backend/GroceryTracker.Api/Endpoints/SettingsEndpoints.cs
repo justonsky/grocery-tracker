@@ -26,6 +26,12 @@ public static class SettingsEndpoints
                     title: $"Chart scheme must be one of: {string.Join(", ", SettingsService.ChartSchemes)}.",
                     statusCode: StatusCodes.Status400BadRequest);
             }
+            if (request.ThemeMode is not null && !SettingsService.ThemeModes.Contains(request.ThemeMode))
+            {
+                return Results.Problem(type: ProblemTypes.Validation,
+                    title: $"Theme mode must be one of: {string.Join(", ", SettingsService.ThemeModes)}.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
             return Results.Ok(await service.UpdateAsync(request, ct));
         });
     }

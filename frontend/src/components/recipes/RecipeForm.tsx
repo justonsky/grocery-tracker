@@ -7,6 +7,7 @@ import { newClientId } from '../../offline/performOrQueue'
 import { Combobox, type ComboOption } from '../ui/Combobox'
 import { Dialog } from '../ui/Dialog'
 import { useToast } from '../ui/ToastProvider'
+import { useConfirm } from '../ui/ConfirmProvider'
 import { recipePhotoUrl } from '../../recipes'
 import { CAMERA, CLOSE, RecipeIcon } from './icons'
 import { usePhotoPicker } from './usePhotoPicker'
@@ -59,6 +60,20 @@ export function RecipeForm({ recipe, onClose, onSaved }: { recipe?: Recipe; onCl
   const dirty = current !== initial || photo !== null || removePhoto
   const [saved, setSaved] = useState(false)
   useUnsavedChangesGuard(() => dirty && !saved)
+  // Escape, the backdrop, the X and Cancel close the dialog: none of them should drop edits unasked.
+  const confirm = useConfirm()
+  const requestClose = async () => {
+    if (dirty && !saved) {
+      const discard = await confirm({
+        title: 'Discard your changes?',
+        body: "This recipe has changes that haven't been saved.",
+        confirmLabel: 'Discard changes',
+        cancelLabel: 'Keep editing',
+      })
+      if (!discard) return
+    }
+    onClose()
+  }
 
   const options: ComboOption[] = useMemo(
     () => (catalogue ?? []).filter((i) => !rows.some((r) => normalize(r.itemName) === normalize(i.name))).map((i) => ({ value: i.name, label: i.name, hint: i.averagePrice != null ? `avg $${i.averagePrice.toFixed(2)}` : undefined })),
@@ -114,7 +129,7 @@ export function RecipeForm({ recipe, onClose, onSaved }: { recipe?: Recipe; onCl
   const shownPhoto = preview ?? (!removePhoto && recipe && recipe.photoVersion > 0 ? recipePhotoUrl(recipe.id, recipe.photoVersion) : null)
 
   return (
-    <Dialog title={recipe ? 'Edit recipe' : 'New recipe'} onClose={onClose} wide>
+    <Dialog title={recipe ? 'Edit recipe' : 'New recipe'} onClose={() => void requestClose()} wide>
       <form
         className="grid gap-4"
         onSubmit={(e) => {
@@ -240,7 +255,7 @@ export function RecipeForm({ recipe, onClose, onSaved }: { recipe?: Recipe; onCl
           </p>
         )}
         <div className="flex flex-wrap justify-end gap-2">
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
+          <button type="button" className="btn btn-ghost" onClick={() => void requestClose()}>
             Cancel
           </button>
           <button type="submit" className="btn btn-primary" disabled={save.isPending}>

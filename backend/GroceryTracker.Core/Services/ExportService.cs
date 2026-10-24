@@ -140,7 +140,7 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
         FormatMoney(itemsSheet, row, 5, 13, 14, 15);
 
         var recipes = await db.Recipes
-            .Select(r => new { r.Name, r.Description, r.PhotoVersion, Items = r.Items.OrderBy(i => i.SortOrder).Select(i => i.Item!.Name + (i.Amount != null ? " (" + i.Amount + ")" : "")).ToList() })
+            .Select(r => new { r.Name, r.Description, HasPhoto = r.PhotoContentType != null, Items = r.Items.OrderBy(i => i.SortOrder).Select(i => i.Item!.Name + (i.Amount != null ? " (" + i.Amount + ")" : "")).ToList() })
             .ToListAsync(ct);
         if (recipes.Count > 0)
         {
@@ -153,7 +153,7 @@ public class ExportService(GroceryTrackerDbContext db, IClock clock)
                 recipesSheet.Cell(row, 2).Value = r.Description ?? "";
                 recipesSheet.Cell(row, 3).Value = r.Items.Count;
                 recipesSheet.Cell(row, 4).Value = string.Join(", ", r.Items);
-                recipesSheet.Cell(row, 5).Value = r.PhotoVersion > 0;
+                recipesSheet.Cell(row, 5).Value = r.HasPhoto;
                 row++;
             }
         }

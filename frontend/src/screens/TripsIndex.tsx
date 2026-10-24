@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import type { TripStatus, TripSummary } from '../api/types'
+import type { Category, TripStatus, TripSummary } from '../api/types'
 import { useConfirm } from '../components/ui/ConfirmProvider'
 import { useToast } from '../components/ui/ToastProvider'
 import { performOrQueue } from '../offline/performOrQueue'
 import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 import { useReceiptImport } from '../receipts/useReceiptImport'
+import { listTrips } from '../trips/pendingTrips'
+import { tripDateLabel } from '../dates'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const PAGE = 12
@@ -46,7 +48,11 @@ export function TripsIndex({ profileId }: { profileId: string }) {
   const [search, setSearch] = useState('')
   const [shown, setShown] = useState(PAGE)
 
-  const { data: trips, isLoading } = useQuery({ queryKey: ['trips', profileId], queryFn: () => api.trips(profileId).list() })
+  const { data: trips, isLoading } = useQuery({
+    queryKey: ['trips', profileId],
+    queryFn: () =>
+      listTrips(profileId, () => api.trips(profileId).list(), queryClient.getQueryData<Category[]>(['categories']), queryClient.getQueryData<TripSummary[]>(['trips', profileId])),
+  })
   const pendingTripIds = useOutstandingEntityIds('trip')
 
   const del = useMutation({
@@ -88,29 +94,32 @@ export function TripsIndex({ profileId }: { profileId: string }) {
   const past = trips?.filter((t) => t.status === 'done') ?? []
   const q = search.trim().toLowerCase()
   const matching = q
-    ? past.filter((t) => [t.name ?? '', t.date, ...t.stores].some((field) => field.toLowerCase().includes(q)))
+    ? past.filter((t) => [t.name ?? '', t.date, tripDateLabel(t.date), ...t.stores].some((field) => field.toLowerCase().includes(q)))
     : past
 
   const renderTrip = (trip: TripSummary) => {
-    const label = trip.name || trip.date
+    const label = trip.name || tripDateLabel(trip.date)
     // Store names (not just a count), so a search by store shows why a trip matched.
     const shownStores = trip.stores.slice(0, 3)
     const moreStores = trip.stores.length - shownStores.length
     const amount = trip.status === 'planned' ? (trip.estimatedTotal > 0 ? `est. ${money(trip.estimatedTotal)}` : null) : money(trip.total)
     return (
-      <Link
-        to={`/trips/${trip.id}`}
+      // The title link stretches over the card (its ::after), so the whole card opens the trip
+      // while the action buttons stay real buttons beside it — not nested inside a link.
+      <div
         key={trip.id}
-        className="card elev-sm flex-row items-center gap-1 border border-divider py-3 pr-2 pl-4 text-text no-underline transition-transform hover:-translate-y-0.5 hover:shadow-md"
+        className="card elev-sm relative flex-row items-center gap-1 border border-divider py-3 pr-1.5 pl-4 text-text transition-transform hover:-translate-y-0.5 hover:shadow-md"
       >
         <div className="min-w-0 flex-1">
           <div className="card-title flex flex-wrap items-center gap-x-2 gap-y-1 text-[16px]">
-            <span className="min-w-0 truncate">{label}</span>
+            <Link to={`/trips/${trip.id}`} className="min-w-0 truncate text-text no-underline after:absolute after:inset-0 after:rounded-[18px]">
+              {label}
+            </Link>
             <span className={`tag py-0.5 text-[10px] ${STATUS_TAG_CLASS[trip.status]}`}>{STATUS_TAG[trip.status]}</span>
             {pendingTripIds.has(trip.id) && <span className="tag tag-neutral py-0.5 text-[10px]">Pending sync</span>}
           </div>
           {/* An unnamed trip already shows its date as the title. */}
-          <div className="card-meta mt-1">{trip.name ? `${trip.date} · ${describe(trip)}` : describe(trip)}</div>
+          <div className="card-meta mt-1">{trip.name ? `${tripDateLabel(trip.date)} · ${describe(trip)}` : describe(trip)}</div>
           {(shownStores.length > 0 || trip.savings != null) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               {shownStores.map((s) => (
@@ -121,7 +130,7 @@ export function TripsIndex({ profileId }: { profileId: string }) {
               {moreStores > 0 && <span className="tag tag-neutral py-0.5 text-[11px]">+{moreStores}</span>}
               {trip.status !== 'planned' && trip.savings != null && trip.savings !== 0 && (
                 <span
-                  className={`tag py-0.5 text-[11px] tabular-nums ${trip.savings > 0 ? 'tag-highlight' : 'tag-neutral text-danger'}`}
+                  className={`tag py-0.5 text-[11px] tabular-nums ${trip.savings > 0 ? 'tag-accent' : 'tag-neutral text-danger'}`}
                 >
                   {trip.savings > 0 ? `${money(trip.savings)} under estimate` : `${money(-trip.savings)} over estimate`}
                 </span>
@@ -130,30 +139,27 @@ export function TripsIndex({ profileId }: { profileId: string }) {
           )}
         </div>
         {amount && <div className="shrink-0 pr-1 text-right font-heading text-lg font-bold tabular-nums">{amount}</div>}
-        <button
-          type="button"
-          aria-label="Shop again from this trip"
-          title="Shop again — new list with these items"
-          className="btn btn-ghost btn-icon shrink-0"
-          onClick={(e) => {
-            e.preventDefault()
-            navigate(`/trips/new?from=${trip.id}`)
-          }}
-        >
-          <RepeatIcon />
-        </button>
-        <button
-          type="button"
-          aria-label="Delete trip"
-          className="btn btn-ghost btn-icon shrink-0 text-danger hover:bg-danger-bg"
-          onClick={(e) => {
-            e.preventDefault()
-            askDelete(trip.id, label)
-          }}
-        >
-          <TrashIcon />
-        </button>
-      </Link>
+        {/* Stacked on a phone, so the title, tags and amount get the width. */}
+        <div className="relative z-10 flex shrink-0 max-sm:flex-col">
+          <button
+            type="button"
+            aria-label={`Shop again from ${label}`}
+            title="Shop again — new list with these items"
+            className="btn btn-ghost btn-icon"
+            onClick={() => navigate(`/trips/new?from=${trip.id}`)}
+          >
+            <RepeatIcon />
+          </button>
+          <button
+            type="button"
+            aria-label={`Delete ${label}`}
+            className="btn btn-ghost btn-icon text-danger hover:bg-danger-bg"
+            onClick={() => askDelete(trip.id, label)}
+          >
+            <TrashIcon />
+          </button>
+        </div>
+      </div>
     )
   }
 

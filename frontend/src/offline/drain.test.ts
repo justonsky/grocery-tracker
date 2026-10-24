@@ -3,7 +3,7 @@ import { ApiError } from '../api/client'
 import { ProblemTypes } from '../api/problemTypes'
 import { resetOutboxDbForTests } from './db'
 import { drainOnce, type DrainDeps } from './drain'
-import { enqueue, getAllOps, updateOp } from './outbox'
+import { discardOp, enqueue, getAllOps, updateOp } from './outbox'
 
 function noopResolveCategoryConflict(): Promise<string | null> {
   return Promise.resolve(null)
@@ -125,6 +125,26 @@ describe('drainOnce', () => {
     const ops = await getAllOps()
     expect(ops.find((o) => o.entity === 'category')!.status).toBe('failed')
     expect(ops.find((o) => o.entity === 'trip')!.status).toBe('blocked')
+  })
+
+  it('sends a blocked op once what it waited on is resolved', async () => {
+    await enqueue({ entity: 'category', action: 'put', entityId: 'cat-1', profileId: null, isCreate: true, payload: { name: 'Snacks' }, label: 'category' })
+    await enqueue({ entity: 'trip', action: 'put', entityId: 'trip-1', profileId: 'p1', isCreate: true, payload: {}, dependsOn: ['cat-1'], label: 'trip' })
+    await drainOnce({
+      execute: async (op) => {
+        if (op.entity === 'category') throw new ApiError(400, 'bad', ProblemTypes.Validation)
+      },
+      resolveCategoryConflict: noopResolveCategoryConflict,
+    })
+    expect((await getAllOps()).find((o) => o.entity === 'trip')!.status).toBe('blocked')
+
+    // The user discards the failed category; the trip no longer waits on anything.
+    await discardOp((await getAllOps()).find((o) => o.entity === 'category')!)
+    const sent: string[] = []
+    await drainOnce({ execute: async (op) => void sent.push(op.entityId), resolveCategoryConflict: noopResolveCategoryConflict })
+
+    expect(sent).toEqual(['trip-1'])
+    expect(await getAllOps()).toHaveLength(0)
   })
 
   it('marks all outstanding ops for a profile orphaned when the profile is gone server-side', async () => {

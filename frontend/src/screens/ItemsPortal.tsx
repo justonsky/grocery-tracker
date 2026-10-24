@@ -8,6 +8,7 @@ import { useToast } from '../components/ui/ToastProvider'
 import { useDebounce } from '../hooks/useDebounce'
 import { ItemEditor, invalidateItemData } from './ItemEditor'
 import { perUnit } from '../trips/quantity'
+import { tripDateLabel } from '../dates'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const ITEMS_PER_PAGE = 40
@@ -121,7 +122,7 @@ export function ItemsPortal() {
                   <span className={`block truncate text-sm text-text ${item.id === selectedId ? 'font-bold' : 'font-semibold'}`}>{item.name}</span>
                   <span className="block text-xs text-text/60">
                     {item.categoryName} · {item.purchaseCount} {item.purchaseCount === 1 ? 'purchase' : 'purchases'}
-                    {item.lastPurchased && ` · last ${item.lastPurchased}`}
+                    {item.lastPurchased && ` · last ${tripDateLabel(item.lastPurchased)}`}
                   </span>
                 </span>
                 {item.averagePrice != null && <span className="tag tag-neutral shrink-0 px-2.5 py-0.5 tabular-nums">avg {money(item.averagePrice)}{perUnit(item.priceUnit)}</span>}

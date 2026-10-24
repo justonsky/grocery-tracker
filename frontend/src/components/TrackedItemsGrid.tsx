@@ -28,12 +28,19 @@ function Sparkline({ prices }: { prices: number[] }) {
   )
 }
 
-const TREND_TAG: Record<TrackedItem['trend'], string> = { up: 'tag-highlight', down: 'tag-accent', flat: 'tag-neutral' }
+// Coral is kept for the screen's one call to action, so a price rise is an outlined tag.
+const TREND_TAG: Record<TrackedItem['trend'], string> = { up: 'tag-outline', down: 'tag-accent', flat: 'tag-neutral' }
 const trendLabel = (item: TrackedItem) => {
   if (item.deltaFromPrevious == null) return '—'
-  const sign = item.deltaFromPrevious > 0 ? '+' : item.deltaFromPrevious < 0 ? '-' : ''
-  return `${sign}${money(Math.abs(item.deltaFromPrevious)).slice(1)}`
+  const sign = item.deltaFromPrevious > 0 ? '+' : item.deltaFromPrevious < 0 ? '−' : ''
+  return `${sign}${money(Math.abs(item.deltaFromPrevious))}`
 }
+const trendDescription = (item: TrackedItem) =>
+  item.deltaFromPrevious == null
+    ? 'Bought once so far'
+    : item.deltaFromPrevious === 0
+      ? 'Same price as the purchase before'
+      : `${item.deltaFromPrevious > 0 ? 'Up' : 'Down'} ${money(Math.abs(item.deltaFromPrevious))} from the purchase before`
 
 // The dashboard's item grid: the 8 most recently bought items until the profile
 // picks its own (add / remove / reset). The whole grid is one outbox op keyed by
@@ -137,7 +144,11 @@ export function TrackedItemsGrid({ profileId, dashboard }: { profileId: string; 
         <div className="min-w-0">
           <h2 className="m-0 text-[22px]">Items you're tracking</h2>
           <p className="m-0 mt-0.5 text-[13px] text-text/70">
-            {dashboard.trackedItemsCustomized ? 'Your picks' : 'Your most recent purchases — edit to choose your own'}
+            {dashboard.trackedItemsCustomized
+              ? 'Your picks'
+              : dashboard.recentTrip
+                ? 'Your most recent purchases — edit to choose your own'
+                : 'Recent household purchases — edit to choose your own'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -159,7 +170,7 @@ export function TrackedItemsGrid({ profileId, dashboard }: { profileId: string; 
             <input
               className="input pl-10"
               type="search"
-              placeholder="Search purchased items…"
+              placeholder="Search items"
               aria-label="Search purchased items"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -223,7 +234,11 @@ export function TrackedItemsGrid({ profileId, dashboard }: { profileId: string; 
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className={`min-w-0 text-[15px] font-bold break-words ${editing && !debouncedSearch ? 'pr-11' : ''}`}>{item.itemName}</div>
-                  {!editing && <span className={`tag shrink-0 px-2.5 py-0.5 ${TREND_TAG[item.trend]}`}>{trendLabel(item)}</span>}
+                  {!editing && (
+                    <span className={`tag shrink-0 px-2.5 py-0.5 tabular-nums ${TREND_TAG[item.trend]}`} title={trendDescription(item)} aria-label={trendDescription(item)}>
+                      {trendLabel(item)}
+                    </span>
+                  )}
                 </div>
                 <Sparkline prices={item.recentPrices} />
                 <div className="card-meta justify-between text-[13px] text-text/70">

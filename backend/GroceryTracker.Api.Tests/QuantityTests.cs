@@ -127,7 +127,7 @@ public class QuantityTests : IDisposable
         var packs = (await (await _client.GetAsync($"/api/v1/items/{item.Id}/history?unit=each")).ReadAsAsync<ItemHistoryDto>())!;
         packs.PriceUnit.Should().Be("each");
         packs.History.Select(p => p.Price).Should().Equal(8.25m, 8.00m);
-        (packs.PurchaseCount, packs.OtherUnitCount, packs.Average).Should().Be((2, 3, 8.125m));
+        (packs.PurchaseCount, packs.OtherUnitCount, packs.Average).Should().Be((2, 3, 8.13m)); // rounded to the cent
 
         (await _client.GetAsync($"/api/v1/items/{item.Id}/history?unit=kg")).StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

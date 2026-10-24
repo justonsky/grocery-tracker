@@ -15,6 +15,7 @@ public static class CategoryEndpoints
 
         group.MapPost("/", async (CreateCategoryRequest request, CategoryService service, CancellationToken ct) =>
         {
+            if (!Amounts.IsValidName(request.Name)) return InvalidName();
             var category = await service.CreateAsync(request, ct);
             return category is null
                 ? Results.Problem(type: ProblemTypes.CategoryNameConflict, title: "A category with that name already exists.", statusCode: StatusCodes.Status409Conflict)
@@ -37,6 +38,7 @@ public static class CategoryEndpoints
             {
                 return Results.Problem(type: ProblemTypes.Validation, title: "Id must not be empty.", statusCode: StatusCodes.Status400BadRequest);
             }
+            if (!Amounts.IsValidName(request.Name)) return InvalidName();
 
             var (result, category) = await service.UpsertAsync(id, request, ct);
             return result switch
@@ -50,4 +52,7 @@ public static class CategoryEndpoints
             };
         });
     }
+
+    private static IResult InvalidName() => Results.Problem(type: ProblemTypes.Validation,
+        title: $"A category needs a name of at most {Amounts.NameLength} characters.", statusCode: StatusCodes.Status400BadRequest);
 }

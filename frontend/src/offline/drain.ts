@@ -38,7 +38,9 @@ export async function drainOnce(deps: DrainDeps): Promise<DrainSummary> {
 
   // Ops left `inflight` by a crashed/interrupted previous drain are safe to
   // retry — every op is an idempotent upsert, or a delete that tolerates 404.
-  await resetInflightToPending()
+  // Blocked ops get another look too: the op they waited on may have since been
+  // retried, synced or discarded, and findBlockingDependency re-checks below.
+  await resetToPending()
 
   const ops = await getPendingOpsInSeqOrder()
 
@@ -142,9 +144,9 @@ export async function runDrainWithLock(deps: DrainDeps): Promise<DrainSummary | 
   })
 }
 
-async function resetInflightToPending(): Promise<void> {
-  const inflight = await getOpsByStatus('inflight')
-  for (const op of inflight) {
+async function resetToPending(): Promise<void> {
+  const stuck = [...(await getOpsByStatus('inflight')), ...(await getOpsByStatus('blocked'))]
+  for (const op of stuck) {
     await updateOp({ ...op, status: 'pending', updatedAt: Date.now() })
   }
 }

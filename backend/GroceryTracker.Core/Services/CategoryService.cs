@@ -69,8 +69,12 @@ public class CategoryService(GroceryTrackerDbContext db)
     // TripService.UpsertAsync for why. Built-in categories have fixed,
     // deterministic ids that a real client-generated GUID will effectively
     // never collide with, but the check costs nothing and closes the gap.
-    public async Task<(CategoryUpsertResult Result, CategoryDto? Category)> UpsertAsync(
-        Guid id, CreateCategoryRequest request, CancellationToken ct = default)
+    public Task<(CategoryUpsertResult Result, CategoryDto? Category)> UpsertAsync(
+        Guid id, CreateCategoryRequest request, CancellationToken ct = default) =>
+        InsertRace.RetryOnceAsync(db, () => UpsertOnceAsync(id, request, ct));
+
+    private async Task<(CategoryUpsertResult Result, CategoryDto? Category)> UpsertOnceAsync(
+        Guid id, CreateCategoryRequest request, CancellationToken ct)
     {
         var trimmed = request.Name.Trim();
         var normalized = NameNormalizer.Normalize(trimmed);

@@ -88,6 +88,21 @@ public class SeedDataServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SeedIfEmpty_SkipsWhenProfilesAreGone_ButTheHouseholdCatalogueRemains()
+    {
+        // Deleting every profile leaves the household's items and stores; seeding again would
+        // collide with them and keep the server from starting.
+        await new SeedDataService(_db).SeedIfEmptyAsync(WriteSeed(SampleSeed()));
+        _db.Profiles.RemoveRange(_db.Profiles);
+        await _db.SaveChangesAsync();
+
+        var outcome = await new SeedDataService(_db).SeedIfEmptyAsync(WriteSeed(SampleSeed()));
+
+        outcome.Should().Be(SeedOutcome.SkippedNotEmpty);
+        _db.Profiles.Count().Should().Be(0);
+    }
+
+    [Fact]
     public async Task SeedIfEmpty_ReadsQuantitiesAndUnits_DefaultingToOneEach()
     {
         var seed = new

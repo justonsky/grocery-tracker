@@ -513,6 +513,10 @@ h1, h2, h3, h4, h5, h6 {
     @apply min-h-11 w-full rounded-md border border-control bg-surface px-3 py-2 text-[15px] text-text
       hover:border-text/45 focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/25 focus-visible:outline-none;
   }
+  /* Read-only fields (locked prices, a locked trip's date) must not look editable. */
+  .input:disabled {
+    @apply cursor-not-allowed border-dashed border-divider bg-chip text-text/70 hover:border-divider;
+  }
 
   .card {
     @apply flex flex-col gap-2 rounded-[18px] bg-surface p-4;

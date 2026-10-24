@@ -7,20 +7,24 @@ import { useConfirm } from '../components/ui/ConfirmProvider'
 // that saves and then navigates can read current state, not the last render's.
 //
 // Moving within the same page (query-string changes) and opening Settings — which is a
-// dialog over this page, so nothing is lost — never prompt.
-export function useUnsavedChangesGuard(isDirty: boolean | (() => boolean)) {
+// dialog over this page, so nothing is lost — never prompt. Except `searchParam`: a page
+// whose query string picks what's being edited (the Items portal's ?item=) asks before it changes.
+export function useUnsavedChangesGuard(isDirty: boolean | (() => boolean), options: { searchParam?: string } = {}) {
   const confirm = useConfirm()
   const dirtyRef = useRef(isDirty)
   dirtyRef.current = isDirty
   const check = () => (typeof dirtyRef.current === 'function' ? dirtyRef.current() : dirtyRef.current)
 
-  const here = useLocation().pathname
-  const hereRef = useRef(here)
-  hereRef.current = here
+  const location = useLocation()
+  const hereRef = useRef(location)
+  hereRef.current = location
+  const param = options.searchParam
 
-  const blocker = useBlocker(
-    ({ nextLocation }) => check() && nextLocation.pathname !== hereRef.current && nextLocation.pathname !== '/settings',
-  )
+  const blocker = useBlocker(({ nextLocation }) => {
+    if (!check() || nextLocation.pathname === '/settings') return false
+    if (nextLocation.pathname !== hereRef.current.pathname) return true
+    return !!param && new URLSearchParams(nextLocation.search).get(param) !== new URLSearchParams(hereRef.current.search).get(param)
+  })
 
   useEffect(() => {
     if (blocker.state !== 'blocked') return

@@ -60,7 +60,7 @@ public class ReceiptService(
         var order = 0;
         foreach (var line in reading.Lines.Where(l => !string.IsNullOrWhiteSpace(l.Text)))
         {
-            var quantity = line.Quantity is > 0 and <= Quantities.MaxQuantity ? line.Quantity.Value : 1m;
+            var quantity = line.Quantity is { } q && Quantities.IsValidQuantity(q) ? q : 1m;
             receipt.Lines.Add(new ReceiptLine
             {
                 Id = Guid.NewGuid(), ReceiptId = receipt.Id, SortOrder = order++,
@@ -78,9 +78,18 @@ public class ReceiptService(
         receipt.TaxCents = Cents(reading.Tax) ?? receipt.Lines.Where(l => l.Kind == "tax").Sum(l => l.PriceCents);
         receipt.StoreName = await GuessStoreAsync(receipt.StoreRead, ct);
 
-        db.Receipts.Add(receipt);
-        await db.SaveChangesAsync(ct);
+        // The photo first, so a draft never says it has an image that was never written.
         if (image is not null) await images.SaveAsync(receipt.Id, image, ct);
+        db.Receipts.Add(receipt);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            images.Delete(receipt.Id);
+            throw;
+        }
         return (ReceiptResult.Ok, await DraftAsync(receipt, receipt.StoreName, ct), null);
     }
 
@@ -96,7 +105,10 @@ public class ReceiptService(
         var receipt = await db.Receipts.Include(r => r.Lines).FirstOrDefaultAsync(r => r.Id == id, ct);
         if (receipt is null) return (ReceiptResult.NotFound, null);
         if (receipt.Status == ReceiptStatus.Applied) return (ReceiptResult.AlreadyApplied, null);
-        if (string.IsNullOrWhiteSpace(request.StoreName) || request.Lines.Any(l => string.IsNullOrWhiteSpace(l.ItemName)))
+        if (!Amounts.IsValidName(request.StoreName) || request.Lines is null || request.Lines.Any(l => !Amounts.IsValidName(l.ItemName)))
+            return (ReceiptResult.Invalid, null);
+        var categoryIds = request.Lines.Where(l => l.CategoryId is not null).Select(l => l.CategoryId!.Value).Distinct().ToList();
+        if (await db.Categories.CountAsync(c => categoryIds.Contains(c.Id), ct) != categoryIds.Count)
             return (ReceiptResult.Invalid, null);
         var lines = receipt.Lines.ToDictionary(l => l.Id);
         if (request.Lines.Any(l => !lines.TryGetValue(l.LineId, out var line) || line.Kind != "item"))
@@ -297,7 +309,9 @@ public class ReceiptService(
         foreach (var r in stale) images.Delete(r.Id);
     }
 
-    private static int? Cents(decimal? amount) => amount is null ? null : (int)Math.Round(amount.Value * 100m, MidpointRounding.AwayFromZero);
+    // A reading can say anything; clamp it into what the cents columns hold (discounts may be negative).
+    private static int? Cents(decimal? amount) =>
+        amount is null ? null : (int)Math.Round(Math.Clamp(amount.Value, -Amounts.MaxAmount, Amounts.MaxAmount) * 100m, MidpointRounding.AwayFromZero);
     private static string? Trim(string? s, int max) => string.IsNullOrWhiteSpace(s) ? null : (s.Trim().Length > max ? s.Trim()[..max] : s.Trim());
     private static bool IsIsoDate(string? s) => s is not null && DateOnly.TryParseExact(s, "yyyy-MM-dd", out _);
 }

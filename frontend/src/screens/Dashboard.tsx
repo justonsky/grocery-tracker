@@ -6,6 +6,7 @@ import { MonthlySpendChart } from '../components/MonthlySpendChart'
 import { TrackedItemsGrid } from '../components/TrackedItemsGrid'
 import { useOutstandingEntityIds } from '../offline/useOutstandingIds'
 import { summarizeByStore } from '../trips/costSummary'
+import { localIsoDate } from '../dates'
 
 const money = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
@@ -75,6 +76,8 @@ export function Dashboard({ profileId }: { profileId: string }) {
   const hasBudget = data.monthBudget != null
   const hasSpendHistory = data.monthlySpend.some((m) => m.total > 0)
   const upNext = tripDetail?.status === 'planned'
+  // A planned list dated before today wasn't shopped on its day: still to do, not "up next".
+  const overdue = upNext && recent != null && recent.date < localIsoDate(now)
   const storeGroups = upNext
     ? summarizeByStore(
         tripDetail.items.map((it) => ({ storeName: it.storeName, estimate: it.estimate, price: it.price })),
@@ -87,7 +90,7 @@ export function Dashboard({ profileId }: { profileId: string }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <div className="text-[13px] text-text/70">{today}</div>
-          <h1 className="m-0 mt-1 text-[28px] leading-tight sm:text-[40px]">
+          <h1 className="m-0 mt-1 line-clamp-2 text-[28px] leading-tight break-words sm:text-[40px]">
             {greetingFor(now.getHours())}
             {profileName ? `, ${profileName}` : ''}
           </h1>
@@ -113,23 +116,23 @@ export function Dashboard({ profileId }: { profileId: string }) {
         <section aria-labelledby="recent-trip" className="card elev-sm gap-3.5 p-5 sm:p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
             <h2 id="recent-trip" className="m-0 text-[22px]">
-              {upNext ? 'Up next' : 'Latest trip'}
+              {upNext ? (overdue ? 'Still to shop' : 'Up next') : 'Latest trip'}
             </h2>
             <span className="tag tag-neutral">
-              {tripDetail ? `${STATUS_LABEL[tripDetail.status]} · ${tripDate(recent.date)}` : tripDate(recent.date)}
+              {tripDetail ? `${overdue ? 'Planned for' : `${STATUS_LABEL[tripDetail.status]} ·`} ${tripDate(recent.date)}` : tripDate(recent.date)}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2 text-[15px] font-semibold">
-              <span className="min-w-0 break-words">{recent.name || recent.storeName}</span>
-              {pendingTripIds.has(recent.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
-            </div>
-            <div className="text-right">
-              <div className="font-heading text-xl leading-none font-bold tabular-nums">
-                {upNext && tripDetail ? `est. ${money(tripDetail.estimatedTotal)}` : money(recent.total)}
+          <div className="flex items-start justify-between gap-3">
+            <div className="grid min-w-0 gap-0.5">
+              <div className="flex min-w-0 flex-wrap items-center gap-2 text-[15px] font-semibold">
+                <span className="min-w-0 break-words">{recent.name || recent.storeName}</span>
+                {pendingTripIds.has(recent.id) && <span className="tag tag-neutral text-[10px]">Pending sync</span>}
               </div>
-              <div className="mt-1 text-xs text-text/70">{plural(recent.itemCount, 'item')}</div>
+              <div className="text-xs text-text/70">{plural(recent.itemCount, 'item')}</div>
+            </div>
+            <div className="shrink-0 font-heading text-xl leading-none font-bold tabular-nums">
+              {upNext && tripDetail ? `est. ${money(tripDetail.estimatedTotal)}` : money(recent.total)}
             </div>
           </div>
 
@@ -181,9 +184,9 @@ export function Dashboard({ profileId }: { profileId: string }) {
         </section>
       ) : (
         <section className="card elev-sm items-center gap-2.5 px-8 py-8 text-center">
-          <p className="m-0 mb-2.5 text-text/70">No trips logged yet.</p>
+          <p className="m-0 mb-2.5 text-text/70">No trips yet. Plan a list, then tick things off as you shop.</p>
           <Link to="/trips/new" className="btn btn-primary">
-            Log your first trip
+            Start a shopping list
           </Link>
         </section>
       )}
@@ -194,7 +197,7 @@ export function Dashboard({ profileId }: { profileId: string }) {
             <h2 id="monthly-spend" className="m-0 text-[22px]">
               Spending by month
             </h2>
-            <Link to="/trends" className="text-sm font-semibold">
+            <Link to="/trends" className="inline-flex min-h-11 items-center text-sm font-semibold">
               See shopping trends →
             </Link>
           </div>

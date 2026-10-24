@@ -5,6 +5,9 @@ namespace GroceryTracker.Api.Endpoints;
 
 public static class ReceiptEndpoints
 {
+    // Rate-limit policy for the two endpoints that call the (paid) receipt reader.
+    public const string ReadPolicy = "receipt-reads";
+
     public static void MapReceiptEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/receipts").WithTags("Receipts");
@@ -32,7 +35,7 @@ public static class ReceiptEndpoints
                 return Results.Problem(type: ProblemTypes.Validation, title: "That file isn't a JPEG, PNG or WebP image.", statusCode: StatusCodes.Status400BadRequest);
             }
             return ToResult(await service.CreateAsync(bytes, contentType, null, Fixture(request), ct));
-        });
+        }).RequireRateLimiting(ReadPolicy);
 
         group.MapPost("/text", async (ReceiptTextRequest body, HttpRequest request, ReceiptService service, CancellationToken ct) =>
         {
@@ -41,7 +44,7 @@ public static class ReceiptEndpoints
                 return Results.Problem(type: ProblemTypes.Validation, title: "Paste the receipt's text (up to 20,000 characters).", statusCode: StatusCodes.Status400BadRequest);
             }
             return ToResult(await service.CreateAsync(null, null, body.Text, Fixture(request), ct));
-        });
+        }).RequireRateLimiting(ReadPolicy);
 
         // store: show the suggestions for another store than the one the receipt was taken to be.
         group.MapGet("/{id:guid}", async (Guid id, string? store, ReceiptService service, CancellationToken ct) =>

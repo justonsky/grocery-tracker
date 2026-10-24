@@ -28,6 +28,7 @@ import type {
   TripInput,
   TripSummary,
 } from './types'
+import { localIsoDate } from '../dates'
 
 const BASE = '/api/v1'
 
@@ -52,9 +53,16 @@ export class ApiError extends Error {
   }
 }
 
+// PUT and DELETE are the outbox's idempotent writes. On a flaky connection that still looks
+// online, fetch can hang for minutes; giving up after this long lets performOrQueue queue the
+// write (safe to send again later) instead of leaving Save spinning.
+const WRITE_TIMEOUT_MS = 10_000
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const isWrite = init?.method === 'PUT' || init?.method === 'DELETE'
   const response = await fetch(`${BASE}${path}`, {
     ...init,
+    signal: init?.signal ?? (isWrite ? AbortSignal.timeout(WRITE_TIMEOUT_MS) : undefined),
     headers: { 'Content-Type': 'application/json', ...init?.headers },
   })
   if (!response.ok) {
@@ -128,11 +136,12 @@ export const api = {
     list: (search?: string) => get<CatalogItem[]>(`/catalog/items${search ? `?search=${encodeURIComponent(search)}` : ''}`),
     create: (body: SaveItemRequest) => post<CatalogItem>('/items', body),
     update: (itemId: string, body: SaveItemRequest) => put<CatalogItem>(`/items/${itemId}`, body),
-    delete: (itemId: string) => del(`/items/${itemId}`),
+    // confirmLocked: also remove purchases whose price is locked (else 409 price-locked).
+    delete: (itemId: string, confirmLocked = false) => del(`/items/${itemId}${confirmLocked ? '?confirmLocked=true' : ''}`),
     lines: (itemId: string) => get<ItemLine[]>(`/items/${itemId}/lines`),
     addLine: (itemId: string, body: SaveItemLineRequest) => post<ItemLine>(`/items/${itemId}/lines`, body),
     updateLine: (itemId: string, lineId: string, body: SaveItemLineRequest) => put<ItemLine>(`/items/${itemId}/lines/${lineId}`, body),
-    deleteLine: (itemId: string, lineId: string) => del(`/items/${itemId}/lines/${lineId}`),
+    deleteLine: (itemId: string, lineId: string, confirmLocked = false) => del(`/items/${itemId}/lines/${lineId}${confirmLocked ? '?confirmLocked=true' : ''}`),
     merge: (itemId: string, body: { targetItemId: string; storeName: string | null; deleteSourceIfEmpty?: boolean }) =>
       post<MergeResult>(`/items/${itemId}/merge`, body),
     trips: () => get<HouseholdTrip[]>('/trips'),
@@ -171,9 +180,10 @@ export const api = {
     deleteAlias: (aliasId: string) => del(`/item-aliases/${aliasId}`),
   },
 
-  dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard`),
+  // ?today: the device's date, which "today" and "this month" are counted by.
+  dashboard: (profileId: string) => get<DashboardSummary>(`/profiles/${profileId}/dashboard?today=${localIsoDate()}`),
 
-  trends: (profileId: string, range: TrendsRange) => get<Trends>(`/profiles/${profileId}/trends?range=${range}`),
+  trends: (profileId: string, range: TrendsRange) => get<Trends>(`/profiles/${profileId}/trends?range=${range}&today=${localIsoDate()}`),
 
   trackedItems: (profileId: string) => ({
     search: (search?: string) =>

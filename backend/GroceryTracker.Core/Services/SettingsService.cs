@@ -53,7 +53,9 @@ public partial class SettingsService(GroceryTrackerDbContext db)
     // Keys are short "kind:slug" ids; values a hex color or "none".
     public static bool IsValidGroupColors(Dictionary<string, string>? colors) =>
         colors is null || (colors.Count <= MaxGroupColors
-            && colors.All(c => GroupKeyPattern().IsMatch(c.Key) && (c.Value == "none" || HexColorPattern().IsMatch(c.Value))));
+            && colors.All(c => c.Key is not null && c.Value is not null && GroupKeyPattern().IsMatch(c.Key) && (c.Value == "none" || HexColorPattern().IsMatch(c.Value))));
+
+    public static readonly string[] ThemeModes = ["system", "light", "dark"];
 
     [GeneratedRegex("^(store|category):[a-z0-9]{1,80}$")]
     private static partial Regex GroupKeyPattern();

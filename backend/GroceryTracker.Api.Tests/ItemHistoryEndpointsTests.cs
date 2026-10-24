@@ -37,7 +37,7 @@ public class ItemHistoryEndpointsTests : IDisposable
         history!.Current.Should().Be(2.50m);
         history.Lowest.Should().Be(2.50m);
         history.Highest.Should().Be(4.50m);
-        history.Average.Should().Be((3.00m + 4.50m + 2.50m) / 3);
+        history.Average.Should().Be(3.33m); // (3.00 + 4.50 + 2.50) / 3, rounded to the cent
         history.History.Should().HaveCount(3);
         history.History[0].Date.Should().Be("2026-08-01"); // most recent first
         history.History[0].DeltaFromPrevious.Should().Be(2.50m - 4.50m);

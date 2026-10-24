@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/GroceryTracker.Api.Tests/GroceryTracker.Api.Tests.csproj" />
+    <Project Path="backend/GroceryTracker.Api/GroceryTracker.Api.csproj" />
+    <Project Path="backend/GroceryTracker.Core/GroceryTracker.Core.csproj" />
+  </Folder>
+</Solution>

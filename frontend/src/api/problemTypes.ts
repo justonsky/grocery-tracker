@@ -16,6 +16,7 @@ export const ProblemTypes = {
   PhotoTooLarge: '/errors/photo-too-large',
   ReceiptNotFound: '/errors/receipt-not-found',
   ReceiptApplied: '/errors/receipt-applied',
+  TooManyReceipts: '/errors/too-many-receipts',
   ReceiptsNotConfigured: '/errors/receipts-not-configured',
   ReceiptsDisabled: '/errors/receipts-disabled',
   ReceiptUnreadable: '/errors/receipt-unreadable',

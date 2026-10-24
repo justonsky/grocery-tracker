@@ -325,8 +325,10 @@ export interface TrendItem {
   category: string
   timesBought: number
   spent: number
+  // Per priceUnit: per item, or per pound for things bought by weight. Absent from older servers.
   averagePrice: number
   lastBought: string
+  priceUnit?: PriceUnit
 }
 
 export interface RisingItem {
