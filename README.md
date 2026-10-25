@@ -82,6 +82,13 @@ last used — typically because the server was reinstalled or its database
 replaced — a banner asks before anything is loaded from or sent to it: **Use
 this server** adopts it and reloads the device's data.
 
+The app itself is cached on each device too, so it opens offline. When a newer
+version has been deployed, a **A new version is ready — Reload** banner appears
+(the app checks every 30 minutes and whenever it comes back to the foreground).
+Nothing reloads until you choose to, and **Reload** brings you back to the same
+profile and page; changes waiting to sync are kept, and an unsaved form still asks
+before it's discarded. (Any other reload returns to the profile picker, by design.)
+
 Known limitation: a trip is saved as a whole, so the last save wins. Editing the
 same trip on two devices (or in the trip editor while fixing its records on the
 Items page) keeps whichever is saved last.
@@ -145,8 +152,12 @@ hover, the description. Opening a card shows the items with their household aver
 prices and an estimated cost, and offers edit, change photo, share (export a PNG or
 copy the text), delete and **Create shopping list**.
 
-On a trip, **+ Add items from recipe** (next to **+ Add item**) adds a recipe's items (never
-twice) and lists the meal under **Planned meals**, its photo behind it. Taking a meal
+On a trip, **+ Add recipe** (next to **Fill estimates from averages**, above the list) adds a
+recipe's items (never twice) and lists the meal under **Planned meals**, its photo behind it.
+It asks which store the items are for, starting on the store last picked on that trip, or the
+trip's first store — so they land in that store's section rather than "Any store". On a phone
+the two buttons stay pinned to the top of the screen as you scroll (below the running totals
+while shopping). Taking a meal
 off removes its unbought items, except ones another planned meal still needs. Trends
 shows **Popular meals** and **Meals gone quiet**.
 
@@ -221,7 +232,7 @@ location with the `DataDirectory` environment variable.
 ```bash
 dotnet test                                                # API integration tests (from the repo root)
 cd frontend && npm test && npm run lint                    # unit tests (offline queue, cost math, autocomplete,
-                                                           # quantities, recipes) + lint
+                                                           # quantities, recipes, update reload) + lint
 cd tools/seed && python3 -m unittest test_backfill_quantities test_merge_named_items  # the seed tools
 ```
 
@@ -270,6 +281,14 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now grocery-tracker
 ```
 
+To update, publish again (or rebuild the image) and restart. Open devices pick the new
+version up through the update banner (see [Offline and sync](#offline-and-sync)); a device
+still running a version from before that banner existed needs every tab (or the installed
+app) closed and reopened once — or a hard refresh (Ctrl+Shift+R) — and gets the banner from
+then on. Keep the data volume / `DataDirectory`: a deploy that starts with an empty data
+folder is a new database, and every device shows the "isn't the server this device last
+used" banner.
+
 Either way, the app listens on `http://0.0.0.0:5080` by default (see
 `backend/GroceryTracker.Api/appsettings.json`) — reachable from any device on
 the same network, not just the host machine.
@@ -292,10 +311,17 @@ right working directory for you):
 Receipt import uses Anthropic's Claude to read photos, so the server needs outbound
 internet and an API key: set `Receipts__ApiKey` (or `ANTHROPIC_API_KEY`) in the
 environment and restart, then turn it on in Settings. `Receipts__Model` picks the
-model (default `claude-sonnet-5-5`). Each photo is sent to Anthropic to be read; the
-key never reaches the browser. Without a key the feature simply stays off. Reads are
+model (default `claude-sonnet-5-5`); it must support structured outputs (any current
+Claude model does), since the reply is requested as JSON matching a schema. Each photo
+is sent to Anthropic to be read; the key never reaches the browser. Without a key the feature simply stays off. Reads are
 capped at `Receipts__ReadsPerHour` (default 30) so nobody on the network can run up
 the API bill.
+
+If a read fails with **"The receipt reader returned …"**, the rest of the message is
+Anthropic's own reason: 401 is a wrong or revoked key, 429 or 529 means try again
+shortly, and a 400 names what the request got wrong (for example a `Receipts__Model`
+that doesn't exist). Older builds forced a tool call, which Claude Sonnet 5.5 rejects
+with a 400 on every receipt — update the server if you see that.
 
 ### Security note
 

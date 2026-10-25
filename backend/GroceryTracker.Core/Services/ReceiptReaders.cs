@@ -33,14 +33,15 @@ public class ReceiptOptions
 
 public class ReceiptReadException(string message, Exception? inner = null) : Exception(message, inner);
 
-// Claude via the Messages API: the image goes up once, forced through a tool whose schema is the
-// ReceiptReading, so the reply is structured data, not prose. Only those fields are kept.
+// Claude via the Messages API: the image goes up once with a structured-output schema (the
+// ReceiptReading), so the reply is JSON, not prose. Only those fields are kept. Not a forced tool
+// call: Claude Sonnet 5.5 and later answer tool_choice "tool"/"any" with a 400.
 public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : IReceiptReader
 {
     public bool Configured => !string.IsNullOrWhiteSpace(options.ApiKey);
 
     internal const string Instructions = """
-        Read this grocery store receipt and record it with the record_receipt tool.
+        Read this grocery store receipt and record it.
         - One line per product bought, in printed order. "text" is the description exactly as printed (without the price);
           "code" is the item number printed with it, if any; "name" is a plain product name with abbreviations expanded
           (e.g. "Redcd Sodium Broth" -> "Reduced Sodium Broth"), or null if you can't tell.
@@ -61,32 +62,34 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         {
           "type": "object",
           "properties": {
-            "store": { "type": ["string", "null"] },
-            "date": { "type": ["string", "null"], "description": "YYYY-MM-DD" },
-            "subtotal": { "type": ["number", "null"] },
-            "tax": { "type": ["number", "null"] },
-            "total": { "type": ["number", "null"] },
+            "store": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+            "date": { "anyOf": [{ "type": "string" }, { "type": "null" }], "description": "YYYY-MM-DD" },
+            "subtotal": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
+            "tax": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
+            "total": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
             "lines": {
               "type": "array",
               "items": {
                 "type": "object",
                 "properties": {
                   "text": { "type": "string" },
-                  "code": { "type": ["string", "null"] },
-                  "name": { "type": ["string", "null"] },
+                  "code": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+                  "name": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
                   "quantity": { "type": "number" },
                   "unit": { "type": "string", "enum": ["each", "lb", "oz", "kg", "g"] },
-                  "unitPrice": { "type": ["number", "null"] },
+                  "unitPrice": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
                   "amount": { "type": "number" },
-                  "discount": { "type": ["number", "null"] },
+                  "discount": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
                   "kind": { "type": "string", "enum": ["item", "tax", "fee", "tip", "deposit"] },
-                  "category": { "type": ["string", "null"] }
+                  "category": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
                 },
-                "required": ["text", "quantity", "unit", "amount", "kind"]
+                "required": ["text", "quantity", "unit", "amount", "kind"],
+                "additionalProperties": false
               }
             }
           },
-          "required": ["lines"]
+          "required": ["lines"],
+          "additionalProperties": false
         }
         """)!.AsObject();
 
@@ -98,12 +101,14 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
               "type": "array",
               "items": {
                 "type": "object",
-                "properties": { "line": { "type": "integer" }, "candidate": { "type": ["integer", "null"] } },
-                "required": ["line", "candidate"]
+                "properties": { "line": { "type": "integer" }, "candidate": { "anyOf": [{ "type": "integer" }, { "type": "null" }] } },
+                "required": ["line", "candidate"],
+                "additionalProperties": false
               }
             }
           },
-          "required": ["choices"]
+          "required": ["choices"],
+          "additionalProperties": false
         }
         """)!.AsObject();
 
@@ -127,7 +132,8 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
 
     private async Task<ReceiptReading> ReadAsync(JsonArray content, CancellationToken ct)
     {
-        var input = await CallToolAsync("record_receipt", "Record the receipt's store, date, totals and lines.", ReceiptSchema, content, 4096, ct);
+        // Room for the thinking the model does first (adaptive thinking counts toward max_tokens) and a long receipt.
+        var input = await CallJsonAsync(ReceiptSchema, content, 16000, ct);
         try
         {
             return input.Deserialize<ReceiptReading>(Json) ?? throw new ReceiptReadException("The receipt came back empty.");
@@ -143,7 +149,7 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         var prompt = new StringBuilder("""
             Each numbered receipt line below is a product bought at a grocery store. Choose which of its numbered
             candidates (items from the household's own list) it is, or null if none of them is the same product.
-            Use the record_choices tool, one choice per line.
+            Give one choice per line.
 
             """);
         for (var i = 0; i < lines.Count; i++)
@@ -151,8 +157,8 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
             prompt.Append($"Line {i}: \"{lines[i].Text}\"{(lines[i].Name is { } n ? $" (probably: {n})" : "")}\n");
             for (var c = 0; c < lines[i].Candidates.Count; c++) prompt.Append($"  {c}: {lines[i].Candidates[c]}\n");
         }
-        var input = await CallToolAsync("record_choices", "Record which candidate each line is.", ChooseSchema,
-            new JsonArray { new JsonObject { ["type"] = "text", ["text"] = prompt.ToString() } }, 2048, ct);
+        var input = await CallJsonAsync(ChooseSchema,
+            new JsonArray { new JsonObject { ["type"] = "text", ["text"] = prompt.ToString() } }, 8000, ct);
         var result = Enumerable.Repeat<int?>(null, lines.Count).ToList();
         foreach (var choice in input["choices"]?.AsArray() ?? [])
         {
@@ -164,15 +170,14 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         return result;
     }
 
-    private async Task<JsonNode> CallToolAsync(string tool, string description, JsonObject schema, JsonArray content, int maxTokens, CancellationToken ct)
+    private async Task<JsonNode> CallJsonAsync(JsonObject schema, JsonArray content, int maxTokens, CancellationToken ct)
     {
         if (!Configured) throw new ReceiptReadException("Receipt reading isn't set up on the server.");
         var body = new JsonObject
         {
             ["model"] = options.Model,
             ["max_tokens"] = maxTokens,
-            ["tools"] = new JsonArray { new JsonObject { ["name"] = tool, ["description"] = description, ["input_schema"] = schema.DeepClone() } },
-            ["tool_choice"] = new JsonObject { ["type"] = "tool", ["name"] = tool },
+            ["output_config"] = new JsonObject { ["format"] = new JsonObject { ["type"] = "json_schema", ["schema"] = schema.DeepClone() } },
             ["messages"] = new JsonArray { new JsonObject { ["role"] = "user", ["content"] = content } },
         };
         using var request = new HttpRequestMessage(HttpMethod.Post, options.Endpoint)
@@ -196,10 +201,41 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         {
             var text = await response.Content.ReadAsStringAsync(ct);
             if (!response.IsSuccessStatusCode)
-                throw new ReceiptReadException($"The receipt reader returned {(int)response.StatusCode}.");
+                throw new ReceiptReadException($"The receipt reader returned {(int)response.StatusCode}{ErrorDetail(text)}.");
             var reply = JsonNode.Parse(text);
-            var use = reply?["content"]?.AsArray().FirstOrDefault(c => c?["type"]?.GetValue<string>() == "tool_use" && c?["name"]?.GetValue<string>() == tool);
-            return use?["input"] ?? throw new ReceiptReadException("The receipt reader gave no answer.");
+            // A refusal or a cut-off reply can stop short of the schema, so it isn't parsed as an answer.
+            switch (reply?["stop_reason"]?.GetValue<string>())
+            {
+                case "refusal": throw new ReceiptReadException("The receipt reader declined to read this receipt.");
+                case "max_tokens": throw new ReceiptReadException("The receipt was too long to read in one go.");
+            }
+            var json = reply?["content"]?.AsArray().FirstOrDefault(c => c?["type"]?.GetValue<string>() == "text")?["text"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(json)) throw new ReceiptReadException("The receipt reader gave no answer.");
+            try
+            {
+                return JsonNode.Parse(json) ?? throw new ReceiptReadException("The receipt reader gave no answer.");
+            }
+            catch (JsonException e)
+            {
+                throw new ReceiptReadException("The receipt reader's answer couldn't be read.", e);
+            }
+        }
+    }
+
+    // The API's own reason for an error ("…is not supported for this model"), so a failure says what
+    // to fix instead of a bare status code. It never carries the key or the receipt.
+    private static string ErrorDetail(string body)
+    {
+        try
+        {
+            var message = JsonNode.Parse(body)?["error"]?["message"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(message)) return "";
+            message = message.Trim();
+            return ": " + (message.Length > 200 ? message[..200] + "…" : message.TrimEnd('.'));
+        }
+        catch (Exception e) when (e is JsonException or InvalidOperationException)
+        {
+            return "";
         }
     }
 }
