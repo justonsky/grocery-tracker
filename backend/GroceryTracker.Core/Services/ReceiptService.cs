@@ -15,7 +15,8 @@ public class ReceiptService(
     GroceryTrackerDbContext db, IReceiptReader reader, ReceiptImageStore images, SettingsService settings,
     LookupService lookup, IClock clock)
 {
-    public const int MaxImageBytes = 10 * 1024 * 1024;
+    // The reader takes at most 10 MB of base64 per image, which is 7.5 MB of photo.
+    public const int MaxImageBytes = 7 * 1024 * 1024;
     private const int ShownCandidates = 5;
     private const int ChooseFrom = 20;
     private const double CandidateFloor = 0.35;

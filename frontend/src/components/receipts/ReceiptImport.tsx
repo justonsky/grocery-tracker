@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import type { Category, Item, ReceiptDraft, ReceiptLine } from '../../api/types'
-import { loadImage } from '../../recipes'
+import { CANVAS_BLOCKED, canvasExportWorks, loadImage } from '../../recipes'
 import { mergeReceipt, pairWithPlanned, type ReceiptRow } from '../../receipts/merge'
 import { quantityLabel } from '../../trips/quantity'
 import type { DraftItem } from '../TripItemList'
@@ -13,6 +13,11 @@ import { useConfirm } from '../ui/ConfirmProvider'
 
 const money = (n: number) => `$${n.toFixed(2)}`
 const MAX_SIDE = 2000
+// What the server takes as it is (ReceiptService.MaxImageBytes, kept inside the reader's 10 MB
+// base64 limit) and the reader's largest side, for a photo that can't be shrunk on the device.
+const SEND_AS_IS_MAX_BYTES = 7 * 1024 * 1024
+const SEND_AS_IS_MAX_SIDE = 8000
+const SEND_AS_IS_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const EXTRA_NAMES: Record<string, string> = { tax: 'Tax', fee: 'Fees', tip: 'Tip', deposit: 'Bottle deposit' }
 
 // What the merge did, for the editor to apply and announce.
@@ -35,11 +40,19 @@ interface Row {
 }
 
 // Shrinks a phone photo before upload: a receipt reads fine at 2000px, at a fraction of the size.
+// Where the browser fakes canvas output, the photo goes as it is if the server can take it, and
+// otherwise stops with a reason — never as the fake picture, which the reader can't read.
 async function shrink(file: File): Promise<Blob> {
   const { image, url } = await loadImage(file)
   try {
     const scale = Math.min(1, MAX_SIDE / Math.max(image.naturalWidth, image.naturalHeight))
     if (scale === 1 && file.type === 'image/jpeg' && file.size < 4 * 1024 * 1024) return file
+    if (!canvasExportWorks()) {
+      const fits = SEND_AS_IS_TYPES.includes(file.type) && file.size <= SEND_AS_IS_MAX_BYTES &&
+        Math.max(image.naturalWidth, image.naturalHeight) <= SEND_AS_IS_MAX_SIDE
+      if (fits) return file
+      throw new Error(`${CANVAS_BLOCKED}, so this photo can't be made small enough to send. Allow this site to read canvas data if your browser offers it, use another browser, or paste the receipt's text.`)
+    }
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(image.naturalWidth * scale)
     canvas.height = Math.round(image.naturalHeight * scale)

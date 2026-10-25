@@ -173,7 +173,8 @@ see [Production deployment](#production-deployment)). Then **Import receipt** ap
 in each store section of the trip editor and on the Grocery Trips page.
 
 1. Take or choose a photo (it's shrunk to 2000px on the device), or paste an
-   e-receipt's text. Claude reads the store, date, totals and each line: quantity
+   e-receipt's text. A photo the reader can't make out (blank, blurry, not a receipt) is
+   reported as unreadable — it never invents lines. Claude reads the store, date, totals and each line: quantity
    or weight ("2 @ 2.75", "1.55 lb x 1.45/lb"), price, and any coupon printed under
    it. Card numbers, membership numbers and payment lines are never kept.
 2. **Check the receipt**: each line shows what it was matched to — *Saved match*
@@ -322,6 +323,14 @@ Anthropic's own reason: 401 is a wrong or revoked key, 429 or 529 means try agai
 shortly, and a 400 names what the request got wrong (for example a `Receipts__Model`
 that doesn't exist). Older builds forced a tool call, which Claude Sonnet 5.5 rejects
 with a 400 on every receipt — update the server if you see that.
+
+**Privacy browsers.** Firefox with `privacy.resistFingerprinting` on (and LibreWolf, Mullvad
+Browser and Tor Browser) replace pictures read back from a page with noise, so the app can't
+shrink a photo on the device there. It then sends the original photo instead (JPEG, PNG or WebP,
+up to 7 MB and 8000px), and otherwise says why it can't. Older builds sent the noise, and the
+reader returned an invented receipt. Recipe photos that need cropping can't be cropped in such
+a browser either; pick one already within the limits. Photos are capped at 7 MB because
+Anthropic accepts at most 10 MB of base64 per image.
 
 ### Security note
 

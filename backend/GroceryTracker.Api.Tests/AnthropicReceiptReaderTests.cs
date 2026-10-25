@@ -51,7 +51,7 @@ public class AnthropicReceiptReaderTests
     public async Task ReadImage_SendsThePhotoWithAStructuredOutputSchema_AndParsesTheReply()
     {
         var handler = new FakeHandler((_, _) => Reply("""
-            {"store":"ALDI","date":"2024-03-15","subtotal":5.5,"tax":0,"total":5.5,
+            {"readable":true,"store":"ALDI","date":"2024-03-15","subtotal":5.5,"tax":0,"total":5.5,
              "lines":[{"text":"Peanut Butter SWC","code":null,"name":"Peanut Butter","quantity":2,"unit":"each","unitPrice":2.75,"amount":5.5,"discount":null,"kind":"item"}]}
             """));
         var reader = new AnthropicReceiptReader(new HttpClient(handler), Options());
@@ -68,6 +68,7 @@ public class AnthropicReceiptReaderTests
         body["tool_choice"].Should().BeNull();
         body["tools"].Should().BeNull();
         body["output_config"]!["format"]!["type"]!.GetValue<string>().Should().Be("json_schema");
+        body["output_config"]!["format"]!["schema"]!["required"]!.AsArray().Select(n => n!.GetValue<string>()).Should().Contain("readable");
         ShouldBeAStrictSchema(body["output_config"]!["format"]!["schema"]!);
         var image = body["messages"]![0]!["content"]![0]!;
         (image["source"]!["media_type"]!.GetValue<string>(), image["source"]!["data"]!.GetValue<string>()).Should().Be(("image/jpeg", "AQID"));
@@ -104,6 +105,10 @@ public class AnthropicReceiptReaderTests
         await rejected.Invoking(r => r.ReadTextAsync("x", [], null, CancellationToken.None)).Should().ThrowAsync<ReceiptReadException>()
             .WithMessage("The receipt reader returned 400: tool_choice: type \"tool\" and \"any\" are not supported for this model.");
 
+        // A picture with no receipt in it (a blank or fake image) is an error, never an invented receipt.
+        var unreadable = new AnthropicReceiptReader(new HttpClient(new FakeHandler((_, _) => Reply("""{"readable":false,"lines":[]}"""))), Options());
+        await unreadable.Invoking(r => r.ReadImageAsync([1, 2, 3], "image/jpeg", [], null, CancellationToken.None)).Should().ThrowAsync<ReceiptReadException>().WithMessage("*doesn't show a receipt*");
+
         var notJson = new AnthropicReceiptReader(new HttpClient(new FakeHandler((_, _) => Reply("hi"))), Options());
         await notJson.Invoking(r => r.ReadTextAsync("x", [], null, CancellationToken.None)).Should().ThrowAsync<ReceiptReadException>();
 
@@ -112,6 +117,10 @@ public class AnthropicReceiptReaderTests
         await refused.Invoking(r => r.ReadTextAsync("x", [], null, CancellationToken.None)).Should().ThrowAsync<ReceiptReadException>().WithMessage("*declined*");
         var cutOff = new AnthropicReceiptReader(new HttpClient(new FakeHandler((_, _) => Reply("""{"lines":[""", "max_tokens"))), Options());
         await cutOff.Invoking(r => r.ReadTextAsync("x", [], null, CancellationToken.None)).Should().ThrowAsync<ReceiptReadException>().WithMessage("*too long*");
+
+        // HttpClient's own timeout is a read error with a clear message, not an unhandled 500.
+        var slow = new AnthropicReceiptReader(new HttpClient(new FakeHandler((_, _) => throw new TaskCanceledException("timeout", new TimeoutException()))), Options());
+        await slow.Invoking(r => r.ReadTextAsync("x", [], null, CancellationToken.None)).Should().ThrowAsync<ReceiptReadException>().WithMessage("*took too long*");
 
         new AnthropicReceiptReader(new HttpClient(), Options(null)).Configured.Should().BeFalse();
     }

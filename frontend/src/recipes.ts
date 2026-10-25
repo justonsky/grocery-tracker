@@ -37,6 +37,33 @@ export function loadImage(source: Blob): Promise<{ image: HTMLImageElement; url:
   })
 }
 
+// Whether pictures drawn on a canvas can be read back. Firefox's "resist fingerprinting" (and
+// LibreWolf, Mullvad and Tor Browser) hand back a fake noise image instead — upload that and the
+// server stores, and the receipt reader "reads", a picture of nothing. Tested once with a known
+// 2×2 pattern; a small tolerance lets through the faint noise of Firefox's default protection.
+let canvasReadable: boolean | null = null
+export function canvasExportWorks(): boolean {
+  if (canvasReadable !== null) return canvasReadable
+  try {
+    const colors = [[220, 20, 20], [20, 220, 20], [20, 20, 220], [240, 240, 240]]
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 2
+    const g = canvas.getContext('2d', { willReadFrequently: true })!
+    colors.forEach(([r, gr, b], i) => {
+      g.fillStyle = `rgb(${r},${gr},${b})`
+      g.fillRect(i % 2, Math.floor(i / 2), 1, 1)
+    })
+    const data = g.getImageData(0, 0, 2, 2).data
+    canvasReadable = colors.every((rgb, i) => rgb.every((v, k) => Math.abs(data[i * 4 + k] - v) <= 24))
+  } catch {
+    canvasReadable = false
+  }
+  return canvasReadable
+}
+
+export const CANVAS_BLOCKED =
+  "This browser blocks reading pictures back from the page (Firefox's “resist fingerprinting” setting, or a privacy browser such as LibreWolf or Mullvad)"
+
 // Reads a picked file's size and says whether it fits the limits. Throws for a file the
 // browser can't read as an image.
 export async function inspectPhoto(file: File): Promise<PhotoInfo> {

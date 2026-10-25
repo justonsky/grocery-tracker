@@ -26,7 +26,7 @@ public static class ReceiptEndpoints
                 buffer.Write(chunk, 0, read);
                 if (buffer.Length > ReceiptService.MaxImageBytes)
                 {
-                    return Results.Problem(type: ProblemTypes.Validation, title: "Receipt photos can be at most 10 MB.", statusCode: StatusCodes.Status413PayloadTooLarge);
+                    return Results.Problem(type: ProblemTypes.Validation, title: "Receipt photos can be at most 7 MB.", statusCode: StatusCodes.Status413PayloadTooLarge);
                 }
             }
             var bytes = buffer.ToArray();

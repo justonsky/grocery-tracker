@@ -3,9 +3,11 @@ namespace GroceryTracker.Core.Dtos;
 // What the reader (the vision model, or a fixture in tests) makes of a receipt. Amount is what a
 // line cost after any coupon printed under it; tender lines, card and membership numbers are never
 // included. Total is null when it isn't visible.
+// Readable false = the reader saw no legible receipt (a blank or fake picture, not a receipt);
+// null (fixtures, older readings) counts as readable.
 public record ReceiptReading(
     string? Store, string? Date, decimal? Subtotal, decimal? Tax, decimal? Total,
-    List<ReceiptReadingLine> Lines);
+    List<ReceiptReadingLine> Lines, bool? Readable = null);
 
 public record ReceiptReadingLine(
     string Text, string? Code, string? Name, decimal? Quantity, string? Unit,

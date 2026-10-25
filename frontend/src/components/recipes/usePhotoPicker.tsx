@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { useToast } from '../ui/ToastProvider'
-import { inspectPhoto } from '../../recipes'
+import { CANVAS_BLOCKED, canvasExportWorks, inspectPhoto } from '../../recipes'
 import { PhotoCropper } from './PhotoCropper'
 
 // Choosing a recipe photo: a file that already fits the limits goes straight to `onPhoto`;
@@ -16,8 +16,10 @@ export function usePhotoPicker(onPhoto: (photo: Blob) => void): { choose: () => 
     if (!file) return
     try {
       const info = await inspectPhoto(file)
-      if (info.tooLarge) setCropping({ file, reason: info.tooLarge })
-      else onPhoto(file)
+      if (!info.tooLarge) onPhoto(file)
+      // Cropping draws on a canvas; where the browser fakes that, the "crop" would be noise.
+      else if (!canvasExportWorks()) toast('error', `${info.tooLarge} ${CANVAS_BLOCKED}, so it can't be cropped here — choose a photo within the limits, or use another browser.`)
+      else setCropping({ file, reason: info.tooLarge })
     } catch {
       toast('error', "That file couldn't be read as a picture. Try a JPEG or PNG.")
     }

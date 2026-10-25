@@ -42,6 +42,8 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
 
     internal const string Instructions = """
         Read this grocery store receipt and record it.
+        - First, "readable": true only if you can actually read a store receipt here. If it's blank, noise, too blurry,
+          or not a receipt, set "readable" to false and "lines" to [] — never guess or invent a store, lines or prices.
         - One line per product bought, in printed order. "text" is the description exactly as printed (without the price);
           "code" is the item number printed with it, if any; "name" is a plain product name with abbreviations expanded
           (e.g. "Redcd Sodium Broth" -> "Reduced Sodium Broth"), or null if you can't tell.
@@ -62,6 +64,7 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         {
           "type": "object",
           "properties": {
+            "readable": { "type": "boolean" },
             "store": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
             "date": { "anyOf": [{ "type": "string" }, { "type": "null" }], "description": "YYYY-MM-DD" },
             "subtotal": { "anyOf": [{ "type": "number" }, { "type": "null" }] },
@@ -88,7 +91,7 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
               }
             }
           },
-          "required": ["lines"],
+          "required": ["readable", "lines"],
           "additionalProperties": false
         }
         """)!.AsObject();
@@ -136,7 +139,11 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         var input = await CallJsonAsync(ReceiptSchema, content, 16000, ct);
         try
         {
-            return input.Deserialize<ReceiptReading>(Json) ?? throw new ReceiptReadException("The receipt came back empty.");
+            var reading = input.Deserialize<ReceiptReading>(Json) ?? throw new ReceiptReadException("The receipt came back empty.");
+            // The schema forces an answer; this is how the reader says it saw no receipt rather than making one up.
+            if (reading.Readable == false)
+                throw new ReceiptReadException("That photo doesn't show a receipt the reader could read. Try a sharper, flatter photo in good light.");
+            return reading;
         }
         catch (JsonException e)
         {
@@ -196,6 +203,11 @@ public class AnthropicReceiptReader(HttpClient http, ReceiptOptions options) : I
         catch (HttpRequestException e)
         {
             throw new ReceiptReadException("Couldn't reach the receipt reader. Check the server's internet connection.", e);
+        }
+        // HttpClient's timeout (Program.cs) surfaces as a cancellation; the request itself wasn't cancelled.
+        catch (TaskCanceledException e) when (!ct.IsCancellationRequested)
+        {
+            throw new ReceiptReadException("The receipt reader took too long to answer. Try again, or try a smaller, flatter photo.", e);
         }
         using (response)
         {
